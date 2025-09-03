@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 export default function Footer() {
   return (
     <footer
-      className="w-full border-t relative bg-center"
+      className="w-full border-t relative bg-center pb-8 "
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
       {/* Overlay bleu pâle */}
@@ -36,29 +36,31 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center px-4 md:px-24 py-6">
           {/* Navigation et copyright */}
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 mb-4 md:mb-0">
-            <span className="text-gray-600 text-sm">© 2025</span>
+            <span className="text-gray-600 text-sm md:text-[1.3rem]">
+              © 2025
+            </span>
             <nav className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-8">
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
               >
                 Élèves
               </a>
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
               >
                 Parents
               </a>
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
               >
                 Répétiteurs
               </a>
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
               >
                 Professeurs
               </a>
@@ -69,7 +71,7 @@ export default function Footer() {
           <div className="flex gap-4">
             <a
               href="#"
-              className="w-8 h-8 md:w-10 md:h-10 bg-[#111D4A] hover:bg-[#0d1640] rounded-full flex items-center justify-center transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 bg-[#111D4A] hover:bg-[#0d1640] rounded-lg flex items-center justify-center transition-colors"
               aria-label="Twitter"
             >
               <svg
@@ -82,7 +84,7 @@ export default function Footer() {
             </a>
             <a
               href="#"
-              className="w-8 h-8 md:w-10 md:h-10 bg-[#111D4A] hover:bg-[#0d1640] rounded-full flex items-center justify-center transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 bg-[#111D4A] hover:bg-[#0d1640] rounded-lg flex items-center justify-center transition-colors"
               aria-label="Facebook"
             >
               <svg

@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
 });
 
 const adventPro = Advent_Pro({
-  weight: ["700"], // On charge seulement le poids 700 (Bold)
+  weight: ["400"], // On charge seulement le poids 700 (Bold)
   subsets: ["latin"],
   variable: "--font-advent-pro", // On crée une variable CSS
   display: "swap", // Meilleure performance

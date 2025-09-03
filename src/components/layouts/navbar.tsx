@@ -46,11 +46,13 @@ export default function NavBar() {
           className="bg-inherit hover:bg-gray-100/20 transition-colors cursor-pointer text-xs sm:text-sm md:text-base px-2 sm:px-4"
           aria-label="Se connecter à votre compte"
         >
-          <span className="text-black font-medium">Se connecter</span>
+          <span className="text-black font-medium text-[1.3rem]">
+            Se connecter
+          </span>
         </Button>
 
         <Button
-          className="px-3 sm:px-6 md:px-10 py-2 sm:py-3 md:py-5 bg-[#111D4A] hover:bg-[#0d1640] rounded-sm text-white cursor-pointer transition-colors text-xs sm:text-sm md:text-base font-medium"
+          className="px-3 sm:px-6 md:px-10 py-2 sm:py-3 md:py-5 bg-[#111D4A] hover:bg-[#0d1640] rounded-sm text-white cursor-pointer transition-colors text-[1.3rem] sm:text-sm md:text-base font-medium"
           aria-label="Créer un nouveau compte"
         >
           S'inscrire

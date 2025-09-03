@@ -31,11 +31,11 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
 }) => {
   return (
     <div
-      className={`relative bg-[#F5F2ED] rounded-2xl shadow-md overflow-hidden ${sizeClasses[size]}`}
+      className={`relative bg-[#F5F2ED] rounded-2xl shadow-md overflow-hidden ${sizeClasses[size]} text-[1.8rem] font-medium`}
     >
       {/* Guillemet d'ouverture stylisé (élément en forme de "6" ou guillemet, positionné en haut à gauche) */}
       <span
-        className="absolute top-4 left-4 text-6xl font-bold"
+        className="absolute top-4 left-4 text-6xl font-bold text-[12rem]"
         style={{ color: quoteColor }}
       >
         “
@@ -45,12 +45,6 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
       <div className="relative z-10 pt-12 px-6 pb-6">
         {/* Première partie du texte */}
         <p className="text-gray-800 mb-4">{quoteText}</p>
-
-        {/* Ligne séparatrice (deuxième élément customizable) */}
-        <hr
-          className="border-t-2 mb-4"
-          style={{ borderColor: separatorColor }}
-        />
 
         {/* Deuxième partie du texte (avec des • si inclus dans mainText) */}
         <p className="text-gray-800 mb-6">{mainText}</p>

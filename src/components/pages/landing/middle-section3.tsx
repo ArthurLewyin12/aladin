@@ -2,13 +2,13 @@
 
 import { motion } from "motion/react";
 
-export default function MiddleSection() {
+export default function MiddleSection3() {
   return (
     <section
-      className="relative min-h-screen flex items-center justify-center bg-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center bg-center overflow-hidden "
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
-      <div className="absolute inset-0 bg-white opacity-60 z-0"></div>
+      <div className="absolute inset-0  bg-white opacity-60 z-0"></div>
 
       {/* Contenu principal */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16">
@@ -24,7 +24,7 @@ export default function MiddleSection() {
             <div className="relative w-full max-w-lg">
               {/* Image de la dame au dictionnaire */}
               <img
-                src="/dictionnary.gif"
+                src="/meet.gif"
                 alt="Dame avec dictionnaire A-Z"
                 className="w-full h-auto"
               />
@@ -40,12 +40,12 @@ export default function MiddleSection() {
             viewport={{ once: true }}
           >
             <div className="space-y-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#0B278E] text-balance">
-                Élève,
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#136C15] text-balance">
+                Professeur,
                 <br />
-                avec aladin, tu apprends
+                avec aladin, vous suivez
                 <br />
-                vite et mieux!
+                l'évolution de vos élèves
               </h2>
             </div>
 

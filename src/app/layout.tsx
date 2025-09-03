@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Advent_Pro } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/layouts/navbar";
 import Footer from "@/components/layouts/footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const adventPro = Advent_Pro({
+  weight: ["700"], // On charge seulement le poids 700 (Bold)
+  subsets: ["latin"],
+  variable: "--font-advent-pro", // On crée une variable CSS
+  display: "swap", // Meilleure performance
 });
 
 export const metadata: Metadata = {
@@ -27,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        className={`${adventPro.variable}  font-sans text-[1.5rem] antialiased `}
       >
         <NavBar />
         {children}

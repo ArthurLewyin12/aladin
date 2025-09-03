@@ -9,13 +9,10 @@ export default function HeroSection() {
       className="relative min-h-screen flex items-center justify-center bg-center overflow-hidden"
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
-      {/* Overlay bleu pâle */}
       <div className="absolute inset-0 bg-blue-100/80 z-0"></div>
 
-      {/* Contenu principal */}
-      <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16">
+      <div className="relative bottom-6  z-10 container mx-auto px-4 md:px-8 lg:px-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Côté gauche - Texte */}
           <motion.div
             className="space-y-6 text-center lg:text-left"
             initial={{ opacity: 0, x: -50 }}
@@ -35,14 +32,15 @@ export default function HeroSection() {
               </h1>
             </div>
 
-            <p className="text-lg md:text-xl text-slate-700 max-w-md mx-auto lg:mx-0 text-pretty">
-              aladin t'aide à réussir brillamment ton année scolaire.
+            <p className="text-lg md:text-xl text-slate-700 max-w-md mx-auto lg:mx-0 text-pretty flex flex-col">
+              <span>aladin t'aide à réussir brillamment</span>
+              <span>ton année scolaire.</span>
             </p>
 
             <div className="pt-4">
               <Button
                 size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-base font-semibold rounded-md transition-colors"
+                className="bg-orange-600 hover:bg-orange-600 text-white px-8 py-3 text-base font-semibold rounded-md transition-colors"
               >
                 VOIR PLUS!
               </Button>
@@ -56,7 +54,6 @@ export default function HeroSection() {
             </div>
           </motion.div>
 
-          {/* Côté droit - Illustration */}
           <motion.div
             className="relative flex justify-center lg:justify-end"
             initial={{ opacity: 0, x: 50 }}
@@ -65,14 +62,12 @@ export default function HeroSection() {
             viewport={{ once: true }}
           >
             <div className="relative w-full max-w-lg">
-              {/* Image principale d'illustration éducative */}
               <img
                 src="/modern-educational-illustration-with-diverse-stude.jpg"
                 alt="Illustration d'étudiants avec des livres et un globe terrestre"
                 className="w-full h-auto"
               />
 
-              {/* Éléments décoratifs flottants */}
               <div className="absolute top-4 right-4 w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center animate-bounce">
                 <svg
                   className="w-8 h-8 text-orange-500"
@@ -97,16 +92,16 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Texte secondaire en haut à droite */}
       <motion.div
-        className="absolute top-8 right-8 hidden lg:block"
+        className="absolute transform -translate-y-56 right-26 hidden lg:block"
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
         viewport={{ once: true }}
       >
-        <p className="text-orange-500 font-medium text-lg text-balance max-w-xs text-right">
-          aladin, ton assistant iA pour réussir l'année scolaire 2025-26
+        <p className="flex flex-col  text-orange-500 font-medium text-[2.5rem] text-balance  mt-20 left-5">
+          <span className="text-center">aladin, ton assistant IA pour</span>
+          <span className="">réussir l'année scolaire 2025-26</span>
         </p>
       </motion.div>
     </section>

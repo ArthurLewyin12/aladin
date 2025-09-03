@@ -10,10 +10,8 @@ export default function MiddleSection3() {
     >
       <div className="absolute inset-0  bg-white opacity-60 z-0"></div>
 
-      {/* Contenu principal */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Côté gauche - Illustration */}
           <motion.div
             className="relative flex justify-center lg:justify-start"
             initial={{ opacity: 0, x: -50 }}
@@ -22,7 +20,6 @@ export default function MiddleSection3() {
             viewport={{ once: true }}
           >
             <div className="relative w-full max-w-lg">
-              {/* Image de la dame au dictionnaire */}
               <img
                 src="/meet.gif"
                 alt="Dame avec dictionnaire A-Z"
@@ -31,7 +28,6 @@ export default function MiddleSection3() {
             </div>
           </motion.div>
 
-          {/* Côté droit - Texte */}
           <motion.div
             className="space-y-8 text-center lg:text-left"
             initial={{ opacity: 0, x: 50 }}
@@ -49,7 +45,6 @@ export default function MiddleSection3() {
               </h2>
             </div>
 
-            {/* Section Révise les cours */}
             <motion.div
               className=""
               initial={{ opacity: 0, y: 20 }}
@@ -58,7 +53,6 @@ export default function MiddleSection3() {
               viewport={{ once: true }}
             >
               <div className="flex items-start gap-4">
-                {/* Icône livre jaune */}
                 <div className="flex-shrink-0 w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-white"
@@ -70,7 +64,6 @@ export default function MiddleSection3() {
                 </div>
 
                 <div className="flex items-start gap-4 flex-1">
-                  {/* Indicateurs verticaux */}
                   <div className="flex flex-col gap-2 mt-2">
                     <div className="w-1 h-6 bg-slate-800 rounded-full"></div>
                     <div className="w-1 h-6 bg-slate-300 rounded-full"></div>

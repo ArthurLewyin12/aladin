@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +20,7 @@ const loginSchema = z.object({
   phone: z.string().optional(),
 });
 
-export default function AladinLoginStudentForm() {
+export default function AladinLoginForm() {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
   });
@@ -38,9 +38,9 @@ export default function AladinLoginStudentForm() {
   return (
     <div className="w-full">
       {/* Message d'accueil */}
-      <div className="mb-6 text-center">
-        <p className="text-gray-600 text-sm mb-4">Content de te revoir</p>
-        <h1 className="text-2xl font-bold text-gray-900">Connexion</h1>
+      <div className="mb-6 ">
+        <p className="text-gray-600 text-[1.3rem] mb-4">Content de te revoir</p>
+        <h1 className=" text-[1.5rem] font-bold text-gray-900">Connexion</h1>
       </div>
 
       <Form {...form}>
@@ -72,7 +72,7 @@ export default function AladinLoginStudentForm() {
                 <FormControl>
                   <PhoneInput
                     placeholder="Numéro de téléphone*"
-                    className="h-12 bg-gray-50 border-gray-200 rounded-lg"
+                    className=" bg-gray-50 border-gray-200 rounded-lg"
                     defaultCountry="CI"
                     {...field}
                   />
@@ -85,7 +85,7 @@ export default function AladinLoginStudentForm() {
           {/* Bouton de connexion */}
           <Button
             type="submit"
-            className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg mt-6"
+            className="cursor-pointer w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg mt-6"
           >
             Se connecter
           </Button>
@@ -102,14 +102,14 @@ export default function AladinLoginStudentForm() {
         <div className="flex gap-3 justify-center">
           <Button
             variant="outline"
-            className="flex-1 h-11 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
+            className="cursor-pointer flex-1 h-11 border-black/80 text-black text-[1rem] hover:bg-gray-50 rounded-lg"
           >
             Inscrivez vous
           </Button>
 
           <Button
             variant="outline"
-            className="flex-1 h-11 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
+            className="cursor-pointer flex-1 h-11 border-black/80 text-black text-[1rem] hover:bg-gray-50 rounded-lg"
           >
             Activez votre compte
           </Button>

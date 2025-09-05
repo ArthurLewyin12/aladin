@@ -4,15 +4,12 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -59,10 +56,19 @@ export default function AladinStudentInscriptionForm() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
+      <div className="mt-8">
+        <p className="text-[1.1rem] leading-relaxed">
+          Je suis Aladin, ton assistant intelligent. Je t'aide à réviser toute
+          ton année scolaire. Inscris-toi maintenant et profite d'un mois
+          gratuit ! Ensuite, l'abonnement coûte xxx FCFA par mois.
+        </p>
+      </div>
       {/* Titre */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Inscription</h1>
+      <div className="mb-8 mt-2">
+        <h1 className="text-[2rem] font-bold text-gray-900 mb-2">
+          Inscription
+        </h1>
       </div>
 
       <Form {...form}>
@@ -76,7 +82,7 @@ export default function AladinStudentInscriptionForm() {
                 <FormControl>
                   <Input
                     placeholder="Nom & Prénoms*"
-                    className="h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
+                    className=" h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -96,7 +102,7 @@ export default function AladinStudentInscriptionForm() {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full h-12 bg-gray-50 border-gray-200 rounded-lg">
+                    <SelectTrigger className="text-[1.1rem] w-full h-12 bg-gray-50 border-gray-200 rounded-lg">
                       <SelectValue placeholder="Statut*" />
                     </SelectTrigger>
                   </FormControl>
@@ -219,7 +225,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Bouton d'inscription */}
           <Button
             type="submit"
-            className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg mt-6"
+            className="cursor-pointer w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg mt-6"
           >
             S'inscrire
           </Button>

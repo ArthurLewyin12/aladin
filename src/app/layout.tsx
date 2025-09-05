@@ -10,10 +10,10 @@ const geistMono = Geist_Mono({
 });
 
 const adventPro = Advent_Pro({
-  weight: ["400"], // On charge seulement le poids 700 (Bold)
+  weight: ["400"],
   subsets: ["latin"],
-  variable: "--font-advent-pro", // On crée une variable CSS
-  display: "swap", // Meilleure performance
+  variable: "--font-advent-pro",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,9 +31,7 @@ export default function RootLayout({
       <body
         className={`${adventPro.variable}  font-sans text-[1.5rem] antialiased `}
       >
-        <NavBar />
         {children}
-        <Footer />
       </body>
     </html>
   );

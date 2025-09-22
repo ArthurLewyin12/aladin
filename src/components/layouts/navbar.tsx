@@ -3,6 +3,7 @@
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
+import { useRouter } from "next/navigation";
 
 export default function NavBar() {
   const { scrollY } = useScroll();
@@ -11,7 +12,7 @@ export default function NavBar() {
   const borderRadius = useTransform(scrollY, [0, 100], ["0px", "20px"]);
   const top = useTransform(scrollY, [0, 100], ["0px", "40px"]);
   const position = useTransform(scrollY, [0, 100], ["fixed", "sticky"]);
-
+  const router = useRouter();
   return (
     <motion.nav
       className="h-16 sm:h-20 border-b flex justify-between items-center gap-2 bg-center left-0 z-50 backdrop-blur-sm mx-auto"
@@ -45,6 +46,9 @@ export default function NavBar() {
         <Button
           className="bg-inherit hover:bg-gray-100/20 transition-colors cursor-pointer text-xs sm:text-sm md:text-base px-2 sm:px-4"
           aria-label="Se connecter à votre compte"
+          onClick={() => {
+            router.push("/login");
+          }}
         >
           <span className="text-black font-medium text-[1.3rem]">
             Se connecter

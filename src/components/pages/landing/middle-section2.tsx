@@ -81,7 +81,7 @@ export default function MiddleSection2() {
           >
             <div className="relative w-full max-w-lg">
               <img
-                src="/dictionnary.gif"
+                src="/femme_learning.png"
                 alt="Dame avec dictionnaire A-Z"
                 className="w-full h-auto"
               />

@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 export default function MiddleSection4() {
   return (
     <section
-      className="relative py-22 pb-8 flex flex-col justify-center bg-center overflow-hidden "
+      className="relative py-22 pb-8  flex flex-col justify-center bg-center overflow-hidden "
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
       <div className="absolute inset-0 bg-blue-200 opacity-60 z-0"></div>
@@ -19,7 +19,7 @@ export default function MiddleSection4() {
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#FF6B47] text-balance">
+            <h2 className="  text-3xl md:text-4xl lg:text-5xl font-bold text-[#FF6B47] text-balance">
               Répétiteurs,
               <br />
               avec aladin, vous gagnez
@@ -37,7 +37,7 @@ export default function MiddleSection4() {
           >
             <div className="relative w-full max-w-lg">
               <img
-                src="/teacher-math.png"
+                src="/mathematics-pana.png"
                 alt="Enseignant au tableau"
                 className="w-full h-auto"
               />

@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${adventPro.variable}  font-sans text-[1.5rem] antialiased `}
+        className={`${adventPro.variable}  font-sans text-[1.2rem] antialiased `}
       >
         {children}
         <Toaster richColors />

@@ -87,13 +87,13 @@ export default function TestimonialCarousel() {
 
   return (
     <section
-      className="relative w-screen  min-h-screen flex flex-col items-center justify-center bg-center overflow-y-hidden"
+      className=" relative w-screen  min-h-screen flex flex-col items-center justify-center bg-center overflow-y-hidden"
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
       <div className="absolute inset-0 bg-white opacity-60 z-0"></div>
 
       <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16 text-center">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#136C15] mb-12">
+        <h2 className="mt-12 text-3xl md:text-4xl lg:text-5xl font-bold text-[#136C15] mb-12">
           Ils en parlent mieux que nous...
         </h2>
 

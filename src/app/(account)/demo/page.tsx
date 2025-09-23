@@ -13,7 +13,7 @@ const DemoPage: React.FC = () => {
   ];
 
   return (
-    <div className="h-screen flex items-center justify-center gap-6">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-8 p-4 md:p-8">
       <div>
         <h2 className="text-2xl font-bold mb-4 text-center">
           Données par Secteur (Thème Fuchsia)

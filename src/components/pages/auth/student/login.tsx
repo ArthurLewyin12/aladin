@@ -13,17 +13,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PasswordInput } from "@/components/ui/password-input";
+
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Nom d'utilisateur requis"),
-  phone: z.string().optional(),
+  password: z.string().min(1, "Mot de passe requis"),
 });
 
 export default function AladinLoginForm() {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
   });
+
+  const router = useRouter();
 
   function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
@@ -36,11 +44,11 @@ export default function AladinLoginForm() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
       {/* Message d'accueil */}
-      <div className="mb-6 ">
+      <div className="mb-6 text-center md:text-left">
         <p className="text-gray-600 text-[1.3rem] mb-4">Content de te revoir</p>
-        <h1 className=" text-[1.5rem] font-bold text-gray-900">Connexion</h1>
+        <h1 className=" text-[1.4rem] font-bold text-gray-900">Connexion</h1>
       </div>
 
       <Form {...form}>
@@ -63,17 +71,16 @@ export default function AladinLoginForm() {
             )}
           />
 
-          {/* Numéro de téléphone */}
+          {/* Mot de passe */}
           <FormField
             control={form.control}
-            name="phone"
+            name="password"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <PhoneInput
-                    placeholder="Numéro de téléphone*"
-                    className=" bg-gray-50 border-gray-200 rounded-lg"
-                    defaultCountry="CI"
+                  <PasswordInput
+                    placeholder="Mot de passe*"
+                    className="h-12 bg-gray-50 border-gray-200 rounded-lg"
                     {...field}
                   />
                 </FormControl>
@@ -85,7 +92,7 @@ export default function AladinLoginForm() {
           {/* Bouton de connexion */}
           <Button
             type="submit"
-            className="cursor-pointer w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg mt-6"
+            className="cursor-pointer w-full h-12 bg-[#111D4A]  text-white font-medium rounded-lg mt-6"
           >
             Se connecter
           </Button>
@@ -94,25 +101,28 @@ export default function AladinLoginForm() {
 
       {/* Liens de navigation */}
       <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 mb-4">
-          Vous n'avez pas encore de compte ? ou Votre compte n'est pas encore
-          activé ?
+        <p className="text-[1rem] text-gray-600 mb-4">
+          Vous n'avez pas encore de compte ?
+          {/*ou Votre
+          <br className="" />
+          compte n'est pas encore activé ?*/}
         </p>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col md:flex-row gap-3 justify-center">
           <Button
             variant="outline"
-            className="cursor-pointer flex-1 h-11 border-black/80 text-black text-[1rem] hover:bg-gray-50 rounded-lg"
+            className="cursor-pointer flex-1 h-11 border-b-2  md:border border-black text-black text-[1rem] hover:bg-blue-100 hover:border-blue-300  rounded-lg"
+            onClick={() => router.push("/student/register")}
           >
             Inscrivez vous
           </Button>
 
-          <Button
+          {/*<Button
             variant="outline"
-            className="cursor-pointer flex-1 h-11 border-black/80 text-black text-[1rem] hover:bg-gray-50 rounded-lg"
+            className="cursor-pointer flex-1 h-11 border-y-2 md:border  border-black text-black text-[1rem] hover:bg-blue-100 hover:border-blue-300  rounded-lg"
           >
             Activez votre compte
-          </Button>
+          </Button>*/}
         </div>
       </div>
     </div>

@@ -42,21 +42,20 @@ export default function NavBar() {
         />
       </div>
 
-      <div className="mr-4 md:mr-24 flex gap-2 sm:gap-4 md:gap-8 relative z-10">
+      <div className="mr-4 md:mr-24 flex gap-2 sm:gap-4 md:gap-8 relative z-10 items-center">
         <Button
-          className="bg-inherit hover:bg-gray-100/20 transition-colors cursor-pointer text-xs sm:text-sm md:text-base px-2 sm:px-4"
+          variant="ghost"
+          className="transition-colors cursor-pointer text-black font-medium text-sm md:text-base px-2 sm:px-4"
           aria-label="Se connecter à votre compte"
           onClick={() => {
             router.push("/login");
           }}
         >
-          <span className="text-black font-medium text-[1.3rem]">
-            Se connecter
-          </span>
+          Se connecter
         </Button>
 
         <Button
-          className="px-3 sm:px-6 md:px-10 py-2 sm:py-3 md:py-5 bg-[#111D4A] hover:bg-[#0d1640] rounded-sm text-white cursor-pointer transition-colors text-[1.3rem] sm:text-sm md:text-base font-medium"
+          className="px-3 sm:px-6 md:px-8 py-2 bg-[#111D4A] hover:bg-[#0d1640] rounded-md text-white cursor-pointer transition-colors text-sm md:text-base font-medium"
           aria-label="Créer un nouveau compte"
         >
           S'inscrire

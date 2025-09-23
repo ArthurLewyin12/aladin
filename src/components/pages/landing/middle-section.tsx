@@ -57,7 +57,7 @@ const SLIDES_DATA: SlideContent[] = [
   },
 ];
 
-const SLIDE_DURATION = 1000; // 4 seconds auto-advance
+const SLIDE_DURATION = 5000; // 4 seconds auto-advance
 
 export default function MiddleSection(): React.JSX.Element {
   const [activeSlide, setActiveSlide] = useState<number>(0);
@@ -82,17 +82,13 @@ export default function MiddleSection(): React.JSX.Element {
     setTimeout(() => setIsPaused(false), SLIDE_DURATION);
   }, []);
 
-  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
-  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
-
   const currentSlide = SLIDES_DATA[activeSlide];
 
   return (
     <section
       className="relative min-h-screen flex items-center justify-center bg-center overflow-hidden"
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      
     >
       <div className="absolute inset-0 bg-white opacity-60 z-0"></div>
 
@@ -156,7 +152,7 @@ export default function MiddleSection(): React.JSX.Element {
                     <div className="flex-shrink-0 w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
                       {currentSlide.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-black">
+                    <h3 className="text-lg md:text-xl font-bold text-black">
                       {currentSlide.title}
                     </h3>
                   </motion.div>

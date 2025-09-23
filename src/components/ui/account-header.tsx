@@ -44,7 +44,7 @@ export function AccountHeader({
   };
 
   return (
-    <div className="w-full h-20 bg-gray-100 border-b border-gray-200 flex items-center justify-between px-6">
+    <div className="w-full h-20 bg-[#F5F4F1] border-b border-gray-200 flex items-center justify-between px-4 sm:px-6">
       {/* Logo */}
       <div className="flex items-center">
         <Image

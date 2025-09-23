@@ -59,7 +59,7 @@ const SLIDES_DATA: SlideContent[] = [
   },
 ];
 
-const SLIDE_DURATION = 1000;
+const SLIDE_DURATION = 5000;
 
 export default function HeroSection(): React.JSX.Element {
   const [activeSlide, setActiveSlide] = useState<number>(0);
@@ -84,8 +84,7 @@ export default function HeroSection(): React.JSX.Element {
     setTimeout(() => setIsPaused(false), SLIDE_DURATION);
   }, []);
 
-  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
-  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
+  
 
   const currentSlide = SLIDES_DATA[activeSlide];
 
@@ -93,8 +92,6 @@ export default function HeroSection(): React.JSX.Element {
     <section
       className="relative min-h-screen flex items-center justify-center bg-center overflow-hidden"
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <div className="absolute inset-0 bg-blue-100/80 z-0" />
 
@@ -112,9 +109,9 @@ export default function HeroSection(): React.JSX.Element {
               <motion.div
                 key={`title-${activeSlide}`}
                 className="space-y-2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               >
                 <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-balance">
@@ -136,9 +133,9 @@ export default function HeroSection(): React.JSX.Element {
               <motion.p
                 key={`desc-${activeSlide}`}
                 className="text-lg md:text-xl lg:text-2xl text-slate-700 max-w-md mx-auto lg:mx-0 text-pretty"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
               >
                 {currentSlide.description}
@@ -147,8 +144,8 @@ export default function HeroSection(): React.JSX.Element {
 
             <motion.div
               className="pt-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
             >
               <Button
@@ -195,7 +192,7 @@ export default function HeroSection(): React.JSX.Element {
               <img
                 src="/image_1_accueil.png"
                 alt="Illustration d'étudiants avec des livres et un globe terrestre"
-                className="w-full h-auto scale-110 lg:scale-125 xl:scale-150 transform origin-center"
+                className="w-full h-auto scale-100 lg:scale-110 xl:scale-125 transform origin-center"
                 loading="lazy"
               />
             </div>
@@ -204,13 +201,13 @@ export default function HeroSection(): React.JSX.Element {
       </div>
 
       <motion.div
-        className="absolute top-16 right-8 xl:right-16 hidden lg:block"
+        className="absolute top-32 right-8 xl:right-16 hidden lg:block"
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
         viewport={{ once: true }}
       >
-        <p className="flex flex-col text-orange-500 font-medium text-2xl xl:text-3xl 2xl:text-4xl text-balance">
+        <p className="flex flex-col text-orange-500 font-medium text-3xl xl:text-4xl 2xl:text-5xl text-balance">
           <span className="text-center">aladin, ton assistant IA pour</span>
           <span className="text-center">réussir l'année scolaire 2025-26</span>
         </p>

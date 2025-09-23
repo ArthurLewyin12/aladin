@@ -48,7 +48,7 @@ export default function QuizPage() {
     >
       {/* Barre supérieure avec image de fond et bouton retour */}
       <div
-        className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-10 py-4"
+        className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4"
         style={{
           backgroundImage: `url("/bg-2.png")`,
           backgroundSize: "80px 80px",
@@ -63,13 +63,13 @@ export default function QuizPage() {
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-orange-600 text-[3rem]">Quiz Time</h1>
+          <h1 className="text-orange-600 text-4xl md:text-[3rem]">Quiz Time</h1>
         </div>
       </div>
       {/* Contenu principal */}
-      <div className="w-full mx-auto max-w-5xl px-8 pt-2 pb-4">
+      <div className="w-full mx-auto max-w-5xl px-4 md:px-8 pt-2 pb-4">
         <div className="text-center mb-10">
-          <p className="text-gray-600 text-[1.3rem]">
+          <p className="text-gray-600 text-lg md:text-[1.3rem]">
             C'est l'heure du quiz ! 3... 2... 1... À toi de jouer ! Tu vas voir,
             tu sais plus de choses que tu ne penses. 😊
           </p>

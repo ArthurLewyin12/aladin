@@ -36,31 +36,29 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center px-4 md:px-24 py-6">
           {/* Navigation et copyright */}
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 mb-4 md:mb-0">
-            <span className="text-gray-600 text-sm md:text-[1.3rem]">
-              © 2025
-            </span>
+            <span className="text-gray-600 text-sm md:text-base">© 2025</span>
             <nav className="flex flex-wrap justify-center md:justify-start gap-4 md:gap-8">
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
               >
                 Élèves
               </a>
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
               >
                 Parents
               </a>
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
               >
                 Répétiteurs
               </a>
               <a
                 href="#"
-                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-[1.3rem]"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
               >
                 Professeurs
               </a>

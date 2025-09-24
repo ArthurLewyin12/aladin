@@ -42,7 +42,7 @@ export default function StudentHomePage() {
       id: "dashboard",
       title: "Consulter le tableau de bord",
       icon: BarChart3,
-      handler: () => console.log("Navigation vers tableau de bord"),
+      handler: () => router.push("/student/dashboard"),
     },
     {
       id: "quiz",

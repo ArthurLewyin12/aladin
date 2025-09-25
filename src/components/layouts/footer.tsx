@@ -62,6 +62,12 @@ export default function Footer() {
               >
                 Professeurs
               </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
+              >
+                TARIFS
+              </a>
             </nav>
           </div>
 

@@ -6,10 +6,10 @@ export default function AccountLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="w-full min-h-screen bg-[#F5F4F1]">
+    <div className="flex flex-col w-full h-screen bg-[#F5F4F1]">
       <AccountHeader />
 
-      <div>{children}</div>
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   );
 }

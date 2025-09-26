@@ -10,14 +10,13 @@ export const tokenMiddleware: ResponseMiddleware = (response, next) => {
 
   let foundInResponse = true;
   if (response.data) {
-    const responseData = response.data.data;
+    const responseData = response.data;
     if (!responseData.token) {
       foundInResponse = false;
     }
     if (foundInResponse) {
-      const tokenResult: any = responseData.token;
-      authHeader = tokenResult.access_token;
-      refreshTokenHeader = tokenResult.refresh_token;
+      authHeader = responseData.token;
+      refreshTokenHeader = responseData.refresh_token;
     }
   }
 

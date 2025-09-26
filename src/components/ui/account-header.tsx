@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { useRouter } from "next/navigation";
 
 interface AccountHeaderProps {
   userName?: string;
@@ -23,7 +25,8 @@ export function AccountHeader({
   userEmail = "megan@example.com",
   userAvatar,
 }: AccountHeaderProps) {
-  // Fonction pour extraire les initiales du nom
+  const router = useRouter();
+  const { logout } = useSession();
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -39,8 +42,8 @@ export function AccountHeader({
   };
 
   const handleLogout = () => {
-    // Logique de déconnexion
-    console.log("Déconnexion");
+    logout();
+    router.push("/login");
   };
 
   return (

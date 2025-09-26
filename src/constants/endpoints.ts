@@ -1,24 +1,23 @@
 export enum AuthEndpoints {
-  LOGIN = '/auth/login',
-  CSRF_COOKIE = '/sanctum/csrf-cookie',
-  AUTH_ME = '/auth/me',
-  AUTH_LOGOUT = '/auth/logout',
-  // Add other auth endpoints here
+  LOGIN = "/api/auth/login",
+  CSRF_COOKIE = "/sanctum/csrf-cookie",
+  AUTH_ME = "/api/auth/me",
+  AUTH_LOGOUT = "/api/auth/logout",
 }
 
 export enum MatiereEndpoints {
-  MATIERES_BY_NIVEAU = '/niveaux/{niveau_id}/matieres',
+  MATIERES_BY_NIVEAU = "/api/niveaux/{niveau_id}/matieres",
 }
 
 export enum ChapitreEndpoints {
-  CHAPITRES_BY_MATIERE = '/matieres/{matiere_id}/chapitres',
+  CHAPITRES_BY_MATIERE = "/api/matieres/{matiere_id}/chapitres",
 }
 
 export enum QuizEndpoints {
-  QUIZ_HISTORY = '/quizzes/history',
-  QUIZ_START = '/quizzes/start',
-  QUIZ_GET = '/quizzes/{quiz_id}',
-  QUIZ_DELETE = '/quizzes/delete/{quiz_id}',
-  QUIZ_SUBMIT = '/quizzes/{quiz_id}/submit',
-  QUIZ_NOTES = '/quizzes/{quiz_id}/notes',
+  QUIZ_HISTORY = "/api/quizzes/history",
+  QUIZ_START = "/api/quizzes/start",
+  QUIZ_GET = "/api/quizzes/{quiz_id}",
+  QUIZ_DELETE = "/api/quizzes/delete/{quiz_id}",
+  QUIZ_SUBMIT = "/api/quizzes/{quiz_id}/submit",
+  QUIZ_NOTES = "/api/quizzes/{quiz_id}/notes",
 }

@@ -7,7 +7,7 @@ export const errorHandlingMiddleware: ResponseMiddleware = (response, next) => {
     if (typeof window !== "undefined") {
       toast.error("Erreur réseau ou serveur indisponible.");
     }
-    return Promise.reject(response); // Changed 'data' to 'response'
+    return Promise.reject(response);
   }
 
   // Cas où le serveur a répondu avec un format d'erreur spécifique

@@ -4,15 +4,18 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/services/hooks/auth/useSession";
 
 export default function NavBar() {
   const { scrollY } = useScroll();
+  const { user, isLoading } = useSession();
 
   const width = useTransform(scrollY, [0, 100], ["100%", "90%"]);
   const borderRadius = useTransform(scrollY, [0, 100], ["0px", "20px"]);
   const top = useTransform(scrollY, [0, 100], ["0px", "40px"]);
   const position = useTransform(scrollY, [0, 100], ["fixed", "sticky"]);
   const router = useRouter();
+
   return (
     <motion.nav
       className="h-16 sm:h-20 border-b flex justify-between items-center gap-2 bg-center left-0 z-50 backdrop-blur-sm mx-auto"
@@ -43,26 +46,41 @@ export default function NavBar() {
       </div>
 
       <div className="mr-4 md:mr-24 flex gap-2 sm:gap-4 md:gap-8 relative z-10 items-center">
-        <Button
-          variant="ghost"
-          className="transition-colors cursor-pointer text-black font-medium text-sm md:text-base px-2 sm:px-4"
-          aria-label="Se connecter à votre compte"
-          onClick={() => {
-            router.push("/login");
-          }}
-        >
-          Se connecter
-        </Button>
+        {isLoading ? null : user ? (
+          <Button
+            variant="ghost"
+            className="transition-colors cursor-pointer text-black font-medium text-sm md:text-base px-2 sm:px-4"
+            aria-label="Aller à votre profil"
+            onClick={() => {
+              router.push("/student/home");
+            }}
+          >
+            Profil
+          </Button>
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              className="transition-colors cursor-pointer text-black font-medium text-sm md:text-base px-2 sm:px-4"
+              aria-label="Se connecter à votre compte"
+              onClick={() => {
+                router.push("/login");
+              }}
+            >
+              Se connecter
+            </Button>
 
-        <Button
-          className="px-3 sm:px-6 md:px-8 py-2 bg-[#111D4A] hover:bg-[#0d1640] rounded-md text-white cursor-pointer transition-colors text-sm md:text-base font-medium"
-          aria-label="Créer un nouveau compte"
-          onClick={() => {
-            router.push("/student/register");
-          }}
-        >
-          S'inscrire
-        </Button>
+            <Button
+              className="px-3 sm:px-6 md:px-8 py-2 bg-[#111D4A] hover:bg-[#0d1640] rounded-md text-white cursor-pointer transition-colors text-sm md:text-base font-medium"
+              aria-label="Créer un nouveau compte"
+              onClick={() => {
+                router.push("/student/register");
+              }}
+            >
+              S'inscrire
+            </Button>
+          </>
+        )}
       </div>
     </motion.nav>
   );

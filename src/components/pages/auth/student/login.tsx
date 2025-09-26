@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useLogin } from "@/services/hooks/auth/useLogin";
+import { useSession } from "@/services/hooks/auth/useSession";
 
 import { useRouter } from "next/navigation";
 
@@ -32,15 +34,21 @@ export default function AladinLoginForm() {
   });
 
   const router = useRouter();
+  const { mutate, isPending } = useLogin();
+  const { login } = useSession();
 
   function onSubmit(values: z.infer<typeof loginSchema>) {
-    try {
-      console.log(values);
-      toast.success("Connexion en cours...");
-    } catch (error) {
-      console.error("Login error", error);
-      toast.error("Erreur lors de la connexion. Veuillez réessayer.");
-    }
+    mutate(values, {
+      onSuccess: (data) => {
+        login(data.user);
+        toast.success("Connexion réussie!");
+        router.push("/student/dashboard");
+      },
+      onError: (error) => {
+        console.error("Login error", error);
+        toast.error("Erreur lors de la connexion. Veuillez réessayer.");
+      },
+    });
   }
 
   return (
@@ -93,8 +101,9 @@ export default function AladinLoginForm() {
           <Button
             type="submit"
             className="cursor-pointer w-full h-12 bg-[#111D4A]  text-white font-medium rounded-lg mt-6"
+            disabled={isPending}
           >
-            Se connecter
+            {isPending ? "Connexion en cours..." : "Se connecter"}
           </Button>
         </form>
       </Form>

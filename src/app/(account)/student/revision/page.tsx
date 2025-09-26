@@ -5,90 +5,64 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-
-const subjects = [
-  { id: "math", name: "Mathématiques" },
-  { id: "geography", name: "Géographie" },
-  { id: "french", name: "Français" },
-  { id: "physics", name: "Physique Chimie" },
-  { id: "history", name: "Histoire" },
-  { id: "english", name: "Anglais" },
-  { id: "history2", name: "Histoire" },
-  { id: "spanish", name: "Espagnol" },
-];
-const chapters = {
-  math: [
-    { id: "chp1", name: "Chp1: Algèbres" },
-    { id: "chp2", name: "Chp2: Fonction" },
-    { id: "chp3", name: "Chp3: Fraction" },
-    { id: "chp4", name: "Chp4: Lorem ipsum" },
-  ],
-  geography: [
-    { id: "geo1", name: "Chp1: Géographie physique" },
-    { id: "geo2", name: "Chp2: Climats" },
-  ],
-  french: [
-    { id: "fr1", name: "Chp1: Grammaire" },
-    { id: "fr2", name: "Chp2: Conjugaison" },
-  ],
-  physics: [
-    { id: "phy1", name: "Chp1: Mécanique" },
-    { id: "phy2", name: "Chp2: Optique" },
-  ],
-  history: [
-    { id: "hist1", name: "Chp1: Antiquité" },
-    { id: "hist2", name: "Chp2: Moyen Âge" },
-  ],
-  english: [
-    { id: "eng1", name: "Chp1: Grammar" },
-    { id: "eng2", name: "Chp2: Vocabulary" },
-  ],
-  spanish: [
-    { id: "esp1", name: "Chp1: Gramática" },
-    { id: "esp2", name: "Chp2: Vocabulario" },
-  ],
-};
+import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
+import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { Matiere, Chapitre } from "@/services/controllers/types/common";
 
 export default function RevisionPage() {
   const [step, setStep] = useState<"subject" | "chapter">("subject");
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
-  const [selectedChapter, setSelectedChapter] = useState<string>("");
+  const [selectedMatiereId, setSelectedMatiereId] = useState<number | null>(
+    null,
+  );
+  const [selectedChapitreId, setSelectedChapitreId] = useState<number | null>(
+    null,
+  );
   const router = useRouter();
+  const { user } = useSession();
+
+  // Fetching data with hooks
+  const { data: matieresData, isLoading: isLoadingMatieres } =
+    useMatieresByNiveau(user?.niveau_id || 0);
+  const { data: chapitresData, isLoading: isLoadingChapitres } =
+    useChapitresByMatiere(selectedMatiereId || 0);
+
+  // Derived State
+  const matieres: Matiere[] = matieresData?.matieres || [];
+  const chapitres: Chapitre[] = chapitresData || [];
+  const selectedMatiereName =
+    matieres.find((m) => m.id === selectedMatiereId)?.libelle || "";
 
   const handleSubjectSelect = (value: string) => {
-    setSelectedSubject(value);
+    setSelectedMatiereId(Number(value));
   };
 
   const handleChapterSelect = (value: string) => {
-    setSelectedChapter(value);
+    setSelectedChapitreId(Number(value));
   };
 
   const handleSubjectNext = () => {
-    if (selectedSubject) {
+    if (selectedMatiereId) {
       setStep("chapter");
     }
   };
 
   const handleChapterBack = () => {
     setStep("subject");
-    setSelectedChapter("");
+    setSelectedChapitreId(null);
   };
 
   const handleStart = () => {
     console.log("Commencer révision:", {
-      subject: selectedSubject,
-      chapter: selectedChapter,
+      matiereId: selectedMatiereId,
+      chapitreId: selectedChapitreId,
     });
+    // TODO: Implement actual revision start logic
   };
 
   const handleBack = () => {
     router.push("/student/home");
   };
-
-  const currentChapters =
-    chapters[selectedSubject as keyof typeof chapters] || [];
-  const selectedSubjectName =
-    subjects.find((s) => s.id === selectedSubject)?.name || "";
 
   return (
     <div
@@ -137,31 +111,38 @@ export default function RevisionPage() {
               <h2 className="text-xl font-semibold text-gray-800 text-center mb-4">
                 Choisis une matière
               </h2>
-              <RadioGroup
-                value={selectedSubject}
-                onValueChange={handleSubjectSelect}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {subjects.map((subject) => (
-                    <div
-                      key={subject.id}
-                      className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-gray-100 hover:bg-gray-50 transition-colors"
-                    >
-                      <RadioGroupItem value={subject.id} id={subject.id} />
-                      <Label
-                        htmlFor={subject.id}
-                        className="flex-1 text-gray-700 font-medium cursor-pointer"
+              {isLoadingMatieres ? (
+                <p>Chargement des matières...</p>
+              ) : (
+                <RadioGroup
+                  value={selectedMatiereId?.toString() || ""}
+                  onValueChange={handleSubjectSelect}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {matieres.map((matiere) => (
+                      <div
+                        key={matiere.id}
+                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-gray-100 hover:bg-gray-50 transition-colors"
                       >
-                        {subject.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
+                        <RadioGroupItem
+                          value={matiere.id.toString()}
+                          id={`matiere-${matiere.id}`}
+                        />
+                        <Label
+                          htmlFor={`matiere-${matiere.id}`}
+                          className="flex-1 text-gray-700 font-medium cursor-pointer"
+                        >
+                          {matiere.libelle}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
               <div className="text-center">
                 <Button
                   onClick={handleSubjectNext}
-                  disabled={!selectedSubject}
+                  disabled={!selectedMatiereId}
                   className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Suivant
@@ -174,7 +155,7 @@ export default function RevisionPage() {
           <>
             <div className="text-center mb-2">
               <h1 className="text-4xl font-bold text-orange-500 mb-2">
-                {selectedSubjectName}
+                {selectedMatiereName}
               </h1>
               <p className="text-gray-600 text-base md:text-lg">
                 Maintenant, choisis le chapitre que tu souhaites réviser. Chaque
@@ -185,31 +166,38 @@ export default function RevisionPage() {
               <h2 className="text-xl font-semibold text-gray-800 text-center mb-4">
                 Choisis un chapitre
               </h2>
-              <RadioGroup
-                value={selectedChapter}
-                onValueChange={handleChapterSelect}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-80 overflow-y-auto">
-                  {currentChapters.map((chapter) => (
-                    <div
-                      key={chapter.id}
-                      className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-gray-100 hover:bg-gray-50 transition-colors"
-                    >
-                      <RadioGroupItem value={chapter.id} id={chapter.id} />
-                      <Label
-                        htmlFor={chapter.id}
-                        className="flex-1 text-gray-700 font-medium cursor-pointer"
+              {isLoadingChapitres ? (
+                <p>Chargement des chapitres...</p>
+              ) : (
+                <RadioGroup
+                  value={selectedChapitreId?.toString() || ""}
+                  onValueChange={handleChapterSelect}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-80 overflow-y-auto">
+                    {chapitres.map((chapitre) => (
+                      <div
+                        key={chapitre.id}
+                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-gray-100 hover:bg-gray-50 transition-colors"
                       >
-                        {chapter.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
+                        <RadioGroupItem
+                          value={chapitre.id.toString()}
+                          id={`chapter-${chapitre.id}`}
+                        />
+                        <Label
+                          htmlFor={`chapter-${chapitre.id}`}
+                          className="flex-1 text-gray-700 font-medium cursor-pointer"
+                        >
+                          {chapitre.libelle}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
               <div className="text-center">
                 <Button
                   onClick={handleStart}
-                  disabled={!selectedChapter}
+                  disabled={!selectedChapitreId}
                   className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Commencer !

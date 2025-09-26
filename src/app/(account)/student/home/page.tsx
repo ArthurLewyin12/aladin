@@ -40,7 +40,7 @@ export default function StudentHomePage() {
   const homeActions = [
     {
       id: "dashboard",
-      title: "Consulter le tableau de bord",
+      title: "Consulter mon tableau de bord",
       icon: BarChart3,
       handler: () => router.push("/student/dashboard"),
     },

@@ -3,6 +3,7 @@ import { Geist_Mono, Advent_Pro } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 
+import { Providers } from "@/components/provider";
 const adventPro = Advent_Pro({
   weight: ["400"],
   subsets: ["latin"],
@@ -26,8 +27,10 @@ export default function RootLayout({
       <body
         className={`${adventPro.variable}  font-sans text-base md:text-lg antialiased `}
       >
-        {children}
-        <Toaster richColors />
+        <Providers>
+          {children}
+          <Toaster richColors />
+        </Providers>
       </body>
     </html>
   );

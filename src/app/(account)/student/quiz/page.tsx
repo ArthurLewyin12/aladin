@@ -1,92 +1,69 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
+import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
+import { useStartQuiz, useQuiz, useSubmitQuiz } from "@/services/hooks/quiz";
+import { useSession } from "@/services/hooks/auth/useSession";
+import {
+  Matiere,
+  Chapitre,
+  QuizStartPayload,
+  UserQuizInstance,
+} from "@/services/controllers/types/common";
+import { toast } from "sonner";
 
 // --- DATA STRUCTURES ---
-const subjects = [
-  { id: "math", name: "Mathématiques" },
-  { id: "geography", name: "Géographie" },
-  { id: "french", name: "Français" },
-  { id: "physics", name: "Physique Chimie" },
-  { id: "history", name: "Histoire" },
-];
-
-const chapters = {
-  math: [
-    { id: "chp1", name: "Chp1: Algèbres" },
-    { id: "chp2", name: "Chp2: Fonction" },
-    { id: "chp3", name: "Chp3: Fraction" },
-  ],
-  geography: [{ id: "geo1", name: "Chp1: Géographie physique" }],
-  french: [{ id: "fr1", name: "Chp1: Grammaire" }],
-  physics: [{ id: "phy1", name: "Chp1: Mécanique" }],
-  history: [{ id: "hist1", name: "Chp1: Antiquité" }],
-};
-
 const difficulties = [
-  { id: "facile", name: "Facile" },
-  { id: "moyen", name: "Moyen" },
-  { id: "difficile", name: "Difficile" },
+  { id: "Facile", name: "Facile" },
+  { id: "Moyen", name: "Moyen" },
+  { id: "Difficile", name: "Difficile" },
 ];
-
-const quizData = {
-  questions: [
-    {
-      id: "q1",
-      questionText: "Quelle est la capitale de la France ?",
-      answers: [
-        { id: "a1", text: "Berlin" },
-        { id: "a2", text: "Madrid" },
-        { id: "a3", text: "Paris" },
-        { id: "a4", text: "Rome" },
-      ],
-      correctAnswerId: "a3",
-    },
-    {
-      id: "q2",
-      questionText: "Combien de côtés a un triangle ?",
-      answers: [
-        { id: "b1", text: "2" },
-        { id: "b2", text: "3" },
-        { id: "b3", text: "4" },
-      ],
-      correctAnswerId: "b2",
-    },
-    {
-      id: "q3",
-      questionText: "Quel est le plus grand océan du monde ?",
-      answers: [
-        { id: "c1", text: "Atlantique" },
-        { id: "c2", text: "Indien" },
-        { id: "c3", text: "Arctique" },
-        { id: "c4", text: "Pacifique" },
-      ],
-      correctAnswerId: "c4",
-    },
-  ],
-};
 
 // --- COMPONENT ---
 export default function QuizPage() {
   // State Management
   const [step, setStep] = useState<"subject" | "config" | "quiz">("subject");
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
-  const [selectedChapter, setSelectedChapter] = useState<string>("");
+  const [selectedMatiereId, setSelectedMatiereId] = useState<number | null>(
+    null,
+  );
+  const [selectedChapitreId, setSelectedChapitreId] = useState<number | null>(
+    null,
+  );
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  const [currentQuizInstance, setCurrentQuizInstance] =
+    useState<UserQuizInstance | null>(null);
   const router = useRouter();
+  const { user } = useSession();
+
+  // Fetching data with hooks
+  const { data: matieresData, isLoading: isLoadingMatieres } =
+    useMatieresByNiveau(user?.niveau_id || 0);
+  const { data: chapitresData, isLoading: isLoadingChapitres } =
+    useChapitresByMatiere(selectedMatiereId || 0);
+  const startQuizMutation = useStartQuiz();
+  const { data: quizDetails, isLoading: isLoadingQuizDetails } = useQuiz(
+    currentQuizInstance?.id || 0,
+  );
+  const submitQuizMutation = useSubmitQuiz();
 
   // Derived State
-  const currentQuestion = quizData.questions[currentQuestionIndex];
-  const currentChapters =
-    chapters[selectedSubject as keyof typeof chapters] || [];
-  const selectedSubjectName =
-    subjects.find((s) => s.id === selectedSubject)?.name || "";
+  const matieres: Matiere[] = matieresData?.matieres || [];
+  const chapitres: Chapitre[] = chapitresData || [];
+  const selectedMatiereName =
+    matieres.find((m) => m.id === selectedMatiereId)?.libelle || "";
+
+  // Parse quiz data if available
+  const parsedQuizQuestions = currentQuizInstance?.data
+    ? JSON.parse(currentQuizInstance.data)
+    : [];
+  const currentQuestion = parsedQuizQuestions[currentQuestionIndex];
 
   // --- HANDLERS ---
   const handleAnswerSelect = (questionId: string, answerId: string) => {
@@ -94,7 +71,7 @@ export default function QuizPage() {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < quizData.questions.length - 1) {
+    if (currentQuestionIndex < parsedQuizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
@@ -105,13 +82,72 @@ export default function QuizPage() {
     }
   };
 
-  const handleStartQuiz = () => setStep("quiz");
+  const handleStartQuiz = async () => {
+    if (
+      !selectedMatiereId ||
+      !user?.niveau_id ||
+      !selectedChapitreId ||
+      !selectedDifficulty
+    ) {
+      toast.error(
+        "Veuillez sélectionner une matière, un chapitre et une difficulté.",
+      );
+      return;
+    }
+
+    const payload: QuizStartPayload = {
+      matiere_id: selectedMatiereId,
+      niveau_id: user.niveau_id,
+      chapitre_id: selectedChapitreId,
+      difficulte: selectedDifficulty,
+    };
+
+    try {
+      const newQuiz = await startQuizMutation.mutateAsync(payload);
+      setCurrentQuizInstance(newQuiz);
+      setStep("quiz");
+      setCurrentQuestionIndex(0);
+      setUserAnswers({});
+    } catch (error) {
+      console.error("Erreur lors du démarrage du quiz", error);
+      toast.error("Impossible de démarrer le quiz. Veuillez réessayer.");
+    }
+  };
+
+  const handleSubmitQuiz = async () => {
+    if (!currentQuizInstance) return;
+
+    const answersArray = Object.keys(userAnswers).map((questionId) => ({
+      question_id: questionId,
+      selected_answer_id: userAnswers[questionId],
+    }));
+
+    const submitPayload = {
+      quiz_id: currentQuizInstance.id,
+      answers: answersArray,
+    };
+
+    try {
+      const result = await submitQuizMutation.mutateAsync({
+        quizId: currentQuizInstance.id,
+        payload: submitPayload,
+      });
+      toast.success(
+        `Quiz terminé! Votre score: ${result.score}/${result.total}`,
+      );
+      router.push("/student/home");
+    } catch (error) {
+      console.error("Erreur lors de la soumission du quiz", error);
+      toast.error("Impossible de soumettre le quiz. Veuillez réessayer.");
+    }
+  };
+
   const handleSubjectNext = () => {
-    if (selectedSubject) setStep("config");
+    if (selectedMatiereId) setStep("config");
   };
   const handleConfigBack = () => {
     setStep("subject");
-    setSelectedChapter("");
+    setSelectedChapitreId(null);
     setSelectedDifficulty("");
   };
   const handleBackToHome = () => router.push("/student/home");
@@ -166,35 +202,39 @@ export default function QuizPage() {
             <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center mb-6">
               Choisis une matière
             </h2>
-            <RadioGroup
-              value={selectedSubject}
-              onValueChange={setSelectedSubject}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {subjects.map((subject) => (
-                  <div
-                    key={subject.id}
-                    className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
-                  >
-                    <RadioGroupItem
-                      value={subject.id}
-                      id={`subject-${subject.id}`}
-                      className="border-black border-2"
-                    />
-                    <Label
-                      htmlFor={`subject-${subject.id}`}
-                      className="flex-1 text-base font-medium cursor-pointer"
+            {isLoadingMatieres ? (
+              <p>Chargement des matières...</p>
+            ) : (
+              <RadioGroup
+                value={selectedMatiereId?.toString() || ""}
+                onValueChange={(value) => setSelectedMatiereId(Number(value))}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {matieres.map((matiere) => (
+                    <div
+                      key={matiere.id}
+                      className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
                     >
-                      {subject.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </RadioGroup>
+                      <RadioGroupItem
+                        value={matiere.id.toString()}
+                        id={`matiere-${matiere.id}`}
+                        className="border-black border-2"
+                      />
+                      <Label
+                        htmlFor={`matiere-${matiere.id}`}
+                        className="flex-1 text-base font-medium cursor-pointer"
+                      >
+                        {matiere.libelle}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            )}
             <div className="text-center mt-8">
               <Button
                 onClick={handleSubjectNext}
-                disabled={!selectedSubject}
+                disabled={!selectedMatiereId}
                 className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-semibold text-lg"
               >
                 Suivant
@@ -213,31 +253,37 @@ export default function QuizPage() {
               <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">
                 Choisis un chapitre
               </h3>
-              <RadioGroup
-                value={selectedChapter}
-                onValueChange={setSelectedChapter}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-60 overflow-y-auto p-2">
-                  {currentChapters.map((chapter) => (
-                    <div
-                      key={chapter.id}
-                      className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
-                    >
-                      <RadioGroupItem
-                        value={chapter.id}
-                        id={`chapter-${chapter.id}`}
-                        className="border-black border-2"
-                      />
-                      <Label
-                        htmlFor={`chapter-${chapter.id}`}
-                        className="flex-1 text-base font-medium cursor-pointer"
+              {isLoadingChapitres ? (
+                <p>Chargement des chapitres...</p>
+              ) : (
+                <RadioGroup
+                  value={selectedChapitreId?.toString() || ""}
+                  onValueChange={(value) =>
+                    setSelectedChapitreId(Number(value))
+                  }
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-60 overflow-y-auto p-2">
+                    {chapitres.map((chapitre) => (
+                      <div
+                        key={chapitre.id}
+                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
                       >
-                        {chapter.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
+                        <RadioGroupItem
+                          value={chapitre.id.toString()}
+                          id={`chapter-${chapitre.id}`}
+                          className="border-black border-2"
+                        />
+                        <Label
+                          htmlFor={`chapter-${chapitre.id}`}
+                          className="flex-1 text-base font-medium cursor-pointer"
+                        >
+                          {chapitre.libelle}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
             </div>
             <div>
               <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">
@@ -271,10 +317,14 @@ export default function QuizPage() {
             <div className="text-center pt-4">
               <Button
                 onClick={handleStartQuiz}
-                disabled={!selectedChapter || !selectedDifficulty}
+                disabled={
+                  !selectedChapitreId ||
+                  !selectedDifficulty ||
+                  startQuizMutation.isPending
+                }
                 className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-12 py-3 rounded-lg font-bold text-xl"
               >
-                Commencer
+                {startQuizMutation.isPending ? "Démarrage..." : "Commencer"}
               </Button>
             </div>
           </div>
@@ -288,15 +338,15 @@ export default function QuizPage() {
                 <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
                   <span>
                     Question {currentQuestionIndex + 1}/
-                    {quizData.questions.length}
+                    {parsedQuizQuestions.length}
                   </span>
-                  <span>{selectedSubjectName}</span>
+                  <span>{selectedMatiereName}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div
                     className="bg-orange-500 h-2.5 rounded-full"
                     style={{
-                      width: `${((currentQuestionIndex + 1) / quizData.questions.length) * 100}%`,
+                      width: `${((currentQuestionIndex + 1) / parsedQuizQuestions.length) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -319,7 +369,7 @@ export default function QuizPage() {
                   }
                 >
                   <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {currentQuestion.answers.map((answer) => (
+                    {currentQuestion.answers.map((answer: any) => (
                       <div
                         key={answer.id}
                         className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-black hover:bg-gray-50 transition-colors"
@@ -349,15 +399,27 @@ export default function QuizPage() {
                 >
                   Précédent
                 </Button>
-                <Button
-                  onClick={handleNextQuestion}
-                  disabled={
-                    !userAnswers[currentQuestion.id] ||
-                    currentQuestionIndex === quizData.questions.length - 1
-                  }
-                >
-                  Suivant
-                </Button>
+                {currentQuestionIndex === parsedQuizQuestions.length - 1 ? (
+                  <Button
+                    onClick={handleSubmitQuiz}
+                    disabled={
+                      !userAnswers[currentQuestion.id] ||
+                      submitQuizMutation.isPending
+                    }
+                    className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-8 py-3 rounded-lg font-semibold text-lg"
+                  >
+                    {submitQuizMutation.isPending
+                      ? "Soumission..."
+                      : "Soumettre le quiz"}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleNextQuestion}
+                    disabled={!userAnswers[currentQuestion.id]}
+                  >
+                    Suivant
+                  </Button>
+                )}
               </div>
             </div>
           </div>

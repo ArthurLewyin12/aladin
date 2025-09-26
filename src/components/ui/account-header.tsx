@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import { User, LogOut, Settings } from "lucide-react";
 import {
@@ -10,37 +9,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { useRouter } from "next/navigation";
 
-interface AccountHeaderProps {
-  userName?: string;
-  userEmail?: string;
-  userAvatar?: string;
-}
+export function AccountHeader() {
+  const router = useRouter();
+  const { user, logout } = useSession();
 
-export function AccountHeader({
-  userName = "Megan Forrest",
-  userEmail = "megan@example.com",
-  userAvatar,
-}: AccountHeaderProps) {
-  // Fonction pour extraire les initiales du nom
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+  const getInitials = (nom?: string, prenom?: string) => {
+    if (!nom && !prenom) return "U";
+    return `${nom?.[0] || ""}${prenom?.[0] || ""}`.toUpperCase();
   };
 
   const handleProfile = () => {
-    // Logique pour aller au profil
-    console.log("Naviguer vers le profil");
+    router.push("/student/profile");
+  };
+
+  const handleSettings = () => {
+    router.push("/student/settings");
   };
 
   const handleLogout = () => {
-    // Logique de déconnexion
-    console.log("Déconnexion");
+    logout();
+    router.push("/login");
   };
 
   return (
@@ -52,7 +44,8 @@ export function AccountHeader({
           width={50}
           src="/logo.png"
           alt="Logo Aladin"
-          className="md:h-[70px] md:w-[80px]"
+          className="md:h-[70px] md:w-[80px] cursor-pointer"
+          onClick={() => router.push("/student/home")}
         />
       </div>
 
@@ -61,31 +54,32 @@ export function AccountHeader({
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center space-x-3 hover:bg-gray-200 rounded-lg p-2 transition-colors cursor-pointer">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={userAvatar} alt={userName} />
-              <AvatarFallback className="bg-rose-500 text-white font-semibold">
-                {getInitials(userName)}
+              <AvatarFallback className="bg-[#111D4A] text-white font-semibold">
+                {getInitials(user?.nom, user?.prenom)}
               </AvatarFallback>
             </Avatar>
             <div className="hidden md:flex flex-col items-start">
               <span className="text-sm font-medium text-gray-900">
-                {userName}
+                {user?.prenom} {user?.nom}
               </span>
-              <span className="text-xs text-gray-500">Terminale A2</span>
+              <span className="text-xs text-gray-500">
+                {user?.statut === "eleve" ? "Élève" : user?.statut}
+              </span>
             </div>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="w-56" align="end">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{userName}</p>
+                <p className="text-sm font-medium leading-none">
+                  {user?.prenom} {user?.nom}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {userEmail}
+                  {user?.mail}
                 </p>
               </div>
             </DropdownMenuLabel>
-
             <DropdownMenuSeparator />
-
             <DropdownMenuItem
               onClick={handleProfile}
               className="cursor-pointer"
@@ -93,20 +87,17 @@ export function AccountHeader({
               <User className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </DropdownMenuItem>
-
             <DropdownMenuItem
-              onClick={handleProfile}
+              onClick={handleSettings}
               className="cursor-pointer"
             >
               <Settings className="mr-2 h-4 w-4" />
               <span>Paramètres</span>
             </DropdownMenuItem>
-
             <DropdownMenuSeparator />
-
             <DropdownMenuItem
               onClick={handleLogout}
-              className="cursor-pointer text-red-600 focus:text-red-600"
+              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Se déconnecter</span>

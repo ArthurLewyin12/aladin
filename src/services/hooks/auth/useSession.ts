@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { User } from "@/services/controllers/types/auth.types";
 import ENVIRONNEMENTS from "@/constants/environnement";
@@ -50,6 +51,7 @@ export const useSession = () => {
   const logoutMutation = useMutation({
     mutationFn: apiLogout,
     onSuccess: () => {
+      toast.info("Vous avez été déconnecté.");
       Cookies.remove("token_" + ENVIRONNEMENTS.UNIVERSE);
       Cookies.remove("user_" + ENVIRONNEMENTS.UNIVERSE);
       queryClient.setQueryData(["me"], null);

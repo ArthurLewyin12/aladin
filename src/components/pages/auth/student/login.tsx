@@ -42,7 +42,7 @@ export default function AladinLoginForm() {
       onSuccess: (data) => {
         login(data.user);
         toast.success("Connexion réussie!");
-        router.push("/student/dashboard");
+        router.push("/student/home");
       },
       onError: (error) => {
         console.error("Login error", error);

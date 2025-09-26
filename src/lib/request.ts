@@ -9,7 +9,9 @@ import ENVIRONNEMENTS from "@/constants/environnement";
 // Configuration de base
 const api = axios.create({
   baseURL: ENVIRONNEMENTS.API_URL || "",
+  //  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   timeout: 10000,
+  // withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

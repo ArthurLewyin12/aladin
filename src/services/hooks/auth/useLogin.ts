@@ -5,7 +5,7 @@ import { LoginPayload } from "@/services/controllers/types/auth.types";
 export const useLogin = () => {
   return useMutation({
     mutationFn: async (payload: LoginPayload) => {
-      await getCsrfCookie();
+      //  await getCsrfCookie();
       return login(payload);
     },
   });

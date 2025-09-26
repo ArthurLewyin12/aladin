@@ -1,7 +1,7 @@
 const ENVIRONNEMENTS = {
   BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   DOMAIN: process.env.NEXT_PUBLIC_DOMAIN,
-  API_URL: process.env.NEXT_PUBLIC_API_URL,
+  API_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
   UNIVERSE: process.env.NEXT_PUBLIC_UNIVERSE,
   NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
 };

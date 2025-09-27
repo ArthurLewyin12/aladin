@@ -6,10 +6,11 @@ import {
   deleteQuiz,
   submitQuiz,
   getQuizNotes,
+  generateQuiz,
 } from "@/services/controllers/quiz.controller";
 import {
-  QuizStartPayload,
   QuizSubmitPayload,
+  QuizGeneratePayload,
 } from "@/services/controllers/types/common";
 
 export const useQuizHistory = () => {
@@ -19,9 +20,15 @@ export const useQuizHistory = () => {
   });
 };
 
+export const useGenerateQuiz = () => {
+  return useMutation({
+    mutationFn: (payload: QuizGeneratePayload) => generateQuiz(payload),
+  });
+};
+
 export const useStartQuiz = () => {
   return useMutation({
-    mutationFn: (payload: QuizStartPayload) => startQuiz(payload),
+    mutationFn: (quizId: number) => startQuiz(quizId),
   });
 };
 

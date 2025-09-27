@@ -14,8 +14,9 @@ export enum ChapitreEndpoints {
 }
 
 export enum QuizEndpoints {
+  QUIZ_GENERATE = "/api/quiz/generate",
   QUIZ_HISTORY = "/api/quizzes/history",
-  QUIZ_START = "/api/quizzes/start",
+  QUIZ_START = "/api/quiz/{quizId}/start",
   QUIZ_GET = "/api/quizzes/{quiz_id}",
   QUIZ_DELETE = "/api/quizzes/delete/{quiz_id}",
   QUIZ_SUBMIT = "/api/quizzes/{quiz_id}/submit",

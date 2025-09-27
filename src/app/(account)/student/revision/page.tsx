@@ -113,7 +113,7 @@ export default function RevisionPage() {
               </h2>
               {isLoadingMatieres ? (
                 <p>Chargement des matières...</p>
-              ) : (
+              ) : matieres.length > 0 ? (
                 <RadioGroup
                   value={selectedMatiereId?.toString() || ""}
                   onValueChange={handleSubjectSelect}
@@ -138,6 +138,12 @@ export default function RevisionPage() {
                     ))}
                   </div>
                 </RadioGroup>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 font-medium">
+                    Aucune matière n'est disponible pour votre niveau pour le moment.
+                  </p>
+                </div>
               )}
               <div className="text-center">
                 <Button
@@ -168,7 +174,7 @@ export default function RevisionPage() {
               </h2>
               {isLoadingChapitres ? (
                 <p>Chargement des chapitres...</p>
-              ) : (
+              ) : chapitres.length > 0 ? (
                 <RadioGroup
                   value={selectedChapitreId?.toString() || ""}
                   onValueChange={handleChapterSelect}
@@ -193,6 +199,12 @@ export default function RevisionPage() {
                     ))}
                   </div>
                 </RadioGroup>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 font-medium">
+                    Aucun chapitre n'est disponible pour cette matière.
+                  </p>
+                </div>
               )}
               <div className="text-center">
                 <Button

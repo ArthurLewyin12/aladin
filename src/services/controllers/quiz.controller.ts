@@ -3,19 +3,33 @@ import { QuizEndpoints } from "@/constants/endpoints";
 import {
   UserQuizInstance,
   QuizHistory,
-  QuizNotes,
-  QuizStartPayload,
   QuizSubmitPayload,
+  QuizGeneratePayload,
+  QuizGenerateResponse,
+  QuizStartResponse,
+  QuizSubmitResponse,
+  QuizNotesResponse,
 } from "./types/common";
 
 export const getQuizHistory = async (): Promise<QuizHistory> => {
   return request.get<QuizHistory>(QuizEndpoints.QUIZ_HISTORY);
 };
 
-export const startQuiz = async (
-  payload: QuizStartPayload,
-): Promise<UserQuizInstance> => {
-  return request.post<UserQuizInstance>(QuizEndpoints.QUIZ_START, payload);
+export const generateQuiz = async (
+  payload: QuizGeneratePayload,
+): Promise<QuizGenerateResponse> => {
+  return request.post<QuizGenerateResponse>(
+    QuizEndpoints.QUIZ_GENERATE,
+    payload,
+  );
+};
+
+export const startQuiz = async (quizId: number): Promise<QuizStartResponse> => {
+  const endpoint = QuizEndpoints.QUIZ_START.replace(
+    "{quizId}",
+    quizId.toString(),
+  );
+  return request.get<QuizStartResponse>(endpoint);
 };
 
 export const getQuiz = async (quizId: number): Promise<UserQuizInstance> => {
@@ -37,18 +51,18 @@ export const deleteQuiz = async (quizId: number): Promise<void> => {
 export const submitQuiz = async (
   quizId: number,
   payload: QuizSubmitPayload,
-): Promise<QuizNotes> => {
+): Promise<QuizSubmitResponse> => {
   const endpoint = QuizEndpoints.QUIZ_SUBMIT.replace(
     "{quiz_id}",
     quizId.toString(),
   );
-  return request.post<QuizNotes>(endpoint, payload);
+  return request.post<QuizSubmitResponse>(endpoint, payload);
 };
 
-export const getQuizNotes = async (quizId: number): Promise<QuizNotes> => {
+export const getQuizNotes = async (quizId: number): Promise<QuizNotesResponse> => {
   const endpoint = QuizEndpoints.QUIZ_NOTES.replace(
     "{quiz_id}",
     quizId.toString(),
   );
-  return request.get<QuizNotes>(endpoint);
+  return request.get<QuizNotesResponse>(endpoint);
 };

@@ -34,3 +34,10 @@ export enum QuizEndpoints {
   QUIZ_SUBMIT = "/api/quizzes/{quiz_id}/submit",
   QUIZ_NOTES = "/api/quizzes/{quiz_id}/notes",
 }
+
+/**
+ * Endpoints relatifs à la gestion des cours.
+ */
+export enum CourseEndpoints {
+  COURSES_BY_CHAPITRE = "/api/cours/expliquer",
+}

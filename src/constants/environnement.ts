@@ -10,7 +10,7 @@ const ENVIRONNEMENTS = {
   DOMAIN: process.env.NEXT_PUBLIC_DOMAIN,
   /** URL de base de l'API back-end. */
   API_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  /** L'univers ou le contexte de l'application (ex: 'eleve', 'prof'). */
+  /** L'univers ou le contexte de l'application */
   UNIVERSE: process.env.NEXT_PUBLIC_UNIVERSE,
   /** L'environnement d'exécution (ex: 'development', 'production'). */
   NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,

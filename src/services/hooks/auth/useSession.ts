@@ -8,7 +8,20 @@ import {
   getMe,
   logout as apiLogout,
 } from "@/services/controllers/auth.controller";
+import { createQueryKey } from "@/lib/request";
 
+/**
+ * Hook de gestion de la session utilisateur.
+ * Gère l'état de connexion, les données de l'utilisateur et les actions de connexion/déconnexion.
+ * Tente de récupérer l'utilisateur depuis les cookies, sinon depuis l'API.
+ *
+ * @returns Un objet contenant :
+ * - `user`: Les données de l'utilisateur ou `null`.
+ * - `login`: Une fonction pour mettre à jour manuellement les données utilisateur après connexion.
+ * - `logout`: Une fonction pour déclencher la déconnexion.
+ * - `isLoading`: Un booléen indiquant si la session est en cours de chargement ou de déconnexion.
+ * - `isLoggedIn`: Un booléen indiquant si l'utilisateur est connecté.
+ */
 export const useSession = () => {
   const queryClient = useQueryClient();
 
@@ -16,9 +29,8 @@ export const useSession = () => {
     data: user,
     isLoading: isLoadingUser,
     isError,
-    refetch,
   } = useQuery<User | null>({
-    queryKey: ["me"],
+    queryKey: createQueryKey("me"),
     queryFn: async () => {
       const userCookie = Cookies.get("user_" + ENVIRONNEMENTS.UNIVERSE);
       if (userCookie) {
@@ -45,7 +57,7 @@ export const useSession = () => {
 
   const login = (userData: User) => {
     Cookies.set("user_" + ENVIRONNEMENTS.UNIVERSE, JSON.stringify(userData));
-    queryClient.setQueryData(["me"], userData);
+    queryClient.setQueryData(createQueryKey("me"), userData);
   };
 
   const logoutMutation = useMutation({
@@ -54,23 +66,21 @@ export const useSession = () => {
       toast.info("Vous avez été déconnecté.");
       Cookies.remove("token_" + ENVIRONNEMENTS.UNIVERSE);
       Cookies.remove("user_" + ENVIRONNEMENTS.UNIVERSE);
-      queryClient.setQueryData(["me"], null);
+      queryClient.setQueryData(createQueryKey("me"), null);
       queryClient.invalidateQueries();
     },
     onError: (error) => {
       console.error("Logout error", error);
-
       Cookies.remove("token_" + ENVIRONNEMENTS.UNIVERSE);
       Cookies.remove("user_" + ENVIRONNEMENTS.UNIVERSE);
-      queryClient.setQueryData(["me"], null);
+      queryClient.setQueryData(createQueryKey("me"), null);
       queryClient.invalidateQueries();
     },
   });
 
   useEffect(() => {
     if (!isLoadingUser && isError) {
-      //redirigier optionnnelement vers login si erreur
-      // router.push('/login');
+      // Optionnellement, rediriger vers la page de connexion si une erreur survient.
     }
   }, [isLoadingUser, isError]);
 

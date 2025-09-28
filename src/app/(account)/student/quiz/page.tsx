@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -7,13 +7,13 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
-import { useStartQuiz, useQuiz, useSubmitQuiz } from "@/services/hooks/quiz";
+import { useGenerateQuiz, useSubmitQuiz } from "@/services/hooks/quiz";
 import { useSession } from "@/services/hooks/auth/useSession";
 import {
   Matiere,
   Chapitre,
-  QuizStartPayload,
-  UserQuizInstance,
+  QuizQuestion,
+  QuizGeneratePayload,
 } from "@/services/controllers/types/common";
 import { toast } from "sonner";
 
@@ -35,10 +35,15 @@ export default function QuizPage() {
     null,
   );
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
+
+  // Quiz specific state
+  const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
-  const [currentQuizInstance, setCurrentQuizInstance] =
-    useState<UserQuizInstance | null>(null);
+  const [userAnswers, setUserAnswers] = useState<
+    Record<string | number, string | number>
+  >({});
+
   const router = useRouter();
   const { user } = useSession();
 
@@ -47,10 +52,9 @@ export default function QuizPage() {
     useMatieresByNiveau(user?.niveau_id || 0);
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
-  const startQuizMutation = useStartQuiz();
-  const { data: quizDetails, isLoading: isLoadingQuizDetails } = useQuiz(
-    currentQuizInstance?.id || 0,
-  );
+
+  // Mutations
+  const generateQuizMutation = useGenerateQuiz();
   const submitQuizMutation = useSubmitQuiz();
 
   // Derived State
@@ -58,20 +62,18 @@ export default function QuizPage() {
   const chapitres: Chapitre[] = chapitresData || [];
   const selectedMatiereName =
     matieres.find((m) => m.id === selectedMatiereId)?.libelle || "";
-
-  // Parse quiz data if available
-  const parsedQuizQuestions = currentQuizInstance?.data
-    ? JSON.parse(currentQuizInstance.data)
-    : [];
-  const currentQuestion = parsedQuizQuestions[currentQuestionIndex];
+  const currentQuestion = quizQuestions[currentQuestionIndex];
 
   // --- HANDLERS ---
-  const handleAnswerSelect = (questionId: string, answerId: string) => {
+  const handleAnswerSelect = (
+    questionId: string | number,
+    answerId: string | number,
+  ) => {
     setUserAnswers((prev) => ({ ...prev, [questionId]: answerId }));
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < parsedQuizQuestions.length - 1) {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
@@ -82,60 +84,57 @@ export default function QuizPage() {
     }
   };
 
-  const handleStartQuiz = async () => {
-    if (
-      !selectedMatiereId ||
-      !user?.niveau_id ||
-      !selectedChapitreId ||
-      !selectedDifficulty
-    ) {
-      toast.error(
-        "Veuillez sélectionner une matière, un chapitre et une difficulté.",
-      );
+  const handleGenerateQuiz = async () => {
+    if (!selectedChapitreId || !selectedDifficulty) {
+      toast.error("Veuillez sélectionner un chapitre et une difficulté.");
       return;
     }
 
-    const payload: QuizStartPayload = {
-      matiere_id: selectedMatiereId,
-      niveau_id: user.niveau_id,
-      chapitre_id: selectedChapitreId,
-      difficulte: selectedDifficulty,
+    const payload: QuizGeneratePayload = {
+      chapter_id: selectedChapitreId,
+      difficulty: selectedDifficulty,
     };
 
     try {
-      const newQuiz = await startQuizMutation.mutateAsync(payload);
-      setCurrentQuizInstance(newQuiz);
-      setStep("quiz");
+      const result = await generateQuizMutation.mutateAsync(payload);
+      setActiveQuizId(result.quiz_id);
+      setQuizQuestions(result.questions);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
-    } catch (error) {
-      console.error("Erreur lors du démarrage du quiz", error);
-      toast.error("Impossible de démarrer le quiz. Veuillez réessayer.");
+      setStep("quiz");
+    } catch (error: any) {
+      console.error("Erreur lors de la génération du quiz", error);
+      const errorMessage =
+        error.response?.data?.error?.message ||
+        "Impossible de générer le quiz. Veuillez réessayer.";
+      toast.error(errorMessage);
     }
   };
 
   const handleSubmitQuiz = async () => {
-    if (!currentQuizInstance) return;
+    if (!activeQuizId) return;
 
-    const answersArray = Object.keys(userAnswers).map((questionId) => ({
-      question_id: questionId,
-      selected_answer_id: userAnswers[questionId],
-    }));
-
-    const submitPayload = {
-      quiz_id: currentQuizInstance.id,
-      answers: answersArray,
-    };
+    // Calculate score
+    let score = 0;
+    for (const question of quizQuestions) {
+      const userAnswerId = userAnswers[question.id];
+      if (userAnswerId == question.bonne_reponse_id) {
+        // Use == for type flexibility (number vs string)
+        score++;
+      }
+    }
 
     try {
       const result = await submitQuizMutation.mutateAsync({
-        quizId: currentQuizInstance.id,
-        payload: submitPayload,
+        quizId: activeQuizId,
+        payload: { score },
       });
       toast.success(
-        `Quiz terminé! Votre score: ${result.score}/${result.total}`,
+        result.message ||
+          `Quiz terminé! Votre score: ${result.score}/${quizQuestions.length}`,
       );
-      router.push("/student/home");
+      // TODO: Navigate to a results page with `result.corrections`
+      router.push(`/student/quiz/results/${activeQuizId}`);
     } catch (error) {
       console.error("Erreur lors de la soumission du quiz", error);
       toast.error("Impossible de soumettre le quiz. Veuillez réessayer.");
@@ -204,7 +203,7 @@ export default function QuizPage() {
             </h2>
             {isLoadingMatieres ? (
               <p>Chargement des matières...</p>
-            ) : (
+            ) : matieres.length > 0 ? (
               <RadioGroup
                 value={selectedMatiereId?.toString() || ""}
                 onValueChange={(value) => setSelectedMatiereId(Number(value))}
@@ -230,6 +229,13 @@ export default function QuizPage() {
                   ))}
                 </div>
               </RadioGroup>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600 font-medium">
+                  Aucune matière n'est disponible pour votre niveau pour le
+                  moment.
+                </p>
+              </div>
             )}
             <div className="text-center mt-8">
               <Button
@@ -255,7 +261,7 @@ export default function QuizPage() {
               </h3>
               {isLoadingChapitres ? (
                 <p>Chargement des chapitres...</p>
-              ) : (
+              ) : chapitres.length > 0 ? (
                 <RadioGroup
                   value={selectedChapitreId?.toString() || ""}
                   onValueChange={(value) =>
@@ -283,6 +289,12 @@ export default function QuizPage() {
                     ))}
                   </div>
                 </RadioGroup>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 font-medium">
+                    Aucun chapitre n'est disponible pour cette matière.
+                  </p>
+                </div>
               )}
             </div>
             <div>
@@ -316,15 +328,15 @@ export default function QuizPage() {
             </div>
             <div className="text-center pt-4">
               <Button
-                onClick={handleStartQuiz}
+                onClick={handleGenerateQuiz}
                 disabled={
                   !selectedChapitreId ||
                   !selectedDifficulty ||
-                  startQuizMutation.isPending
+                  generateQuizMutation.isPending
                 }
                 className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-12 py-3 rounded-lg font-bold text-xl"
               >
-                {startQuizMutation.isPending ? "Démarrage..." : "Commencer"}
+                {generateQuizMutation.isPending ? "Génération..." : "Commencer"}
               </Button>
             </div>
           </div>
@@ -337,8 +349,7 @@ export default function QuizPage() {
               <div>
                 <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
                   <span>
-                    Question {currentQuestionIndex + 1}/
-                    {parsedQuizQuestions.length}
+                    Question {currentQuestionIndex + 1}/{quizQuestions.length}
                   </span>
                   <span>{selectedMatiereName}</span>
                 </div>
@@ -346,7 +357,7 @@ export default function QuizPage() {
                   <div
                     className="bg-orange-500 h-2.5 rounded-full"
                     style={{
-                      width: `${((currentQuestionIndex + 1) / parsedQuizQuestions.length) * 100}%`,
+                      width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -357,33 +368,33 @@ export default function QuizPage() {
                   Question {currentQuestionIndex + 1}
                 </h2>
                 <p className="text-xl md:text-2xl text-gray-900">
-                  {currentQuestion.questionText}
+                  {currentQuestion.question}
                 </p>
               </div>
 
               <div>
                 <RadioGroup
-                  value={userAnswers[currentQuestion.id] || ""}
+                  value={userAnswers[currentQuestion.id]?.toString() || ""}
                   onValueChange={(value) =>
                     handleAnswerSelect(currentQuestion.id, value)
                   }
                 >
                   <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {currentQuestion.answers.map((answer: any) => (
+                    {currentQuestion.propositions.map((proposition) => (
                       <div
-                        key={answer.id}
+                        key={proposition.id}
                         className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-black hover:bg-gray-50 transition-colors"
                       >
                         <RadioGroupItem
-                          value={answer.id}
-                          id={answer.id}
+                          value={proposition.id.toString()}
+                          id={proposition.id.toString()}
                           className="border-black border-2"
                         />
                         <Label
-                          htmlFor={answer.id}
+                          htmlFor={proposition.id.toString()}
                           className="flex-1 text-base font-medium cursor-pointer"
                         >
-                          {answer.text}
+                          {proposition.text}
                         </Label>
                       </div>
                     ))}
@@ -399,7 +410,7 @@ export default function QuizPage() {
                 >
                   Précédent
                 </Button>
-                {currentQuestionIndex === parsedQuizQuestions.length - 1 ? (
+                {currentQuestionIndex === quizQuestions.length - 1 ? (
                   <Button
                     onClick={handleSubmitQuiz}
                     disabled={

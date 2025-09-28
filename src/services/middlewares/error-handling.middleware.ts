@@ -1,6 +1,16 @@
 import { toast } from "sonner";
 import { ResponseMiddleware } from "./types/response.middleware";
 
+/**
+ * Middleware de réponse pour la gestion centralisée des erreurs.
+ * Il intercepte les réponses pour identifier les erreurs réseau ou les erreurs
+ * structurées renvoyées par l'API, affiche une notification (toast) à l'utilisateur
+ * côté client, et rejette une promesse pour signaler l'échec de la requête.
+ *
+ * @param response L'objet de réponse Axios, ou une valeur falsy en cas d'erreur réseau.
+ * @param next La fonction pour passer au middleware suivant dans la chaîne.
+ * @returns Le résultat du middleware suivant en cas de succès, ou une promesse rejetée en cas d'erreur.
+ */
 export const errorHandlingMiddleware: ResponseMiddleware = (response, next) => {
   if (!response) {
     // Cas d'une erreur réseau où le serveur n'a pas répondu

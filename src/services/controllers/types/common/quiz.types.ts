@@ -21,7 +21,7 @@ export type UserQuizInstance = {
   user_id: number;
   chapitre_id: number;
   difficulte: string;
-  data: string;
+  data: QuizQuestion[]; // Changed from string
   time: string | null;
 } & AuditFields;
 
@@ -32,19 +32,81 @@ export type ReponseQuiz = {
 
 export type QuizHistory = UserQuizInstance[];
 
-export type QuizNotes = {
-  score: number;
-  total: number;
-};
+// --- Payloads & Responses ---
 
-export type QuizStartPayload = {
-  matiere_id: number;
-  niveau_id: number;
-  chapitre_id: number;
-  difficulte: string;
+export type QuizGeneratePayload = {
+  chapter_id: number;
+  difficulty: string;
 };
 
 export type QuizSubmitPayload = {
+  score: number;
+};
+
+export type QuizProposition = {
+  id: number | string;
+  text: string;
+};
+
+export type QuizQuestion = {
+  id: number | string;
+  question: string;
+  propositions: QuizProposition[];
+  bonne_reponse_id: number | string;
+};
+
+export type QuizGenerateResponse = {
   quiz_id: number;
-  answers: Record<string, any>[];
+  questions: QuizQuestion[];
+  time: number;
+  served: "generated" | "existing";
+};
+
+export type QuizStartResponse = {
+  data: QuizQuestion[];
+  time: number;
+  userQuiz: {
+    id: number;
+    user_id: number;
+    chapitre_id: number;
+    difficulte: string;
+    created_at: string;
+  };
+};
+
+export type QuizSubmitResponse = {
+  message: string;
+  score: number;
+  note: {
+    id: number;
+    user_id: number;
+    quiz_id: number;
+    note: number;
+    created_at: string;
+  };
+  userQuiz: {
+    id: number;
+    chapitre_id: number;
+    difficulte: string;
+  };
+  corrections: QuizQuestion[];
+};
+
+export type QuizNotesResponse = {
+  userQuiz: {
+    id: number;
+    chapitre_id: number;
+    difficulte: string;
+  };
+  notes: {
+    id: number;
+    user_id: number;
+    quiz_id: number;
+    note: number;
+    created_at: string;
+    user: {
+      id: number;
+      name: string;
+    };
+  }[];
 };

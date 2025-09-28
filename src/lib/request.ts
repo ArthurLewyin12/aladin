@@ -93,8 +93,12 @@ export const request = {
    * @param {unknown} [data] Le corps de la requête.
    * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
    */
-  post: async <T>(url: string, data?: unknown): Promise<T> => {
-    const response = await api.post<T>(url, data);
+  post: async <T>(
+    url: string,
+    data?: unknown,
+    config?: import("axios").AxiosRequestConfig,
+  ): Promise<T> => {
+    const response = await api.post<T>(url, data, config);
     return response.data;
   },
 

@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
 import { useGenerateQuiz, useSubmitQuiz } from "@/services/hooks/quiz";
@@ -45,7 +45,22 @@ export default function QuizPage() {
   >({});
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useSession();
+
+  // Effect for "Retake Quiz" feature
+  useEffect(() => {
+    const matiereId = searchParams.get("matiereId");
+    const chapitreId = searchParams.get("chapitreId");
+    const difficulty = searchParams.get("difficulty");
+
+    if (matiereId && chapitreId && difficulty) {
+      setSelectedMatiereId(Number(matiereId));
+      setSelectedChapitreId(Number(chapitreId));
+      setSelectedDifficulty(difficulty);
+      setStep("config");
+    }
+  }, [searchParams]);
 
   // Fetching data with hooks
   const { data: matieresData, isLoading: isLoadingMatieres } =
@@ -97,6 +112,15 @@ export default function QuizPage() {
 
     try {
       const result = await generateQuizMutation.mutateAsync(payload);
+
+      // Store the config for the "Retake" feature
+      const quizConfig = {
+        matiereId: selectedMatiereId,
+        chapitreId: selectedChapitreId,
+        difficulty: selectedDifficulty,
+      };
+      sessionStorage.setItem("quizConfig", JSON.stringify(quizConfig));
+
       setActiveQuizId(result.quiz_id);
       setQuizQuestions(result.questions);
       setCurrentQuestionIndex(0);
@@ -133,8 +157,33 @@ export default function QuizPage() {
         result.message ||
           `Quiz terminé! Votre score: ${result.score}/${quizQuestions.length}`,
       );
-      // TODO: Navigate to a results page with `result.corrections`
-      router.push(`/student/quiz/results/${activeQuizId}`);
+
+      // The `corrections` from the API have the same raw format as the generated quiz
+      // We need to transform them to match the frontend's expected data structure.
+      const transformedCorrections = result.corrections.map(
+        (question: any, index: number) => {
+          const propositions = question.propositions.map(
+            (propositionText: string, propIndex: number) => ({
+              id: propIndex,
+              text: propositionText,
+            }),
+          );
+
+          return {
+            id: `q_${index}`,
+            question: question.question,
+            propositions: propositions,
+            bonne_reponse_id: question.bonne_reponse,
+          };
+        },
+      );
+
+      sessionStorage.setItem(
+        "quizCorrections",
+        JSON.stringify(transformedCorrections), // Store the transformed data
+      );
+
+      router.push(`/student/quiz/results/${result.userQuiz.id}`);
     } catch (error) {
       console.error("Erreur lors de la soumission du quiz", error);
       toast.error("Impossible de soumettre le quiz. Veuillez réessayer.");

@@ -2,6 +2,15 @@ import ENVIRONNEMENTS from "@/constants/environnement";
 import Cookies from "js-cookie";
 import { ResponseMiddleware } from "./types/response.middleware";
 
+/**
+ * Middleware de réponse chargé de gérer les tokens d'authentification.
+ * Il inspecte les en-têtes (`Authorization`, `RefreshToken`) et le corps de la réponse
+ * pour trouver de nouveaux tokens et les stocke dans les cookies si présents.
+ *
+ * @param response L'objet de réponse Axios.
+ * @param next La fonction pour passer au middleware suivant.
+ * @returns Le résultat de l'appel au middleware suivant.
+ */
 export const tokenMiddleware: ResponseMiddleware = (response, next) => {
   let authHeader =
     response.headers["Authorization"] || response.headers["authorization"];

@@ -6,27 +6,36 @@ import { errorHandlingMiddleware } from "@/services/middlewares/error-handling.m
 import { tokenMiddleware } from "@/services/middlewares/token-manager.middleware";
 import ENVIRONNEMENTS from "@/constants/environnement";
 
-// Configuration de base
+/**
+ * Instance Axios pré-configurée pour tous les appels API de l'application.
+ * Définit l'URL de base, un timeout et les en-têtes par défaut.
+ */
 const api = axios.create({
   baseURL: ENVIRONNEMENTS.API_URL || "",
-  //  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   timeout: 10000,
-  // withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Création des chaînes de middlewares
+/**
+ * Chaîne de middlewares exécutée sur chaque requête sortante.
+ * Utilise `requestHeaderMiddleware` pour ajouter le token d'authentification.
+ */
 const requestMiddlewareChain = createRequestMiddlewareChain([
   requestHeaderMiddleware,
 ]);
+
+/**
+ * Chaîne de middlewares exécutée sur chaque réponse entrante.
+ * Utilise `tokenMiddleware` pour la gestion du token et `errorHandlingMiddleware` pour la gestion des erreurs.
+ */
 const responseMiddlewareChain = createResponseMiddlewareChain([
   tokenMiddleware,
   errorHandlingMiddleware,
 ]);
 
-// Application des middlewares
+// Applique les chaînes de middlewares comme intercepteurs Axios.
 api.interceptors.request.use(requestMiddlewareChain, (error) =>
   Promise.reject(error),
 );
@@ -34,7 +43,10 @@ api.interceptors.response.use(responseMiddlewareChain, (error) =>
   Promise.reject(error),
 );
 
-// Intercepteur simple pour les logs en développement
+/**
+ * En environnement de développement, cet intercepteur loggue les informations
+ * de base de chaque requête et réponse pour faciliter le débogage.
+ */
 if (process.env.NODE_ENV === "development") {
   api.interceptors.request.use((config) => {
     console.log(` ${config.method?.toUpperCase()} ${config.url}`);
@@ -58,28 +70,65 @@ if (process.env.NODE_ENV === "development") {
   );
 }
 
-// Fonctions utilitaires simples
+/**
+ * Un objet wrapper autour d'Axios pour simplifier les appels HTTP courants.
+ * Chaque méthode retourne directement la propriété `data` de la réponse Axios.
+ */
 export const request = {
+  /**
+   * Exécute une requête GET.
+   * @template T Le type de données attendu dans la réponse.
+   * @param {string} url L'URL de l'endpoint.
+   * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
+   */
   get: async <T>(url: string): Promise<T> => {
     const response = await api.get<T>(url);
     return response.data;
   },
 
+  /**
+   * Exécute une requête POST.
+   * @template T Le type de données attendu dans la réponse.
+   * @param {string} url L'URL de l'endpoint.
+   * @param {unknown} [data] Le corps de la requête.
+   * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
+   */
   post: async <T>(url: string, data?: unknown): Promise<T> => {
     const response = await api.post<T>(url, data);
     return response.data;
   },
 
+  /**
+   * Exécute une requête PUT.
+   * @template T Le type de données attendu dans la réponse.
+   * @param {string} url L'URL de l'endpoint.
+   * @param {unknown} [data] Le corps de la requête.
+   * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
+   */
   put: async <T>(url: string, data?: unknown): Promise<T> => {
     const response = await api.put<T>(url, data);
     return response.data;
   },
 
+  /**
+   * Exécute une requête DELETE.
+   * @template T Le type de données attendu dans la réponse.
+   * @param {string} url L'URL de l'endpoint.
+   * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
+   */
   delete: async <T>(url: string): Promise<T> => {
     const response = await api.delete<T>(url);
     return response.data;
   },
 
+  /**
+   * Exécute une requête POST avec des données `multipart/form-data`, typiquement pour un upload de fichier.
+   * @template T Le type de données attendu dans la réponse.
+   * @param {string} url L'URL de l'endpoint.
+   * @param {Record<string, any>} data Un objet contenant les paires clé-valeur à envoyer.
+   * @param {File} file Le fichier à uploader.
+   * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
+   */
   postWithFile: async <T>(
     url: string,
     data: Record<string, any>,
@@ -87,14 +136,11 @@ export const request = {
   ): Promise<T> => {
     const formData = new FormData();
 
-    // Ajoute le fichier
     formData.append("photo", file);
 
-    // Ajoute les autres données
     for (const key in data) {
       if (Object.prototype.hasOwnProperty.call(data, key)) {
         const value = data[key];
-        // Gérer les tableaux (ex: hobbies)
         if (Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));
         } else {
@@ -113,7 +159,12 @@ export const request = {
   },
 };
 
-// Helper pour créer des clés de cache TanStack Query
+/**
+ * Fonction utilitaire pour créer des clés de requête pour TanStack Query.
+ * Convertit toutes les parties en chaînes de caractères.
+ * @param {...(string | number)[]} parts Les segments qui composent la clé.
+ * @returns {string[]} Un tableau de chaînes de caractères à utiliser comme clé de requête.
+ */
 export const createQueryKey = (...parts: (string | number)[]): string[] => {
   return parts.map((part) => String(part));
 };

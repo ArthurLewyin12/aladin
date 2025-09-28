@@ -104,7 +104,7 @@ export default function QuizResultPage() {
                         {isCorrect ? (
                           <CheckCircle className="w-5 h-5 mr-3 text-green-600 flex-shrink-0" />
                         ) : (
-                          <div className="w-5 h-5 mr-3 flex-shrink-0" /> // Placeholder for alignment
+                          <div className="w-5 h-5 mr-3 flex-shrink-0" />
                         )}
                         <span className="text-gray-900">
                           {proposition.text}

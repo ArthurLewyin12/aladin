@@ -1,5 +1,13 @@
 import { RequestMiddleware } from "../types/request.middleware";
 
+/**
+ * Crée une chaîne de middlewares pour les requêtes.
+ * Prend un tableau de middlewares et les exécute séquentiellement.
+ * Chaque middleware reçoit la configuration de la requête et une fonction `next` pour passer au suivant.
+ *
+ * @param {RequestMiddleware[]} middlewares - Un tableau de middlewares de requête à enchaîner.
+ * @returns Une fonction asynchrone qui prend la configuration initiale et exécute la chaîne de middlewares.
+ */
 export const createRequestMiddlewareChain = (
   middlewares: RequestMiddleware[],
 ) => {

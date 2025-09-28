@@ -53,11 +53,9 @@ export default function RevisionPage() {
   };
 
   const handleStart = () => {
-    console.log("Commencer révision:", {
-      matiereId: selectedMatiereId,
-      chapitreId: selectedChapitreId,
-    });
-    // TODO: Implement actual revision start logic
+    if (selectedChapitreId) {
+      router.push(`/student/cours/${selectedChapitreId}`);
+    }
   };
 
   const handleBack = () => {

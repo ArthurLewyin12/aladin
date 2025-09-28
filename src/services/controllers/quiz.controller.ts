@@ -27,10 +27,35 @@ export const getQuizHistory = async (): Promise<QuizHistory> => {
 export const generateQuiz = async (
   payload: QuizGeneratePayload,
 ): Promise<QuizGenerateResponse> => {
-  return request.post<QuizGenerateResponse>(
+  // The API returns a different shape than QuizGenerateResponse, so we fetch as `any`
+  const response = await request.post<any>(
     QuizEndpoints.QUIZ_GENERATE,
     payload,
   );
+
+  // Manually transform the data to fit the frontend types
+  const transformedQuestions = response.questions.map(
+    (question: any, index: number) => {
+      const propositions = question.propositions.map(
+        (propositionText: string, propIndex: number) => ({
+          id: propIndex, // Use index as ID since API doesn't provide one
+          text: propositionText,
+        }),
+      );
+
+      return {
+        id: `q_${index}`, // Create a unique ID for the question
+        question: question.question,
+        propositions: propositions,
+        bonne_reponse_id: question.bonne_reponse, // Rename to match frontend type
+      };
+    },
+  );
+
+  return {
+    ...response,
+    questions: transformedQuestions,
+  };
 };
 
 /**

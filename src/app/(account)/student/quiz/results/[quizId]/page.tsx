@@ -178,7 +178,6 @@ export default function QuizResultPage() {
           ))}
         </div>
 
-        {/* Retake Quiz Button - Left aligned under questions */}
         <div className="mb-8">
           <Button
             onClick={handleRetakeQuiz}
@@ -190,8 +189,6 @@ export default function QuizResultPage() {
           </Button>
         </div>
 
-        {/* Bottom Right Action Buttons */}
-        {/* Bottom buttons - justified between left and right */}
         <div className="flex justify-between items-center">
           <Button className="" variant="outline">
             Plus d'explication

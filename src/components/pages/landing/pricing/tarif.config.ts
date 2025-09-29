@@ -1,4 +1,4 @@
-export const PAYMENT_FREQUENCIES = ["mensuel", "annuel"];
+export const PAYMENT_FREQUENCIES = ["annuel"];
 
 export interface PricingTier {
   name: string;
@@ -16,7 +16,6 @@ export const TIERS: PricingTier[] = [
     id: "eleve",
     name: "Forfait Élève",
     price: {
-      mensuel: 1000,
       annuel: 9000,
     },
     description: "Accès complet pour une année scolaire réussie.",
@@ -26,7 +25,7 @@ export const TIERS: PricingTier[] = [
       "Suivi de progression personnalisé",
       "Support prioritaire 24/7",
     ],
-    cta: "S'abonner",
+    cta: "Souscrire",
     popular: true,
     highlighted: true,
   },
@@ -34,17 +33,36 @@ export const TIERS: PricingTier[] = [
     id: "famille",
     name: "Forfait Famille",
     price: {
-      mensuel: 2500,
       annuel: 25000,
     },
-    description: "Pour les parents qui veulent suivre la progression de leurs enfants.",
+    description:
+      "Pour les parents qui veulent suivre la progression de leurs enfants.",
     features: [
       "Toutes les fonctionnalités du Forfait Élève",
       "Tableau de bord parental",
       "Rapports de progression hebdomadaires",
       "Suivi de plusieurs enfants (jusqu'à 3)",
     ],
-    cta: "Choisir l'offre Famille",
+    cta: "Souscrire",
     popular: false,
+  },
+  {
+    id: "entreprise",
+    name: "Forfait Entreprise",
+    price: {
+      annuel: "Sur mesure",
+    },
+    description: "Gestion des Coupons & Offres pour les entreprises.",
+    features: [
+      "Offrir des comptes à des élèves",
+      "Achat de packs de codes promo (coupons)",
+      "Suivi de l'utilisation des coupons",
+      "Activation automatique des comptes élèves",
+      "Page de gestion des coupons (tableau, tri, export CSV/PDF)",
+      "Support dédié",
+    ],
+    cta: "Acheter",
+    popular: false,
+    highlighted: false,
   },
 ];

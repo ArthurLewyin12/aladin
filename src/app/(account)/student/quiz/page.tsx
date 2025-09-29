@@ -17,16 +17,13 @@ import {
 } from "@/services/controllers/types/common";
 import { toast } from "sonner";
 
-// --- DATA STRUCTURES ---
 const difficulties = [
   { id: "Facile", name: "Facile" },
   { id: "Moyen", name: "Moyen" },
   { id: "Difficile", name: "Difficile" },
 ];
 
-// --- COMPONENT ---
 export default function QuizPage() {
-  // State Management
   const [step, setStep] = useState<"subject" | "config" | "quiz">("subject");
   const [selectedMatiereId, setSelectedMatiereId] = useState<number | null>(
     null,
@@ -36,7 +33,6 @@ export default function QuizPage() {
   );
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
 
-  // Quiz specific state
   const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -48,7 +44,6 @@ export default function QuizPage() {
   const searchParams = useSearchParams();
   const { user } = useSession();
 
-  // Effect for "Retake Quiz" feature
   useEffect(() => {
     const matiereId = searchParams.get("matiereId");
     const chapitreId = searchParams.get("chapitreId");
@@ -62,24 +57,20 @@ export default function QuizPage() {
     }
   }, [searchParams]);
 
-  // Fetching data with hooks
   const { data: matieresData, isLoading: isLoadingMatieres } =
     useMatieresByNiveau(user?.niveau_id || 0);
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
 
-  // Mutations
   const generateQuizMutation = useGenerateQuiz();
   const submitQuizMutation = useSubmitQuiz();
 
-  // Derived State
   const matieres: Matiere[] = matieresData?.matieres || [];
   const chapitres: Chapitre[] = chapitresData || [];
   const selectedMatiereName =
     matieres.find((m) => m.id === selectedMatiereId)?.libelle || "";
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
-  // --- HANDLERS ---
   const handleAnswerSelect = (
     questionId: string | number,
     answerId: string | number,
@@ -113,7 +104,6 @@ export default function QuizPage() {
     try {
       const result = await generateQuizMutation.mutateAsync(payload);
 
-      // Store the config for the "Retake" feature
       const quizConfig = {
         matiereId: selectedMatiereId,
         chapitreId: selectedChapitreId,
@@ -138,12 +128,10 @@ export default function QuizPage() {
   const handleSubmitQuiz = async () => {
     if (!activeQuizId) return;
 
-    // Calculate score
     let score = 0;
     for (const question of quizQuestions) {
       const userAnswerId = userAnswers[question.id];
       if (userAnswerId == question.bonne_reponse_id) {
-        // Use == for type flexibility (number vs string)
         score++;
       }
     }
@@ -158,8 +146,6 @@ export default function QuizPage() {
           `Quiz terminé! Votre score: ${result.score}/${quizQuestions.length}`,
       );
 
-      // The `corrections` from the API have the same raw format as the generated quiz
-      // We need to transform them to match the frontend's expected data structure.
       const transformedCorrections = result.corrections.map(
         (question: any, index: number) => {
           const propositions = question.propositions.map(
@@ -180,7 +166,7 @@ export default function QuizPage() {
 
       sessionStorage.setItem(
         "quizCorrections",
-        JSON.stringify(transformedCorrections), // Store the transformed data
+        JSON.stringify(transformedCorrections),
       );
 
       router.push(`/student/quiz/results/${result.userQuiz.id}`);

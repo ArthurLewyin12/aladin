@@ -37,6 +37,11 @@ export const useSession = () => {
         return JSON.parse(userCookie) as User;
       }
 
+      const token = Cookies.get("token_" + ENVIRONNEMENTS.UNIVERSE);
+      if (!token) {
+        return null; // Pas de token, pas besoin d'appeler getMe
+      }
+
       try {
         const fetchedUser = await getMe();
         Cookies.set(

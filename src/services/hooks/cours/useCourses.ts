@@ -3,6 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { expliquerCours } from "@/services/controllers/cours.controller";
 import { AxiosError } from "axios";
 
+/**
+ * Hook de requête pour récupérer l'explication d'un cours pour un chapitre spécifique.
+ * Encapsule l'appel à l'API `expliquerCours` dans une requête TanStack Query.
+ *
+ * @param {string} chapter_id - L'ID du chapitre à récupérer.
+ * @returns Une requête qui peut être utilisée pour suivre l'état de la récupération (pending, error, success).
+ *          La requête est activée uniquement si `chapter_id` est fourni.
+ *          Inclut une logique de "retry" avec "exponential backoff" en cas d'échec,
+ *          sauf pour les erreurs 429 (Too Many Requests).
+ */
 export const useCourse = (chapter_id: string) => {
   return useQuery({
     queryKey: createQueryKey("course", chapter_id),

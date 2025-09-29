@@ -2,6 +2,11 @@ import { CourseEndpoints } from "@/constants/endpoints";
 import { GenerateCoursResponse } from "./types/common/cours.type";
 import { request } from "@/lib/request";
 
+/**
+ * Génère une explication de cours pour un chapitre donné.
+ * @param {string} chapter_id - L'ID du chapitre pour lequel générer le cours.
+ * @returns {Promise<GenerateCoursResponse>} La réponse de l'API contenant le contenu du cours.
+ */
 export const expliquerCours = async (
   chapter_id: string,
 ): Promise<GenerateCoursResponse> => {

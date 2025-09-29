@@ -139,7 +139,8 @@ export default function RevisionPage() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600 font-medium">
-                    Aucune matière n'est disponible pour votre niveau pour le moment.
+                    Aucune matière n'est disponible pour votre niveau pour le
+                    moment.
                   </p>
                 </div>
               )}

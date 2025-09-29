@@ -63,7 +63,7 @@ export default function Footer() {
                 Professeurs
               </a>
               <a
-                href="#"
+                href="/tarifs"
                 className="text-gray-700 hover:text-[#111D4A] transition-colors text-sm md:text-base"
               >
                 TARIFS

@@ -37,7 +37,7 @@ export default function NavBar() {
 
   return (
     <motion.nav
-      className="h-16 sm:h-20 border-b flex justify-between items-center gap-2 bg-center left-0 z-50 backdrop-blur-sm mx-auto"
+      className="h-24 sm:h-28 border-b flex justify-between items-center gap-2 bg-center left-0 z-50 backdrop-blur-sm mx-auto"
       style={{
         backgroundImage: "url('/bg1.png')",
         backgroundSize: "30%",
@@ -56,11 +56,11 @@ export default function NavBar() {
 
       <div className="ml-4 md:ml-24 relative z-10">
         <Image
-          height={40}
-          width={40}
+          height={80}
+          width={80}
           src="/logo.png"
           alt="Logo du site"
-          className="sm:h-[50px] sm:w-[50px] md:h-[60px] md:w-[60px] cursor-pointer"
+          className="sm:h-[70px] sm:w-[70px] md:h-[80px] md:w-[80px] lg:h-[90px] lg:w-[90px] cursor-pointer"
           onClick={() => router.push("/")}
         />
       </div>

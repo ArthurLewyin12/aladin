@@ -34,19 +34,25 @@ import {
 } from "@/components/ui/dialog";
 const formSchema = z
   .object({
-    name_6739798132: z.string().min(1, "Nom et prénoms requis"),
-    name_2425221157: z.string().min(1, "Statut requis"),
-    name_7182574515: z.string().min(1, "Niveau requis"),
-    name_7457105706: z.string().optional(),
-    name_4704680311: z.string().email("Email invalide").min(1, "Email requis"),
-    name_3715865492: z
+    fullName: z.string().min(1, "Nom et prénoms requis"),
+    status: z.string().min(1, "Statut requis"),
+    level: z.string().min(1, "Niveau requis"),
+    phone: z.string().optional(),
+    email: z.string().email("Email invalide").min(1, "Email requis"),
+    parentEmail: z
+      .string()
+      .email("Email parent invalide")
+      .optional()
+      .or(z.literal("")),
+    parentPhone: z.string().optional().or(z.literal("")),
+    password: z
       .string()
       .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
-    name_1443242358: z.string(),
+    confirmPassword: z.string(),
   })
-  .refine((data) => data.name_3715865492 === data.name_1443242358, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
-    path: ["name_1443242358"],
+    path: ["confirmPassword"],
   });
 
 export default function AladinStudentInscriptionForm() {
@@ -58,13 +64,15 @@ export default function AladinStudentInscriptionForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name_6739798132: "",
-      name_2425221157: "",
-      name_7182574515: "",
-      name_7457105706: "",
-      name_4704680311: "",
-      name_3715865492: "",
-      name_1443242358: "",
+      fullName: "",
+      status: "",
+      level: "",
+      phone: "",
+      email: "",
+      parentEmail: "",
+      parentPhone: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
@@ -92,13 +100,13 @@ export default function AladinStudentInscriptionForm() {
 
   return (
     <div className="w-full ">
-      <div className="mt-8">
+      {/*<div className="mt-8">
         <p className="text-base leading-relaxed">
           Je suis Aladin, ton assistant intelligent. Je t'aide à réviser toute
           ton année scolaire. Inscris-toi maintenant et profite d'un mois
           gratuit ! Ensuite, l'abonnement coûte xxx FCFA par mois.
         </p>
-      </div>
+      </div>*/}
       {/* Titre */}
       <div className="mb-8 mt-2">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Inscription</h1>
@@ -112,7 +120,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Nom et prénoms */}
           <FormField
             control={form.control}
-            name="name_6739798132"
+            name="fullName"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -130,7 +138,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Statut */}
           <FormField
             control={form.control}
-            name="name_2425221157"
+            name="status"
             render={({ field }) => (
               <FormItem>
                 <Select
@@ -157,7 +165,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Niveau */}
           <FormField
             control={form.control}
-            name="name_7182574515"
+            name="level"
             render={({ field }) => (
               <FormItem>
                 <Select
@@ -187,7 +195,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Téléphone */}
           <FormField
             control={form.control}
-            name="name_7457105706"
+            name="phone"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -196,6 +204,7 @@ export default function AladinStudentInscriptionForm() {
                     className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg"
                     {...field}
                     defaultCountry="CI"
+                    countryCallingCodeEditable={false}
                   />
                 </FormControl>
                 <FormMessage />
@@ -206,7 +215,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Email */}
           <FormField
             control={form.control}
-            name="name_4704680311"
+            name="email"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -222,10 +231,49 @@ export default function AladinStudentInscriptionForm() {
             )}
           />
 
+          {/* Email parent (Optionnel) */}
+          <FormField
+            control={form.control}
+            name="parentEmail"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    placeholder="Email parent (Optionnel)"
+                    type="email"
+                    className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Numéro parent (Optionnel) */}
+          <FormField
+            control={form.control}
+            name="parentPhone"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <PhoneInput
+                    placeholder="Numéro parent (Optionnel)"
+                    className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg"
+                    {...field}
+                    defaultCountry="CI"
+                    countryCallingCodeEditable={false}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Mot de passe */}
           <FormField
             control={form.control}
-            name="name_3715865492"
+            name="password"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -243,7 +291,7 @@ export default function AladinStudentInscriptionForm() {
           {/* Confirmer mot de passe */}
           <FormField
             control={form.control}
-            name="name_1443242358"
+            name="confirmPassword"
             render={({ field }) => (
               <FormItem>
                 <FormControl>

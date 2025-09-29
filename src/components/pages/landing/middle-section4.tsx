@@ -124,7 +124,7 @@ export default function MiddleSection4() {
       className="relative py-22 pb-8 flex flex-col justify-center bg-center overflow-hidden "
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
-      <div className="absolute inset-0 bg-blue-200 opacity-60 z-0"></div>
+      <div className="absolute inset-0 bg-green-200 opacity-60 z-0"></div>
 
       <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16 space-y-16 pb-0">
         {/* Première section - Titre + Image */}

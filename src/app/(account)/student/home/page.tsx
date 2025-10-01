@@ -60,7 +60,7 @@ export default function StudentHomePage() {
       id: "group",
       title: "Créer un groupe d'étude",
       icon: Users,
-      handler: () => console.log("Navigation vers création de groupe"),
+      handler: () => router.push("/student/groups"),
     },
     {
       id: "share",

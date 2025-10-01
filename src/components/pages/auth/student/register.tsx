@@ -32,9 +32,15 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useRegister } from "@/services/hooks/users/useUser";
+import { useRouter } from "next/navigation";
+import { UserStatus } from "@/constants/user-status";
+import type { RegisterResponseDto } from "@/services/controllers/types/common/user.type";
+
 const formSchema = z
   .object({
-    fullName: z.string().min(1, "Nom et prénoms requis"),
+    nom: z.string().min(1, "Nom requis"),
+    prenom: z.string().min(1, "Prénom requis"),
     status: z.string().min(1, "Statut requis"),
     level: z.string().min(1, "Niveau requis"),
     phone: z.string().optional(),
@@ -56,15 +62,18 @@ const formSchema = z
   });
 
 export default function AladinStudentInscriptionForm() {
-  const [isDialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(
-    null,
-  );
+  // const [isDialogOpen, setDialogOpen] = useState(false);
+  // const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(
+  //   null,
+  // );
+  const { mutate: register, isPending } = useRegister();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
+      nom: "",
+      prenom: "",
       status: "",
       level: "",
       phone: "",
@@ -78,24 +87,37 @@ export default function AladinStudentInscriptionForm() {
 
   // Ouvre le dialogue de confirmation
   function handleFormSubmit(values: z.infer<typeof formSchema>) {
-    setFormData(values);
-    setDialogOpen(true);
-  }
+    // setFormData(values);
+    // setDialogOpen(true);
+    const payload = {
+      nom: values.nom,
+      prenom: values.prenom,
+      statut: values.status as any,
+      niveau_id: 2, // Temporarily hardcoded as per user request
+      numero: values.phone || "",
+      parent_numero: values.parentPhone || "",
+      parent_mail: values.parentEmail || "",
+      mail: values.email,
+      password: values.password,
+    };
 
-  // Logique d'inscription finale
-  function handleConfirmInscription() {
-    if (!formData) return;
-
-    try {
-      console.log("Inscription confirmée avec les données:", formData);
-      toast.success("Inscription réussie !");
-      setDialogOpen(false);
-      form.reset();
-      // Ici, vous mettriez la logique pour envoyer les données au backend
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Erreur lors de l'inscription. Veuillez réessayer.");
-    }
+    register(payload, {
+      onSuccess: (response) => {
+        toast.success(
+          "Inscription presque terminée! Veuillez vérifier votre email pour activer votre compte.",
+        );
+        sessionStorage.setItem("user_to_activate", JSON.stringify(response.user));
+        router.push(`/student/register/otp?email=${response.user.mail}`);
+        form.reset();
+      },
+      onError: (error: any) => {
+        console.error("Form submission error", error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Erreur lors de l'inscription. Veuillez réessayer.",
+        );
+      },
+    });
   }
 
   return (
@@ -118,22 +140,41 @@ export default function AladinStudentInscriptionForm() {
           className="space-y-4"
         >
           {/* Nom et prénoms */}
-          <FormField
-            control={form.control}
-            name="fullName"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    placeholder="Nom & Prénoms*"
-                    className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="flex flex-col md:flex-row gap-4">
+            <FormField
+              control={form.control}
+              name="nom"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      placeholder="Nom*"
+                      className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="prenom"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      placeholder="Prénom(s)*"
+                      className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {/* Statut */}
           <FormField
@@ -316,7 +357,7 @@ export default function AladinStudentInscriptionForm() {
         </form>
       </Form>
 
-      <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+      {/* <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <div className="flex flex-col items-center text-center">
@@ -367,7 +408,7 @@ export default function AladinStudentInscriptionForm() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }

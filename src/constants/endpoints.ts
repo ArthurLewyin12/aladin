@@ -9,6 +9,14 @@ export enum AuthEndpoints {
 }
 
 /**
+ * Endpoint api pour la gestion des users
+ */
+export enum UserEndpoint {
+  REGISTER = "api/auth/register",
+  ACTIVATE = "/api/auth/activate",
+}
+
+/**
  * Endpoints relatifs à la gestion des matières.
  */
 export enum MatiereEndpoints {
@@ -40,4 +48,27 @@ export enum QuizEndpoints {
  */
 export enum CourseEndpoints {
   COURSES_BY_CHAPITRE = "/api/cours/expliquer",
+}
+
+/**
+ * Endpoints relatifs à la gestion des groupes.
+ */
+export enum GroupeEndpoints {
+  CREATE = "/api/groupes",
+  GET_ALL = "/api/groupes",
+  GET_ONE = "/api/groupes/{groupeId}",
+  UPDATE = "/api/groupes/{groupeId}",
+  DELETE = "/api/groupes/{groupeId}",
+  QUIT = "/api/groupes/{groupeId}/quit",
+  INVITE = "/api/groupes/{groupeId}/invitations",
+  ACCEPT_INVITATION = "/api/invitations/{invitationId}/accept",
+  DECLINE_INVITATION = "/api/invitations/{invitationId}/decline",
+  GET_DETAILED = "/api/groupes/{groupeId}/detailed",
+}
+
+/**
+ * Endpoints relatifs à la gestion des notifications.
+ */
+export enum NotificationEndpoints {
+  GET_NOTIFICATIONS = "/api/notifications",
 }

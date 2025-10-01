@@ -21,6 +21,60 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { GroupList } from "@/components/pages/groups/group-list";
+import { useGroupes } from "@/services/hooks/groupes/useGroupes";
+import { useCreateGroupe } from "@/services/hooks/groupes/useCreateGroupe";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+
+// 🔥 FIX: Sortir FormContent en dehors du composant parent
+interface FormContentProps {
+  groupName: string;
+  setGroupName: (value: string) => void;
+  groupDescription: string;
+  setGroupDescription: (value: string) => void;
+  isCreatingGroup: boolean;
+}
+
+const FormContent = ({
+  groupName,
+  setGroupName,
+  groupDescription,
+  setGroupDescription,
+  isCreatingGroup,
+}: FormContentProps) => (
+  <div className="space-y-4">
+    <div>
+      <Label htmlFor="groupName" className="text-sm text-gray-600">
+        Nom du groupe*
+      </Label>
+      <Input
+        id="groupName"
+        placeholder="Nom du groupe*"
+        value={groupName}
+        onChange={(e) => setGroupName(e.target.value)}
+        className="mt-1 bg-gray-50 border-gray-200"
+        disabled={isCreatingGroup}
+      />
+    </div>
+
+    <div>
+      <Label htmlFor="description" className="text-sm text-gray-600">
+        Description du groupe
+      </Label>
+      <Textarea
+        id="description"
+        placeholder="Description du groupe"
+        value={groupDescription}
+        onChange={(e) => setGroupDescription(e.target.value)}
+        rows={4}
+        className="mt-1 bg-gray-50 border-gray-200 resize-none"
+        disabled={isCreatingGroup}
+      />
+    </div>
+  </div>
+);
 
 export default function GroupsPage() {
   const router = useRouter();
@@ -28,6 +82,11 @@ export default function GroupsPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
+
+  const { user } = useSession();
+  const { mutate: createGroupeMutation, isPending: isCreatingGroup } =
+    useCreateGroupe();
+  const { data: groupes, isLoading, isError } = useGroupes();
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -46,11 +105,31 @@ export default function GroupsPage() {
   };
 
   const handleCreateGroup = () => {
-    // Logique pour créer le groupe
-    console.log("Groupe créé:", { groupName, groupDescription });
-    setIsOpen(false);
-    setGroupName("");
-    setGroupDescription("");
+    if (!user || user.niveau_id === undefined) {
+      toast.error(
+        "Impossible de créer le groupe : niveau utilisateur non défini.",
+      );
+      return;
+    }
+    if (!groupName.trim()) {
+      toast.error("Le nom du groupe ne peut pas être vide.");
+      return;
+    }
+
+    createGroupeMutation(
+      {
+        nom: groupName,
+        description: groupDescription,
+        niveau_id: user.niveau_id.toString(),
+      },
+      {
+        onSuccess: () => {
+          setIsOpen(false);
+          setGroupName("");
+          setGroupDescription("");
+        },
+      },
+    );
   };
 
   const handleCancel = () => {
@@ -59,37 +138,25 @@ export default function GroupsPage() {
     setGroupDescription("");
   };
 
-  // Contenu du formulaire (réutilisé dans Modal et Drawer)
-  const FormContent = () => (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="groupName" className="text-sm text-gray-600">
-          Nom du groupe*
-        </Label>
-        <Input
-          id="groupName"
-          placeholder="Nom du groupe*"
-          value={groupName}
-          onChange={(e) => setGroupName(e.target.value)}
-          className="mt-1 bg-gray-50 border-gray-200"
-        />
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spinner />
       </div>
+    );
+  }
 
-      <div>
-        <Label htmlFor="description" className="text-sm text-gray-600">
-          Description du groupe
-        </Label>
-        <Textarea
-          id="description"
-          placeholder="Description du groupe"
-          value={groupDescription}
-          onChange={(e) => setGroupDescription(e.target.value)}
-          rows={4}
-          className="mt-1 bg-gray-50 border-gray-200 resize-none"
-        />
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+          <p className="text-red-600">
+            Une erreur est survenue lors du chargement des groupes.
+          </p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div
@@ -127,45 +194,69 @@ export default function GroupsPage() {
           </div>
         </div>
 
-        {/* Description */}
-        <div className="text-center mb-12">
-          <p className="text-gray-600 text-base sm:text-lg max-w-4xl mx-auto leading-relaxed">
-            Crée ton groupe d'étude en quelques clics, invite tes amis ou
-            camarades de classe et avancez ensemble. Posez-vous des questions,
-            faites des quiz en groupe et entraidez-vous avec l'aide de l'IA.
-          </p>
-        </div>
+        {groupes && groupes.length > 0 ? (
+          // Scénario: Des groupes sont présents
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <p className="text-gray-600 text-lg">
+                Ici, tu retrouves tous les groupes que tu as créés ou rejoints.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => setIsOpen(true)}
+                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Créer un groupe
+              </Button>
+            </div>
+            <GroupList />
+          </>
+        ) : (
+          // Scénario: Aucun groupe (contenu placeholder original)
+          <>
+            {/* Description originale */}
+            <div className="text-center mb-12">
+              <p className="text-gray-600 text-base sm:text-lg max-w-4xl mx-auto leading-relaxed">
+                Crée ton groupe d'étude en quelques clics, invite tes amis ou
+                camarades de classe et avancez ensemble. Posez-vous des
+                questions, faites des quiz en groupe et entraidez-vous avec
+                l'aide de l'IA.
+              </p>
+            </div>
 
-        {/* Illustration centrale */}
-        <div className="flex flex-col items-center gap-8 mt-16">
-          <div className="relative w-full max-w-2xl">
-            <Image
-              src="/group.png"
-              alt="Groupe d'étude illustration"
-              width={600}
-              height={400}
-              className="w-full h-auto"
-              priority
-            />
-          </div>
+            {/* Illustration centrale originale */}
+            <div className="flex flex-col items-center gap-8 mt-16">
+              <div className="relative w-full max-w-2xl">
+                <Image
+                  src="/group.png"
+                  alt="Groupe d'étude illustration"
+                  width={600}
+                  height={400}
+                  className="w-full h-auto"
+                  priority
+                />
+              </div>
 
-          {/* Texte et bouton CTA */}
-          <div className="text-center">
-            <p className="text-gray-600 text-lg mb-6">
-              Clique ci-dessous pour créer ton premier groupe et commencer
-              l'aventure collaborative !
-            </p>
+              {/* Texte et bouton CTA originaux */}
+              <div className="text-center">
+                <p className="text-gray-600 text-lg mb-6">
+                  Clique ci-dessous pour créer ton premier groupe et commencer
+                  l'aventure collaborative !
+                </p>
 
-            <Button
-              size="lg"
-              onClick={() => setIsOpen(true)}
-              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Créer un groupe
-            </Button>
-          </div>
-        </div>
+                <Button
+                  size="lg"
+                  onClick={() => setIsOpen(true)}
+                  className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Créer un groupe
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modal pour Desktop/Tablette */}
@@ -176,17 +267,16 @@ export default function GroupsPage() {
               <DialogTitle className="text-2xl font-bold text-[#2C3E50]">
                 Créer un groupe
               </DialogTitle>
-              {/*<button
-                onClick={() => setIsOpen(false)}
-                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-              >
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </button>*/}
             </DialogHeader>
 
             <div className="mt-4">
-              <FormContent />
+              <FormContent
+                groupName={groupName}
+                setGroupName={setGroupName}
+                groupDescription={groupDescription}
+                setGroupDescription={setGroupDescription}
+                isCreatingGroup={isCreatingGroup}
+              />
             </div>
 
             <div className="flex gap-3 mt-6 justify-end">
@@ -196,8 +286,9 @@ export default function GroupsPage() {
               <Button
                 onClick={handleCreateGroup}
                 className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8"
+                disabled={isCreatingGroup}
               >
-                Créer
+                {isCreatingGroup ? <Spinner /> : "Créer"}
               </Button>
             </div>
           </DialogContent>
@@ -219,7 +310,13 @@ export default function GroupsPage() {
             </DrawerHeader>
 
             <div className="px-4 pb-4 overflow-y-auto">
-              <FormContent />
+              <FormContent
+                groupName={groupName}
+                setGroupName={setGroupName}
+                groupDescription={groupDescription}
+                setGroupDescription={setGroupDescription}
+                isCreatingGroup={isCreatingGroup}
+              />
             </div>
 
             <DrawerFooter className="flex-row gap-3 justify-end">
@@ -229,39 +326,14 @@ export default function GroupsPage() {
               <Button
                 onClick={handleCreateGroup}
                 className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
+                disabled={isCreatingGroup}
               >
-                Créer
+                {isCreatingGroup ? <Spinner /> : "Créer"}
               </Button>
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
       )}
-
-      {/* Éléments décoratifs en arrière-plan */}
-      {/*<div className="absolute top-20 left-10 opacity-20">
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none">
-          <path d="M9 11H3V2H9V11Z" stroke="#FFA500" strokeWidth="2" />
-          <path d="M21 11H15V2H21V11Z" stroke="#FFA500" strokeWidth="2" />
-          <path d="M9 22H3V13H9V22Z" stroke="#FFA500" strokeWidth="2" />
-          <path d="M21 22H15V13H21V22Z" stroke="#FFA500" strokeWidth="2" />
-        </svg>
-      </div>*/}
-
-      {/*<div className="absolute bottom-20 right-10 opacity-20">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-            stroke="#FFA500"
-            strokeWidth="2"
-          />
-        </svg>
-      </div>*/}
-
-      {/*<div className="absolute top-1/3 right-20 opacity-10">
-        <svg width="100" height="100" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="#FFA500" strokeWidth="2" />
-        </svg>
-      </div>*/}
     </div>
   );
 }

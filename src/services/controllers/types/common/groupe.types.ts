@@ -2,6 +2,7 @@ import { AuditFields } from "@/constants/audit.types";
 import { AuthUser } from "./user.type";
 import { QuizDefinition } from "./quiz.types";
 import { Matiere } from "./matiere.types";
+import { Niveau } from "./niveau.types";
 
 export type Groupe = {
   id: number;
@@ -23,7 +24,17 @@ export type CreateGroupeResponse = {
   groupe: Groupe;
 };
 
-export type GetGroupesResponse = Groupe[];
+export type GroupeWithDetails = {
+  groupe: Groupe;
+  utilisateurs: AuthUser[];
+  niveau: Niveau;
+  matieres: Matiere[];
+  quizzes: QuizDefinition[];
+  isChief: boolean;
+  members_count: number;
+};
+
+export type GetGroupesResponse = GroupeWithDetails[];
 
 export type GetGroupeResponse = Groupe;
 

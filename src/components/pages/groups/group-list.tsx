@@ -97,22 +97,24 @@ export const GroupList = () => {
         (user) => user.id !== item.groupe.chief_user,
       );
 
+      // Limiter les avatars à 6
+      const displayedMembers = members.slice(0, 6);
+
       // Générer les avatars des membres
-      const memberAvatars = members.slice(0, 4).map((user) => {
+      const memberAvatars = displayedMembers.map((user) => {
         const initials =
           `${user.prenom?.[0] || ""}${user.nom?.[0] || ""}`.toUpperCase();
-        // Utilisation de ui-avatars.com pour générer des avatars avec initiales
         const imageUrl = `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random&color=fff&size=40`;
         return {
           imageUrl: imageUrl,
-          profileUrl: `#user-${user.id}`, // Ou une URL de profil réelle si disponible
+          profileUrl: `#user-${user.id}`,
         };
       });
 
       const hasMembers = members.length > 0;
-      // Utiliser item.members_count pour le nombre total de membres
+      // Calculer remainingCount en fonction de la limite de 6 avatars
       const remainingCount =
-        item.members_count > 4 ? item.members_count - 4 : 0;
+        item.members_count > 6 ? item.members_count - 6 : 0;
 
       // Assigner une couleur basée sur l'index du groupe
       const cardColor = CARD_COLORS[index % CARD_COLORS.length];
@@ -244,10 +246,8 @@ export const GroupList = () => {
               handleDelete(groupe.id, groupe.nom, groupe.cardColor)
             }
             onOpen={() => handleOpen(groupe.id)}
-            onInvite={
-              groupe.hasMembers
-                ? undefined
-                : () => handleInvite(groupe.id, groupe.nom, groupe.cardColor)
+            onInvite={() =>
+              handleInvite(groupe.id, groupe.nom, groupe.cardColor)
             }
           />
         ))}

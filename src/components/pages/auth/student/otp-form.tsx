@@ -45,7 +45,7 @@ function OtpFormComponent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length !== 10 || !email) return;
+    if (otp.length !== 6 || !email) return;
 
     activate(
       { mail: email, code: otp },
@@ -53,28 +53,17 @@ function OtpFormComponent() {
         onSuccess: () => {
           toast.success("Votre compte a été activé avec succès !");
 
-          const userString = sessionStorage.getItem("user_to_activate");
-          if (!userString) {
-            // Fallback if session storage is empty
-            router.push("/login");
-            return;
-          }
+          // Supprimer la logique de sessionStorage.getItem("user_to_activate")
+          // et sessionStorage.removeItem("user_to_activate") car les tokens
+          // sont déjà gérés par le backend lors de l'inscription.
+          // L'utilisateur est déjà authentifié.
 
-          const user = JSON.parse(userString);
-          sessionStorage.removeItem("user_to_activate");
-
-          switch (user.statut) {
-            case UserStatus.ELEVE:
-              router.push("/student/home");
-              break;
-            // TODO: Add cases for other user statuses
-            // case UserStatus.PROFESSEUR:
-            //   router.push("/prof/dashboard");
-            //   break;
-            default:
-              router.push("/login");
-              break;
-          }
+          // Rediriger directement vers la page d'accueil de l'étudiant
+          // ou une page par défaut si le statut n'est pas géré.
+          router.push("/student/home"); // Redirection par défaut pour les élèves
+          // Si d'autres statuts sont ajoutés, la logique de redirection
+          // devra être affinée en fonction du statut de l'utilisateur
+          // qui devrait être disponible via le hook useSession.
         },
         onError: (error: any) => {
           console.error("Activation error:", error);
@@ -115,7 +104,7 @@ function OtpFormComponent() {
                 value={otp}
                 onChange={setOtp}
                 containerClassName="flex items-center gap-3 has-[:disabled]:opacity-50"
-                maxLength={10}
+                maxLength={6}
                 disabled={isLoading}
                 render={({ slots }) => (
                   <div className="flex gap-2">
@@ -130,7 +119,7 @@ function OtpFormComponent() {
             <Button
               type="submit"
               className="cursor-pointer w-full h-12 bg-[#111D4A] text-white font-medium text-lg rounded-lg mt-6"
-              disabled={isLoading || otp.length !== 10}
+              disabled={isLoading || otp.length !== 6}
             >
               {isLoading ? "Vérification..." : "Activer mon compte"}
             </Button>

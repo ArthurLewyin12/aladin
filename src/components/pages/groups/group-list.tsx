@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { useGroupes } from "@/services/hooks/groupes/useGroupes";
 import { useDeleteGroupe } from "@/services/hooks/groupes/useDeleteGroupe";
 import { GroupCard } from "./group-card";
-import { Loader2 } from "lucide-react";
+import { InviteUsersModal } from "./invit-member-modal";
+import { Spinner } from "@/components/ui/spinner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,8 +48,9 @@ export const GroupList = () => {
   const { data: groupes, isLoading, isError } = useGroupes();
   const { mutate: deleteGroupeMutation, isPending: isDeletingGroup } =
     useDeleteGroupe();
+  const [isMobile, setIsMobile] = useState(false);
 
-  // State pour le dialog de confirmation
+  // State pour le dialog de confirmation de suppression
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     groupId: number | null;
@@ -60,6 +62,31 @@ export const GroupList = () => {
     groupName: "",
     cardColor: CARD_COLORS[0],
   });
+
+  // State pour la modale d'invitation
+  const [inviteModal, setInviteModal] = useState<{
+    isOpen: boolean;
+    groupId: number | null;
+    groupName: string;
+    cardColor: string;
+  }>({
+    isOpen: false,
+    groupId: null,
+    groupName: "",
+    cardColor: CARD_COLORS[0],
+  });
+
+  // Détecter si on est sur mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Parser les user_ids et déterminer si le groupe a des membres
   const enrichedGroupes = useMemo(() => {
@@ -138,16 +165,32 @@ export const GroupList = () => {
     // TODO: Implémenter la navigation vers le groupe
   }, []);
 
-  const handleInvite = useCallback((groupId: number) => {
-    console.log("Invite to groupe:", groupId);
-    // TODO: Implémenter la modal d'invitation
+  const handleInvite = useCallback(
+    (groupId: number, groupName: string, cardColor: string) => {
+      setInviteModal({
+        isOpen: true,
+        groupId,
+        groupName,
+        cardColor,
+      });
+    },
+    [],
+  );
+
+  const closeInviteModal = useCallback(() => {
+    setInviteModal({
+      isOpen: false,
+      groupId: null,
+      groupName: "",
+      cardColor: CARD_COLORS[0],
+    });
   }, []);
 
   // État de chargement
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -200,7 +243,9 @@ export const GroupList = () => {
             }
             onOpen={() => handleOpen(groupe.id)}
             onInvite={
-              groupe.hasMembers ? undefined : () => handleInvite(groupe.id)
+              groupe.hasMembers
+                ? undefined
+                : () => handleInvite(groupe.id, groupe.nom, groupe.cardColor)
             }
           />
         ))}
@@ -237,7 +282,7 @@ export const GroupList = () => {
             >
               {isDeletingGroup ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner size="sm" className="border-white" />
                   Suppression...
                 </>
               ) : (
@@ -247,6 +292,18 @@ export const GroupList = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modale d'invitation */}
+      {inviteModal.groupId && (
+        <InviteUsersModal
+          isOpen={inviteModal.isOpen}
+          onClose={closeInviteModal}
+          groupId={inviteModal.groupId}
+          groupName={inviteModal.groupName}
+          cardColor={inviteModal.cardColor}
+          isMobile={isMobile}
+        />
+      )}
     </>
   );
 };

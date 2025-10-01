@@ -24,25 +24,25 @@ const CARD_COLORS = [
   "bg-[#FFE8D6]", // Orange clair
 ];
 
-// Placeholders pour les avatars en attendant l'API users
-const PLACEHOLDER_AVATARS = [
-  {
-    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
-    profileUrl: "#",
-  },
-  {
-    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
-    profileUrl: "#",
-  },
-  {
-    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=3",
-    profileUrl: "#",
-  },
-  {
-    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=4",
-    profileUrl: "#",
-  },
-];
+// // Placeholders pour les avatars en attendant l'API users
+// const PLACEHOLDER_AVATARS = [
+//   {
+//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
+//     profileUrl: "#",
+//   },
+//   {
+//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
+//     profileUrl: "#",
+//   },
+//   {
+//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=3",
+//     profileUrl: "#",
+//   },
+//   {
+//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=4",
+//     profileUrl: "#",
+//   },
+// ];
 
 export const GroupList = () => {
   const { data: groupes, isLoading, isError } = useGroupes();
@@ -92,32 +92,34 @@ export const GroupList = () => {
   const enrichedGroupes = useMemo(() => {
     if (!groupes) return [];
 
-    return groupes.map((groupe, index) => {
-      // Parser le JSON stringified user_id
-      let userIds: number[] = [];
-      try {
-        userIds = JSON.parse(groupe.user_id);
-      } catch (e) {
-        console.error("Erreur parsing user_id:", e);
-      }
+    return groupes.map((item, index) => {
+      const members = item.utilisateurs.filter(
+        (user) => user.id !== item.groupe.chief_user,
+      );
 
-      // Filtrer pour ne garder que les membres (pas le chief)
-      const membersIds = userIds.filter((id) => id !== groupe.chief_user);
+      // Générer les avatars des membres
+      const memberAvatars = members.slice(0, 4).map((user) => {
+        const initials =
+          `${user.prenom?.[0] || ""}${user.nom?.[0] || ""}`.toUpperCase();
+        // Utilisation de ui-avatars.com pour générer des avatars avec initiales
+        const imageUrl = `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random&color=fff&size=40`;
+        return {
+          imageUrl: imageUrl,
+          profileUrl: `#user-${user.id}`, // Ou une URL de profil réelle si disponible
+        };
+      });
 
-      // Générer des avatars placeholder basés sur le nombre de membres
-      const memberAvatars = membersIds.slice(0, 4).map((id, index) => ({
-        imageUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${groupe.id}-${id}`,
-        profileUrl: `#user-${id}`,
-      }));
-
-      const hasMembers = membersIds.length > 0;
-      const remainingCount = membersIds.length > 4 ? membersIds.length - 4 : 0;
+      const hasMembers = members.length > 0;
+      // Utiliser item.members_count pour le nombre total de membres
+      const remainingCount =
+        item.members_count > 4 ? item.members_count - 4 : 0;
 
       // Assigner une couleur basée sur l'index du groupe
       const cardColor = CARD_COLORS[index % CARD_COLORS.length];
 
       return {
-        ...groupe,
+        ...item.groupe,
+        ...item,
         hasMembers,
         memberAvatars,
         remainingCount,

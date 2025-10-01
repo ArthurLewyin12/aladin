@@ -80,44 +80,45 @@ export const GroupCard = ({
 
       {/* Footer avec boutons/avatars */}
       <div className="flex items-center justify-between">
-        {hasMembersOrInvite ? (
-          <>
-            {/* Avatars des membres */}
-            <AvatarCircles avatarUrls={members || []} numPeople={numPeople} />
-            {/* Bouton Ouvrir */}
-            {onOpen && (
-              <button
-                onClick={onOpen}
-                className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:gap-3 transition-all"
-              >
-                Ouvrir
-                <span className="text-lg">→</span>
-              </button>
-            )}
-          </>
-        ) : (
-          <>
-            {/* Bouton Inviter des amis */}
-            {onInvite && (
-              <button
-                onClick={onInvite}
-                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
-              >
-                <PlusIcon className="inline-block w-4 h-4 mr-1" />
+        <div className="flex items-center">
+          {/* Avatars des membres */}
+          {members && members.length > 0 && (
+            <AvatarCircles avatarUrls={members} numPeople={numPeople} />
+          )}
+
+          {/* Bouton Inviter des amis (toujours présent) */}
+          {onInvite && (
+            <button
+              onClick={onInvite}
+              className={cn(
+                "rounded-full flex items-center justify-center transition-colors",
+                members && members.length > 0
+                  ? "h-10 w-10 bg-white text-gray-900 hover:bg-gray-50 -ml-4 border-2 border-white relative z-10"
+                  : "bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50",
+              )}
+            >
+              <PlusIcon
+                className={cn(
+                  "inline-block",
+                  members && members.length > 0 ? "w-5 h-5" : "w-4 h-4 mr-1",
+                )}
+              />
+              {!(members && members.length > 0) && (
                 <span className="font-bold">Inviter des amis</span>
-              </button>
-            )}
-            {/* Bouton Ouvrir */}
-            {onOpen && (
-              <button
-                onClick={onOpen}
-                className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:gap-3 transition-all"
-              >
-                Ouvrir
-                <span className="text-lg">→</span>
-              </button>
-            )}
-          </>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Bouton Ouvrir */}
+        {onOpen && (
+          <button
+            onClick={onOpen}
+            className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:gap-3 transition-all"
+          >
+            Ouvrir
+            <span className="text-lg">→</span>
+          </button>
         )}
       </div>
     </div>

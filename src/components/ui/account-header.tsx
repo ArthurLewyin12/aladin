@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
+import { NotificationsBell } from "@/components/pages/groups/notification-group";
 
 export function AccountHeader() {
   const router = useRouter();
@@ -45,12 +46,13 @@ export function AccountHeader() {
           src="/logo.png"
           alt="Logo Aladin"
           className="md:h-[70px] md:w-[80px] cursor-pointer"
-          onClick={() => router.push("/student/home")}
+          onClick={() => router.push("/")}
         />
       </div>
 
       {/* Menu utilisateur */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-4">
+        <NotificationsBell />
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center space-x-3 hover:bg-gray-200 rounded-lg p-2 transition-colors cursor-pointer">
             <Avatar className="h-10 w-10">

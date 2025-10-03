@@ -4,26 +4,26 @@ export interface QuestionReponse {
 }
 
 export interface CoursData {
-  text: string; // Cours formaté complet
-  questions: QuestionReponse[]; // Array de 5 questions d'approfondissement
+  text: string;
+  questions: QuestionReponse[];
 }
 
 export interface UserCours {
-  id: number; // ID du cours
-  user_id: number; // ID de l'utilisateur
-  chapitre_id: number; // ID du chapitre
-  data: CoursData; // Contenu du cours (casté en array)
-  time: number; // Temps associé
-  created_at: string; // Date de création ISO
-  updated_at: string; // Date de mise à jour ISO
+  id: number;
+  user_id: number;
+  chapitre_id: number;
+  data: CoursData;
+  time: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GenerateCoursSuccessResponse {
-  cours_id: number; // ID du cours créé/récupéré
-  text: string; // Contenu du cours formaté
-  questions: QuestionReponse[]; // Questions d'approfondissement
-  served: "existing" | "generated"; // Type de service
-  message?: string; // Message optionnel (si cours existe déjà)
+  cours_id: number;
+  text: string;
+  questions: QuestionReponse[];
+  served: "existing" | "generated";
+  message?: string;
 }
 
 /**

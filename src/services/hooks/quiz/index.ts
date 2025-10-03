@@ -1,5 +1,6 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { toast } from "sonner";
 import {
   getQuizHistory,
   startQuiz,
@@ -8,6 +9,8 @@ import {
   submitQuiz,
   getQuizNotes,
   generateQuiz,
+  deactivateQuiz,
+  reactivateQuiz,
 } from "@/services/controllers/quiz.controller";
 import {
   QuizSubmitPayload,
@@ -47,8 +50,7 @@ export const useGenerateQuiz = () => {
     },
 
     // Délai exponentiel entre les tentatives (ex: 1s, 2s, 4s, 8s)
-    retryDelay: (attemptIndex) =>
-      Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
@@ -106,5 +108,39 @@ export const useQuizNotes = (quizId: number) => {
     queryKey: createQueryKey("quizNotes", quizId),
     queryFn: () => getQuizNotes(quizId),
     enabled: !!quizId, // La requête ne s'exécute que si quizId est fourni.
+  });
+};
+
+/**
+ * Hook de mutation pour desactiver un quiz.
+ */
+export const useDeactivateQuiz = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (quizId: number) => deactivateQuiz(quizId),
+    onSuccess: () => {
+      toast.success("Quiz désactivé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["detailedGroupe"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Une erreur est survenue.");
+    }
+  });
+};
+
+/**
+ * Hook de mutation pour reactiver un quiz.
+ */
+export const useReactivateQuiz = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (quizId: number) => reactivateQuiz(quizId),
+    onSuccess: () => {
+      toast.success("Quiz réactivé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["detailedGroupe"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Une erreur est survenue.");
+    }
   });
 };

@@ -4,25 +4,27 @@ import { useSession } from "@/services/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { AuthError } from "./auth-error";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useSession();
   const router = useRouter();
 
   useEffect(() => {
+    // Redirection uniquement si le chargement est terminé et qu'il n'y a pas d'utilisateur
     if (!isLoading && !user) {
-      router.push("/login");
+      router.push("student/login");
     }
   }, [isLoading, user, router]);
 
-  if (isLoading) {
-    return <Spinner />;
+  // Affichage du spinner pendant le chargement ou pendant la redirection
+  if (isLoading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  if (!user) {
-    return <AuthError />;
-  }
-
+  // Affichage du contenu protégé
   return <>{children}</>;
 }

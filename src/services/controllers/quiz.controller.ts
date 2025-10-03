@@ -27,7 +27,6 @@ export const getQuizHistory = async (): Promise<QuizHistory> => {
 export const generateQuiz = async (
   payload: QuizGeneratePayload,
 ): Promise<QuizGenerateResponse> => {
-  // The API returns a different shape than QuizGenerateResponse, so we fetch as `any`
   const response = await request.post<any>(
     QuizEndpoints.QUIZ_GENERATE,
     payload,
@@ -36,18 +35,26 @@ export const generateQuiz = async (
   // Manually transform the data to fit the frontend types
   const transformedQuestions = response.questions.map(
     (question: any, index: number) => {
-      const propositions = question.propositions.map(
-        (propositionText: string, propIndex: number) => ({
-          id: propIndex, // Use index as ID since API doesn't provide one
-          text: propositionText,
+      // Handle cases where propositions might be an object or an array
+      const propositionsArray = Array.isArray(question.propositions)
+        ? question.propositions
+        : Object.entries(question.propositions).map(([key, value]) => ({
+            id: key,
+            text: value,
+          }));
+
+      const propositions = propositionsArray.map(
+        (proposition: any, propIndex: number) => ({
+          id: proposition.id ?? propIndex,
+          text: proposition.text || proposition,
         }),
       );
 
       return {
-        id: `q_${index}`, // Create a unique ID for the question
+        id: `q_${index}`,
         question: question.question,
         propositions: propositions,
-        bonne_reponse_id: question.bonne_reponse, // Rename to match frontend type
+        bonne_reponse_id: question.bonne_reponse,
       };
     },
   );
@@ -126,3 +133,30 @@ export const getQuizNotes = async (quizId: number): Promise<QuizNotesResponse> =
   );
   return request.get<QuizNotesResponse>(endpoint);
 };
+
+/**
+ * Desactive un quiz spécifique.
+ * @param {number} quizId - L'ID du quiz à desactiver.
+ * @returns {Promise<void>}
+ */
+export const deactivateQuiz = async (quizId: number): Promise<void> => {
+  const endpoint = QuizEndpoints.DESACTIVATE_QUIZ.replace(
+    "{quizId}",
+    quizId.toString(),
+  );
+  return request.post<void>(endpoint);
+};
+
+/**
+ * Reactive un quiz spécifique.
+ * @param {number} quizId - L'ID du quiz à reactiver.
+ * @returns {Promise<void>}
+ */
+export const reactivateQuiz = async (quizId: number): Promise<void> => {
+  const endpoint = QuizEndpoints.REACTIVATE_QUIZ.replace(
+    "{quizId}",
+    quizId.toString(),
+  );
+  return request.post<void>(endpoint);
+};
+

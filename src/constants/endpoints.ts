@@ -41,6 +41,8 @@ export enum QuizEndpoints {
   QUIZ_DELETE = "/api/quizzes/delete/{quiz_id}",
   QUIZ_SUBMIT = "/api/quizzes/{quiz_id}/submit",
   QUIZ_NOTES = "/api/quizzes/{quiz_id}/notes",
+  DESACTIVATE_QUIZ = "/api/quizzes/{quizId}/deactivate",
+  REACTIVATE_QUIZ = "/api/quizzes/{quizId}/reactivate",
 }
 
 /**
@@ -64,6 +66,8 @@ export enum GroupeEndpoints {
   ACCEPT_INVITATION = "/api/invitations/{invitationId}/accept",
   DECLINE_INVITATION = "/api/invitations/{invitationId}/decline",
   GET_DETAILED = "/api/groupes/{groupeId}/detailed",
+  DESACTIVATE_GROUE = "api/groupes/{groupeId}/desactive",
+  CREATE_QUIZ = "api/quizzes/generate/group",
 }
 
 /**

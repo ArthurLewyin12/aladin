@@ -1,8 +1,9 @@
 "use client";
 
-import { PlusIcon, Trash2 } from "lucide-react";
+import { PlusIcon, Eye, EyeOff } from "lucide-react";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { cn } from "@/lib/utils";
+import { ClientTooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface Avatar {
   imageUrl: string;
@@ -15,8 +16,10 @@ interface GroupCardProps {
   groupId: string;
   members?: Avatar[];
   numPeople?: number;
-  cardColor?: string;
-  onDelete?: () => void;
+  isActive: boolean;
+  isChief: boolean;
+  index: number;
+  onDeactivate?: () => void;
   onOpen?: () => void;
   onInvite?: () => void;
   className?: string;
@@ -29,50 +32,70 @@ const CARD_COLORS = [
   "bg-[#FFE8D6]", // Orange clair
 ];
 
-// Fonction pour obtenir une couleur aléatoire
-const getRandomColor = () => {
-  return CARD_COLORS[Math.floor(Math.random() * CARD_COLORS.length)];
-};
-
 export const GroupCard = ({
   title,
   description,
   groupId,
   members,
   numPeople,
-  cardColor,
-  onDelete,
+  isActive,
+  isChief,
+  index,
+  onDeactivate,
   onOpen,
   onInvite,
   className,
 }: GroupCardProps) => {
-  // Utiliser la couleur passée en prop, sinon générer aléatoirement
-  const bgColor = cardColor || getRandomColor();
+  const bgColor = CARD_COLORS[index % CARD_COLORS.length];
 
   const hasMembersOrInvite = members && members.length > 0;
 
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-6 shadow-sm transition-all hover:shadow-md",
+        "relative rounded-3xl p-8 shadow-sm transition-all hover:shadow-md",
         bgColor,
         className,
+        !isActive && "opacity-60",
       )}
     >
-      {/* Header avec titre et icône delete */}
+      {/* Header avec titre et icône de statut */}
       <div className="mb-3 flex items-start justify-between">
         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 pr-2">
           {title}
         </h3>
-        {onDelete && (
-          <button
-            onClick={onDelete}
-            className="flex-shrink-0 text-gray-600 hover:text-gray-900 transition-colors"
-            aria-label="Supprimer le groupe"
-          >
-            <Trash2 size={20} />
-          </button>
-        )}
+        <ClientTooltip>
+          {isActive ? (
+            isChief && onDeactivate ? (
+              <TooltipTrigger>
+                <button
+                  onClick={onDeactivate}
+                  className="flex-shrink-0 text-gray-600 hover:text-gray-900 transition-colors"
+                  aria-label="Désactiver le groupe"
+                >
+                  <Eye size={20} />
+                </button>
+              </TooltipTrigger>
+            ) : (
+              <TooltipTrigger>
+                <Eye size={20} className="flex-shrink-0 text-gray-600" />
+              </TooltipTrigger>
+            )
+          ) : (
+            <TooltipTrigger>
+              <EyeOff size={20} className="flex-shrink-0 text-gray-600" />
+            </TooltipTrigger>
+          )}
+          <TooltipContent>
+            {!isChief ? (
+              "Vous ne pouvez pas désactiver le groupe."
+            ) : !isActive ? (
+              "Le groupe est désactivé."
+            ) : (
+              "Désactiver le groupe"
+            )}
+          </TooltipContent>
+        </ClientTooltip>
       </div>
 
       {/* Description */}

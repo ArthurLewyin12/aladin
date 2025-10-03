@@ -1,11 +1,11 @@
 import { AuditFields } from "@/constants/audit.types";
 
-// Represents the Quiz model from the backend (the definition of a quiz)
 export type QuizDefinition = {
   id: number;
   titre: string;
   nombre_questions: number;
   temps: number | null;
+
   niveau_id: number;
   matiere_id: number;
   chapitre_id: number;
@@ -21,7 +21,7 @@ export type UserQuizInstance = {
   user_id: number;
   chapitre_id: number;
   difficulte: string;
-  data: QuizQuestion[]; // Changed from string
+  data: QuizQuestion[];
   time: string | null;
 } & AuditFields;
 
@@ -31,8 +31,6 @@ export type ReponseQuiz = {
 } & AuditFields;
 
 export type QuizHistory = UserQuizInstance[];
-
-// --- Payloads & Responses ---
 
 export type QuizGeneratePayload = {
   chapter_id: number;

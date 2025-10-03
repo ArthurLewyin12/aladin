@@ -12,7 +12,7 @@ import ENVIRONNEMENTS from "@/constants/environnement";
  */
 const api = axios.create({
   baseURL: ENVIRONNEMENTS.API_URL || "",
-  timeout: 10000,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },

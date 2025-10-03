@@ -1,21 +1,13 @@
 "use client";
 
 import { useMemo, useCallback, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGroupes } from "@/services/hooks/groupes/useGroupes";
-import { useDeleteGroupe } from "@/services/hooks/groupes/useDeleteGroupe";
+import { useDeactivateGroupe } from "@/services/hooks/groupes/useDeactivateGroupe";
 import { GroupCard } from "./group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const CARD_COLORS = [
   "bg-[#F5E6D3]", // Beige/Pêche
@@ -24,44 +16,11 @@ const CARD_COLORS = [
   "bg-[#FFE8D6]", // Orange clair
 ];
 
-// // Placeholders pour les avatars en attendant l'API users
-// const PLACEHOLDER_AVATARS = [
-//   {
-//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
-//     profileUrl: "#",
-//   },
-//   {
-//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
-//     profileUrl: "#",
-//   },
-//   {
-//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=3",
-//     profileUrl: "#",
-//   },
-//   {
-//     imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=4",
-//     profileUrl: "#",
-//   },
-// ];
-
 export const GroupList = () => {
+  const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
-  const { mutate: deleteGroupeMutation, isPending: isDeletingGroup } =
-    useDeleteGroupe();
+  const { mutate: deactivateGroupeMutation } = useDeactivateGroupe();
   const [isMobile, setIsMobile] = useState(false);
-
-  // State pour le dialog de confirmation de suppression
-  const [deleteDialog, setDeleteDialog] = useState<{
-    isOpen: boolean;
-    groupId: number | null;
-    groupName: string;
-    cardColor: string;
-  }>({
-    isOpen: false,
-    groupId: null,
-    groupName: "",
-    cardColor: CARD_COLORS[0],
-  });
 
   // State pour la modale d'invitation
   const [inviteModal, setInviteModal] = useState<{
@@ -111,63 +70,37 @@ export const GroupList = () => {
         };
       });
 
-      const hasMembers = members.length > 0;
-      // Calculer remainingCount en fonction de la limite de 6 avatars
-      const remainingCount =
-        item.members_count > 6 ? item.members_count - 6 : 0;
-
       // Assigner une couleur basée sur l'index du groupe
       const cardColor = CARD_COLORS[index % CARD_COLORS.length];
 
       return {
         ...item.groupe,
         ...item,
-        hasMembers,
+        hasMembers: members.length > 0,
         memberAvatars,
-        remainingCount,
+        remainingCount: item.members_count > 6 ? item.members_count - 6 : 0,
         cardColor,
+        index,
       };
     });
   }, [groupes]);
 
   // Handlers
-  const handleDelete = useCallback(
-    (groupId: number, groupName: string, cardColor: string) => {
-      setDeleteDialog({
-        isOpen: true,
-        groupId,
-        groupName,
-        cardColor,
-      });
+  const handleStatusChange = useCallback(
+    (groupId: number, newStatus: boolean) => {
+      if (!newStatus) {
+        deactivateGroupeMutation(groupId);
+      }
     },
-    [],
+    [deactivateGroupeMutation],
   );
 
-  const confirmDelete = useCallback(() => {
-    if (deleteDialog.groupId) {
-      deleteGroupeMutation(deleteDialog.groupId);
-      setDeleteDialog({
-        isOpen: false,
-        groupId: null,
-        groupName: "",
-        cardColor: CARD_COLORS[0],
-      });
-    }
-  }, [deleteDialog.groupId, deleteGroupeMutation]);
-
-  const cancelDelete = useCallback(() => {
-    setDeleteDialog({
-      isOpen: false,
-      groupId: null,
-      groupName: "",
-      cardColor: CARD_COLORS[0],
-    });
-  }, []);
-
-  const handleOpen = useCallback((groupId: number) => {
-    console.log("Open groupe:", groupId);
-    // TODO: Implémenter la navigation vers le groupe
-  }, []);
+  const handleOpen = useCallback(
+    (groupId: number) => {
+      router.push(`/student/groups/${groupId}`);
+    },
+    [router],
+  );
 
   const handleInvite = useCallback(
     (groupId: number, groupName: string, cardColor: string) => {
@@ -241,9 +174,11 @@ export const GroupList = () => {
             groupId={groupe.id.toString()}
             members={groupe.hasMembers ? groupe.memberAvatars : undefined}
             numPeople={groupe.remainingCount}
-            cardColor={groupe.cardColor}
-            onDelete={() =>
-              handleDelete(groupe.id, groupe.nom, groupe.cardColor)
+            isActive={groupe.groupe.is_active}
+            isChief={groupe.isChief}
+            index={groupe.index}
+            onDeactivate={() =>
+              handleStatusChange(groupe.id, false)
             }
             onOpen={() => handleOpen(groupe.id)}
             onInvite={() =>
@@ -252,48 +187,6 @@ export const GroupList = () => {
           />
         ))}
       </div>
-
-      {/* AlertDialog de confirmation de suppression */}
-      <AlertDialog
-        open={deleteDialog.isOpen}
-        onOpenChange={(open) => !open && cancelDelete()}
-      >
-        <AlertDialogContent className={`${deleteDialog.cardColor} border-none`}>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl font-bold text-gray-900">
-              Supprimer le groupe ?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-700 text-base">
-              Êtes-vous sûr de vouloir supprimer le groupe{" "}
-              <span className="font-semibold">"{deleteDialog.groupName}"</span>{" "}
-              ? Cette action est irréversible et tous les membres seront retirés
-              du groupe.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={cancelDelete}
-              className="bg-white hover:bg-gray-100"
-            >
-              Annuler
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              disabled={isDeletingGroup}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              {isDeletingGroup ? (
-                <>
-                  <Spinner size="sm" className="border-white" />
-                  Suppression...
-                </>
-              ) : (
-                "Supprimer"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Modale d'invitation */}
       {inviteModal.groupId && (

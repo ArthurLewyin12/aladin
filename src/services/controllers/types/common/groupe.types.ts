@@ -8,8 +8,9 @@ export type Groupe = {
   id: number;
   nom: string;
   description: string;
+  is_active: boolean;
   niveau_id: number;
-  user_id: string; // JSON stringified array of user IDs
+  user_id: string;
   chief_user: number;
 } & AuditFields;
 
@@ -29,7 +30,7 @@ export type GroupeWithDetails = {
   utilisateurs: AuthUser[];
   niveau: Niveau;
   matieres: Matiere[];
-  quizzes: QuizDefinition[];
+  quizzes: GroupQuiz[];
   isChief: boolean;
   members_count: number;
 };
@@ -73,7 +74,7 @@ export type AcceptInvitationResponse = {
 export type GetDetailedGroupeResponse = {
   groupe: Groupe;
   utilisateurs: AuthUser[]; // Using AuthUser for detailed user info
-  quizzes: QuizDefinition[]; // Using QuizDefinition for quiz details
+  quizzes: GroupQuiz[]; // Using GroupQuiz for quiz details
   matieres: Matiere[];
   difficultes: string[];
   quizzesPasses: number[];
@@ -97,4 +98,38 @@ export type Invitation = {
 
 export type GetNotificationsResponse = {
   invitations: Invitation[];
+};
+
+export type GroupQuiz = {
+  id: number;
+  titre: string;
+  nombre_questions: number;
+  temps: number;
+  niveau_id: number;
+  matiere_id: number;
+  chapitre_id: number;
+  difficulte: string;
+  groupe_id: number;
+  is_active: boolean;
+  parent_id: number | null;
+  classe_id: number | null;
+  trimestre: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateGroupQuizPayload = {
+  group_id: number;
+  chapter_id: number;
+  difficulty: string;
+  title: string;
+  nombre_questions: number;
+  temps: number;
+};
+
+export type CreateGroupQuizResponse = {
+  quiz: GroupQuiz;
+  questions: any[];
+  questions_approfondissement: any[];
+  message: string;
 };

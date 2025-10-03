@@ -7,7 +7,6 @@ import {
   GetGroupeResponse,
   UpdateGroupePayload,
   UpdateGroupeResponse,
-  DeleteGroupeResponse,
   QuitGroupeResponse,
   InviteUsersToGroupePayload,
   InviteUsersToGroupeResponse,
@@ -15,6 +14,8 @@ import {
   DeclineInvitationResponse,
   GetDetailedGroupeResponse,
   GetNotificationsResponse,
+  CreateGroupQuizPayload,
+  CreateGroupQuizResponse,
 } from "./types/common";
 import { NotificationEndpoints } from "@/constants/endpoints";
 
@@ -67,21 +68,6 @@ export const updateGroupe = async (
     groupeId.toString(),
   );
   return request.put<UpdateGroupeResponse>(endpoint, payload);
-};
-
-/**
- * Supprime un groupe spécifique par son ID.
- * @param {number} groupeId - L'ID du groupe à supprimer.
- * @returns {Promise<DeleteGroupeResponse>} Une promesse résolue avec un message de succès.
- */
-export const deleteGroupe = async (
-  groupeId: number,
-): Promise<DeleteGroupeResponse> => {
-  const endpoint = GroupeEndpoints.DELETE.replace(
-    "{groupeId}",
-    groupeId.toString(),
-  );
-  return request.delete<DeleteGroupeResponse>(endpoint);
 };
 
 /**
@@ -154,7 +140,7 @@ export const declineInvitation = async (
 export const getDetailedGroupe = async (
   groupeId: number,
 ): Promise<GetDetailedGroupeResponse> => {
-  const endpoint = GroupeEndpoints.GET_DETAILED.replace(
+  const endpoint = GroupeEndpoints.GET_ONE.replace(
     "{groupeId}",
     groupeId.toString(),
   );
@@ -170,3 +156,31 @@ export const getNotifications = async (): Promise<GetNotificationsResponse> => {
     NotificationEndpoints.GET_NOTIFICATIONS,
   );
 };
+
+/**
+ * Crée un nouveau quiz pour un groupe.
+ * @param {CreateGroupQuizPayload} payload - Les données pour la création du quiz.
+ * @returns {Promise<CreateGroupQuizResponse>} Une promesse résolue avec les informations du quiz créé.
+ */
+export const createGroupQuiz = async (
+  payload: CreateGroupQuizPayload,
+): Promise<CreateGroupQuizResponse> => {
+  return request.post<CreateGroupQuizResponse>(
+    GroupeEndpoints.CREATE_QUIZ,
+    payload,
+  );
+};
+
+/**
+ * Desactive un groupe spécifique.
+ * @param {number} groupeId - L'ID du groupe à desactiver.
+ * @returns {Promise<void>}
+ */
+export const deactivateGroupe = async (groupeId: number): Promise<void> => {
+  const endpoint = GroupeEndpoints.DESACTIVATE_GROUE.replace(
+    "{groupeId}",
+    groupeId.toString(),
+  );
+  return request.post<void>(endpoint);
+};
+

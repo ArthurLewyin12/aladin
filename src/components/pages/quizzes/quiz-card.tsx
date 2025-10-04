@@ -14,7 +14,7 @@ interface QuizCardProps {
   isActive: boolean;
   index: number;
   canManage?: boolean;
-  onStatusChange: (newStatus: boolean) => void;
+  onStatusChange?: (newStatus: boolean) => void;
   onViewGrades?: () => void;
   onConsult?: () => void;
   className?: string;

@@ -16,6 +16,15 @@ import {
   QuizGeneratePayload,
 } from "@/services/controllers/types/common";
 import { toast } from "sonner";
+import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
+
+const quizLoadingMessages = [
+  "Génération du quiz en cours...",
+  "Construction des questions...",
+  "Analyse du chapitre...",
+  "Préparation des propositions...",
+  "Finalisation...",
+];
 
 const difficulties = [
   { id: "Facile", name: "Facile" },
@@ -148,10 +157,18 @@ export default function QuizPage() {
 
       const transformedCorrections = result.corrections.map(
         (question: any, index: number) => {
-          const propositions = question.propositions.map(
-            (propositionText: string, propIndex: number) => ({
-              id: propIndex,
-              text: propositionText,
+          // Handle cases where propositions might be an object or an array
+          const propositionsArray = Array.isArray(question.propositions)
+            ? question.propositions
+            : Object.entries(question.propositions).map(([key, value]) => ({
+                id: key,
+                text: value as string,
+              }));
+
+          const propositions = propositionsArray.map(
+            (proposition: any, propIndex: number) => ({
+              id: proposition.id ?? propIndex,
+              text: proposition.text || proposition,
             }),
           );
 
@@ -195,6 +212,11 @@ export default function QuizPage() {
         backgroundSize: "80px 80px",
       }}
     >
+      <GenerationLoadingOverlay
+        isLoading={generateQuizMutation.isPending}
+        messages={quizLoadingMessages}
+      />
+
       {/* Header */}
       <div
         className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4"
@@ -371,7 +393,7 @@ export default function QuizPage() {
                 }
                 className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-12 py-3 rounded-lg font-bold text-xl"
               >
-                {generateQuizMutation.isPending ? "Génération..." : "Commencer"}
+                Commencer
               </Button>
             </div>
           </div>
@@ -379,8 +401,9 @@ export default function QuizPage() {
 
         {/* Step 3: Quiz */}
         {step === "quiz" && currentQuestion && (
-          <div className="max-w-2xl mx-auto  mt-24">
+          <div className="max-w-4xl mx-auto mt-24">
             <div className="space-y-8">
+              {/* Progress bar */}
               <div>
                 <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
                   <span>
@@ -398,15 +421,17 @@ export default function QuizPage() {
                 </div>
               </div>
 
-              <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-6 md:p-8">
-                <h2 className="text-[1.3rem]  text-center font-bold text-gray-800 mb-4">
+              {/* Question Card */}
+              <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center underline decoration-2 underline-offset-4">
                   Question {currentQuestionIndex + 1}
                 </h2>
-                <p className="text-xl md:text-2xl text-gray-900">
+                <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
                   {currentQuestion.question}
                 </p>
               </div>
 
+              {/* Answers */}
               <div>
                 <RadioGroup
                   value={userAnswers[currentQuestion.id]?.toString() || ""}
@@ -414,34 +439,39 @@ export default function QuizPage() {
                     handleAnswerSelect(currentQuestion.id, value)
                   }
                 >
-                  <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {currentQuestion.propositions.map((proposition) => (
-                      <div
-                        key={proposition.id}
-                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-black hover:bg-gray-50 transition-colors"
-                      >
-                        <RadioGroupItem
-                          value={proposition.id.toString()}
-                          id={proposition.id.toString()}
-                          className="border-black border-2"
-                        />
-                        <Label
-                          htmlFor={proposition.id.toString()}
-                          className="flex-1 text-base font-medium cursor-pointer"
+                  <div className="grid grid-cols-3 gap-4">
+                    {currentQuestion.propositions.map((proposition, index) => {
+                      const letters = ["a", "b", "c", "d", "e", "f"];
+                      return (
+                        <div
+                          key={proposition.id}
+                          className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
                         >
-                          {proposition.text}
-                        </Label>
-                      </div>
-                    ))}
+                          <RadioGroupItem
+                            value={proposition.id.toString()}
+                            id={proposition.id.toString()}
+                            className="border-black border-2 flex-shrink-0"
+                          />
+                          <Label
+                            htmlFor={proposition.id.toString()}
+                            className="flex-1 text-base font-medium cursor-pointer"
+                          >
+                            {letters[index]}) {proposition.text}
+                          </Label>
+                        </div>
+                      );
+                    })}
                   </div>
                 </RadioGroup>
               </div>
 
+              {/* Navigation buttons */}
               <div className="flex justify-between items-center pt-6">
                 <Button
                   variant="outline"
                   onClick={handlePreviousQuestion}
                   disabled={currentQuestionIndex === 0}
+                  className="px-6 py-2"
                 >
                   Précédent
                 </Button>
@@ -462,6 +492,7 @@ export default function QuizPage() {
                   <Button
                     onClick={handleNextQuestion}
                     disabled={!userAnswers[currentQuestion.id]}
+                    className="px-6 py-2"
                   >
                     Suivant
                   </Button>

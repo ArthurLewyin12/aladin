@@ -66,7 +66,8 @@ export enum GroupeEndpoints {
   ACCEPT_INVITATION = "/api/invitations/{invitationId}/accept",
   DECLINE_INVITATION = "/api/invitations/{invitationId}/decline",
   GET_DETAILED = "/api/groupes/{groupeId}/detailed",
-  DESACTIVATE_GROUE = "api/groupes/{groupeId}/desactive",
+  DESACTIVATE_GROUPE = "api/groupes/{groupeId}/desactive",
+  REACTIVATE_GROUPE = "api/groupes/{groupeId}/reactivate",
   CREATE_QUIZ = "api/quizzes/generate/group",
 }
 

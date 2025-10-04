@@ -1,9 +1,10 @@
 "use client";
 
-import { PlusIcon, Eye, EyeOff } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { cn } from "@/lib/utils";
-import { ClientTooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Avatar {
   imageUrl: string;
@@ -20,6 +21,7 @@ interface GroupCardProps {
   isChief: boolean;
   index: number;
   onDeactivate?: () => void;
+  onActivate?: () => void; // Ajouté pour la réactivation
   onOpen?: () => void;
   onInvite?: () => void;
   className?: string;
@@ -42,13 +44,20 @@ export const GroupCard = ({
   isChief,
   index,
   onDeactivate,
+  onActivate,
   onOpen,
   onInvite,
   className,
 }: GroupCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
 
-  const hasMembersOrInvite = members && members.length > 0;
+  const handleStatusChange = (newStatus: boolean) => {
+    if (newStatus && onActivate) {
+      onActivate();
+    } else if (!newStatus && onDeactivate) {
+      onDeactivate();
+    }
+  };
 
   return (
     <div
@@ -64,38 +73,21 @@ export const GroupCard = ({
         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 pr-2">
           {title}
         </h3>
-        <ClientTooltip>
-          {isActive ? (
-            isChief && onDeactivate ? (
-              <TooltipTrigger>
-                <button
-                  onClick={onDeactivate}
-                  className="flex-shrink-0 text-gray-600 hover:text-gray-900 transition-colors"
-                  aria-label="Désactiver le groupe"
-                >
-                  <Eye size={20} />
-                </button>
-              </TooltipTrigger>
-            ) : (
-              <TooltipTrigger>
-                <Eye size={20} className="flex-shrink-0 text-gray-600" />
-              </TooltipTrigger>
-            )
-          ) : (
-            <TooltipTrigger>
-              <EyeOff size={20} className="flex-shrink-0 text-gray-600" />
-            </TooltipTrigger>
-          )}
-          <TooltipContent>
-            {!isChief ? (
-              "Vous ne pouvez pas désactiver le groupe."
-            ) : !isActive ? (
-              "Le groupe est désactivé."
-            ) : (
-              "Désactiver le groupe"
-            )}
-          </TooltipContent>
-        </ClientTooltip>
+        {isChief && (
+          <div className="flex items-center space-x-2">
+            <Label
+              htmlFor={`group-status-${groupId}`}
+              className="text-sm font-medium"
+            >
+              {isActive ? "Activé" : "Désactivé"}
+            </Label>
+            <Switch
+              id={`group-status-${groupId}`}
+              checked={isActive}
+              onCheckedChange={handleStatusChange}
+            />
+          </div>
+        )}
       </div>
 
       {/* Description */}
@@ -109,8 +101,8 @@ export const GroupCard = ({
             <AvatarCircles avatarUrls={members} numPeople={numPeople} />
           )}
 
-          {/* Bouton Inviter des amis (toujours présent) */}
-          {onInvite && (
+          {/* Bouton Inviter des amis (seulement pour le chef) */}
+          {isChief && onInvite && (
             <button
               onClick={onInvite}
               className={cn(

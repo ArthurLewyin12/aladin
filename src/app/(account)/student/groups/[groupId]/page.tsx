@@ -11,6 +11,12 @@ import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
 import { CreateQuizModal } from "@/components/pages/groups/create-quiz-modal";
 import { useDeactivateQuiz, useReactivateQuiz } from "@/services/hooks/quiz";
 import { useSession } from "@/services/hooks/auth/useSession";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { MemberPopoverCard } from "@/components/pages/groups/MemberPopoverCard";
 
 const GroupPage = () => {
   const params = useParams();
@@ -25,8 +31,6 @@ const GroupPage = () => {
     isLoading,
     isError,
   } = useDetailedGroupe(Number(groupId));
-  const { mutate: deactivateQuiz } = useDeactivateQuiz();
-  const { mutate: reactivateQuiz } = useReactivateQuiz();
 
   if (isLoading) {
     return (
@@ -51,14 +55,6 @@ const GroupPage = () => {
 
   const handleBack = () => {
     router.back();
-  };
-
-  const handleStatusChange = (quizId: number, newStatus: boolean) => {
-    if (newStatus) {
-      reactivateQuiz(quizId);
-    } else {
-      deactivateQuiz(quizId);
-    }
   };
 
   return (
@@ -97,8 +93,7 @@ const GroupPage = () => {
         {/* Description */}
         <div className="mb-8 px-4">
           <p className="text-gray-600 text-base sm:text-lg max-w-4xl leading-relaxed">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt
+            {groupDetails.groupe.description}
           </p>
         </div>
 
@@ -120,29 +115,41 @@ const GroupPage = () => {
                 const bgColor = colors[index % colors.length];
 
                 return (
-                  <div
-                    key={user.id}
-                    className={`w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-lg`}
-                  >
-                    {user.prenom.charAt(0).toUpperCase()}
-                    {user.nom.charAt(0).toUpperCase()}
-                  </div>
+                  <Popover key={user.id}>
+                    <PopoverTrigger asChild>
+                      <div
+                        className={`w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-lg cursor-pointer`}
+                      >
+                        {user.prenom.charAt(0).toUpperCase()}
+                        {user.nom.charAt(0).toUpperCase()}
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 border-0 shadow-xl">
+                      <MemberPopoverCard
+                        user={user}
+                        bgColor={bgColor}
+                        niveauLabel={groupDetails.niveau.libelle}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 );
               })}
 
-              {/* Bouton + pour inviter */}
-              <button
-                onClick={() => setInviteModalOpen(true)}
-                className="w-14 h-14 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
-                aria-label="Inviter des membres"
-              >
-                <PlusIcon className="w-6 h-6" />
-              </button>
+              {/* Bouton + pour inviter (seulement pour le chef)*/}
+              {isChief && (
+                <button
+                  onClick={() => setInviteModalOpen(true)}
+                  className="w-14 h-14 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+                  aria-label="Inviter des membres"
+                >
+                  <PlusIcon className="w-6 h-6" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Bouton Créer un Quiz - visible seulement si il y a des quiz */}
-          {quizzes.length > 0 && (
+          {/* Bouton Créer un Quiz - visible seulement si le user est chief */}
+          {isChief && (
             <Button
               size="lg"
               onClick={() => setCreateQuizModalOpen(true)}
@@ -163,14 +170,16 @@ const GroupPage = () => {
                 Aucun quiz pour le moment. Créez votre premier quiz pour
                 commencer à réviser avec votre groupe.
               </p>
-              <Button
-                size="lg"
-                onClick={() => setCreateQuizModalOpen(true)}
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
-              >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                Créer un Quiz
-              </Button>
+              {isChief && (
+                <Button
+                  size="lg"
+                  onClick={() => setCreateQuizModalOpen(true)}
+                  className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+                >
+                  <PlusIcon className="w-5 h-5 mr-2" />
+                  Créer un Quiz
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -190,10 +199,6 @@ const GroupPage = () => {
                   quizId={quiz.id.toString()}
                   isActive={quiz.is_active}
                   index={index}
-                  canManage={isChief}
-                  onStatusChange={(newStatus) =>
-                    handleStatusChange(quiz.id, newStatus)
-                  }
                   onViewGrades={() => {
                     router.push(`/groups/${groupId}/quiz/${quiz.id}/grades`);
                   }}

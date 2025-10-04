@@ -177,7 +177,20 @@ export const createGroupQuiz = async (
  * @returns {Promise<void>}
  */
 export const deactivateGroupe = async (groupeId: number): Promise<void> => {
-  const endpoint = GroupeEndpoints.DESACTIVATE_GROUE.replace(
+  const endpoint = GroupeEndpoints.DESACTIVATE_GROUPE.replace(
+    "{groupeId}",
+    groupeId.toString(),
+  );
+  return request.post<void>(endpoint);
+};
+
+/**
+ * Reactive un groupe spécifique.
+ * @param {number} groupeId - L'ID du groupe à reactiver.
+ * @returns {Promise<void>}
+ */
+export const reactivateGroupe = async (groupeId: number): Promise<void> => {
+  const endpoint = GroupeEndpoints.REACTIVATE_GROUPE.replace(
     "{groupeId}",
     groupeId.toString(),
   );

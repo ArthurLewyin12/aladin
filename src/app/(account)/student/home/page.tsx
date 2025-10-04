@@ -40,25 +40,26 @@ export default function StudentHomePage() {
   const homeActions = [
     {
       id: "dashboard",
-      title: "Consulter mon tableau de bord",
+      title: "je consulte mon tableau de bord",
       icon: BarChart3,
       handler: () => router.push("/student/dashboard"),
     },
     {
-      id: "quiz",
-      title: "Passer un quiz",
-      icon: Brain,
-      handler: () => router.push("/student/quiz"),
-    },
-    {
       id: "course",
-      title: "Réviser un cours",
+      title: "Je révise un cours",
       icon: BookOpen,
       handler: () => router.push("/student/revision"),
     },
     {
+      id: "quiz",
+      title: "Je passe un quiz",
+      icon: Brain,
+      handler: () => router.push("/student/quiz"),
+    },
+
+    {
       id: "group",
-      title: "Créer un groupe d'étude",
+      title: "Je créer un groupe d'étude",
       icon: Users,
       handler: () => router.push("/student/groups"),
     },

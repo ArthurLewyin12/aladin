@@ -4,6 +4,7 @@ import { useMemo, useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGroupes } from "@/services/hooks/groupes/useGroupes";
 import { useDeactivateGroupe } from "@/services/hooks/groupes/useDeactivateGroupe";
+import { useReactivateGroupe } from "@/services/hooks/groupes/useReactivateGroupe"; // Ajout
 import { GroupCard } from "./group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
@@ -20,6 +21,7 @@ export const GroupList = () => {
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
   const { mutate: deactivateGroupeMutation } = useDeactivateGroupe();
+  const { mutate: reactivateGroupeMutation } = useReactivateGroupe(); // Ajout
   const [isMobile, setIsMobile] = useState(false);
 
   // State pour la modale d'invitation
@@ -86,13 +88,18 @@ export const GroupList = () => {
   }, [groupes]);
 
   // Handlers
-  const handleStatusChange = useCallback(
-    (groupId: number, newStatus: boolean) => {
-      if (!newStatus) {
-        deactivateGroupeMutation(groupId);
-      }
+  const handleDeactivate = useCallback(
+    (groupId: number) => {
+      deactivateGroupeMutation(groupId);
     },
     [deactivateGroupeMutation],
+  );
+
+  const handleActivate = useCallback(
+    (groupId: number) => {
+      reactivateGroupeMutation(groupId);
+    },
+    [reactivateGroupeMutation],
   );
 
   const handleOpen = useCallback(
@@ -177,9 +184,8 @@ export const GroupList = () => {
             isActive={groupe.groupe.is_active}
             isChief={groupe.isChief}
             index={groupe.index}
-            onDeactivate={() =>
-              handleStatusChange(groupe.id, false)
-            }
+            onDeactivate={() => handleDeactivate(groupe.id)}
+            onActivate={() => handleActivate(groupe.id)} // Ajout
             onOpen={() => handleOpen(groupe.id)}
             onInvite={() =>
               handleInvite(groupe.id, groupe.nom, groupe.cardColor)

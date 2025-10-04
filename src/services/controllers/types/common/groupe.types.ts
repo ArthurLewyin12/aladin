@@ -76,6 +76,7 @@ export type GetDetailedGroupeResponse = {
   utilisateurs: AuthUser[]; // Using AuthUser for detailed user info
   quizzes: GroupQuiz[]; // Using GroupQuiz for quiz details
   matieres: Matiere[];
+  niveau: Niveau; // Ajout de la propriété manquante
   difficultes: string[];
   quizzesPasses: number[];
 };

@@ -4,8 +4,18 @@ import { useParams, useRouter } from "next/navigation";
 import { useCourse } from "@/services/hooks/cours/useCourses";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { ArrowLeft, BookOpen, BrainCircuit, HelpCircle } from "lucide-react";
+import { ArrowLeft, BrainCircuit, HelpCircle } from "lucide-react";
 import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
+import { MathText } from "@/components/ui/MathText";
+import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
+
+const courseLoadingMessages = [
+  "Génération de votre cours personnalisé...",
+  "Analyse des concepts clés du chapitre...",
+  "Synthèse des informations importantes...",
+  "Préparation des exemples et illustrations...",
+  "Finalisation du cours...",
+];
 
 export default function CoursePage() {
   const router = useRouter();
@@ -21,7 +31,7 @@ export default function CoursePage() {
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
 
     return courseData.text.split("\n").map((line, index) => {
-      const isTitle =
+      const isTitle = 
         romanNumeralRegex.test(line) || line.toUpperCase() === line;
       return {
         id: index,
@@ -51,16 +61,7 @@ export default function CoursePage() {
 
   const handleBack = () => router.back();
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center">
-        <Spinner />
-        <p className="mt-4 text-lg text-gray-600">Chargement du cours...</p>
-      </div>
-    );
-  }
-
-  if (isError || !data || !("text" in data)) {
+  if (isError || (data && !("text" in data))) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center">
         <p className="text-lg text-red-500">
@@ -74,8 +75,20 @@ export default function CoursePage() {
     );
   }
 
+  // On ne peut pas afficher la page si les données ne sont pas prêtes (et pas en chargement)
+  if (!isLoading && !data) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center">
+        <p className="text-lg text-gray-500">Aucune donnée pour ce cours.</p>
+        <Button onClick={handleBack} className="mt-4">
+          Retour
+        </Button>
+      </div>
+    );
+  }
+
   const courseData = data as GenerateCoursSuccessResponse;
-  const introText = courseData.text.substring(0, 100);
+  const introText = courseData?.text.substring(0, 100) || "";
 
   return (
     <div
@@ -85,6 +98,8 @@ export default function CoursePage() {
         backgroundSize: "80px 80px",
       }}
     >
+      <GenerationLoadingOverlay isLoading={isLoading} messages={courseLoadingMessages} />
+
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm">
         <div
@@ -112,59 +127,70 @@ export default function CoursePage() {
       </div>
 
       {/* Main Content */}
-      <main className="w-full mx-auto max-w-5xl px-4 md:px-8 pt-8 pb-16">
-        {/* Course Paper */}
-        <article className="bg-white rounded-lg shadow-lg p-8 md:p-12 lg:p-16 mb-12 font-serif">
-          {parsedContent.map((line) => (
-            <p
-              key={line.id}
-              className={
-                line.type === "title"
-                  ? "text-2xl font-bold text-orange-600 mt-6 mb-2"
-                  : "text-base text-black leading-relaxed mb-4"
-              }
-            >
-              {line.content}
-            </p>
-          ))}
-        </article>
-
-        {/* Summary Section */}
-        <section className="bg-blue-50 border border-blue-200 rounded-lg p-8 mb-12">
-          <div className="flex items-center gap-4 mb-4">
-            <BrainCircuit className="w-8 h-8 text-blue-600" />
-            <h2 className="text-2xl font-bold text-blue-900">
-              Ce que tu dois retenir
-            </h2>
-          </div>
-          <p className="text-blue-800 leading-relaxed">{summary}</p>
-        </section>
-
-        {/* FAQ Section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <HelpCircle className="w-8 h-8 text-gray-600" />
-            <h2 className="text-2xl font-bold text-gray-800">
-              Questions fréquentes
-            </h2>
-          </div>
-          <div className="space-y-4">
-            {courseData.questions.map((qa, index) => (
-              <details
-                key={index}
-                className="bg-white p-4 rounded-lg shadow-sm open:ring-2 open:ring-orange-500 transition"
-              >
-                <summary className="font-semibold text-lg cursor-pointer text-gray-900">
-                  {qa.question}
-                </summary>
-                <p className="mt-2 text-gray-700 leading-relaxed">
-                  {qa.reponse}
-                </p>
-              </details>
+      {data && (
+        <main className="w-full mx-auto max-w-5xl px-4 md:px-8 pt-8 pb-16">
+          {/* Course Paper */}
+          <article className="bg-white rounded-lg shadow-lg p-8 md:p-12 lg:p-16 mb-12 font-serif">
+            {parsedContent.map((line) => (
+              <div key={line.id}>
+                {line.type === "title" ? (
+                  // Pour les titres, on peut garder un <p> normal ou utiliser MathText aussi
+                  <p className="text-2xl font-bold text-orange-600 mt-6 mb-2">
+                    {line.content}
+                  </p>
+                ) : (
+                  // ← Utilisation de MathText pour les paragraphes
+                  <MathText
+                    text={line.content}
+                    className="text-base text-black leading-relaxed mb-4"
+                  />
+                )}
+              </div>
             ))}
-          </div>
-        </section>
-      </main>
+          </article>
+
+          {/* Summary Section */}
+          <section className="bg-blue-50 border border-blue-200 rounded-lg p-8 mb-12">
+            <div className="flex items-center gap-4 mb-4">
+              <BrainCircuit className="w-8 h-8 text-blue-600" />
+              <h2 className="text-2xl font-bold text-blue-900">
+                Ce que tu dois retenir
+              </h2>
+            </div>
+            {/* ← Utilisation de MathText pour le résumé */}
+            <MathText text={summary} className="text-blue-800 leading-relaxed" />
+          </section>
+
+          {/* FAQ Section */}
+          <section>
+            <div className="flex items-center gap-4 mb-4">
+              <HelpCircle className="w-8 h-8 text-gray-600" />
+              <h2 className="text-2xl font-bold text-gray-800">
+                Questions fréquentes
+              </h2>
+            </div>
+            <div className="space-y-4">
+              {courseData.questions.map((qa, index) => (
+                <details
+                  key={index}
+                  className="bg-white p-4 rounded-lg shadow-sm open:ring-2 open:ring-orange-500 transition"
+                >
+                  <summary className="font-semibold text-lg cursor-pointer text-gray-900">
+                    {/* ← Utilisation de MathText pour la question */}
+                    <MathText text={qa.question} />
+                  </summary>
+                  {/* ← Utilisation de MathText pour la réponse */}
+                  <MathText
+                    text={qa.reponse}
+                    className="mt-2 text-gray-700 leading-relaxed"
+                  />
+                </details>
+              ))}
+            </div>
+          </section>
+        </main>
+      )}
     </div>
+
   );
 }

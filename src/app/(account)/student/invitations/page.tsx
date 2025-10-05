@@ -24,7 +24,7 @@ function InvitationComponent() {
     isLoading,
     isError,
     error,
-  } = useInvitationByToken(token as string);
+  } = useInvitationByToken(token || "");
   const { mutate: acceptInvitation, isPending: isAccepting } =
     useAcceptInvitation();
   const { mutate: declineInvitation, isPending: isDeclining } =
@@ -59,8 +59,8 @@ function InvitationComponent() {
             Invitation Invalide
           </AlertTitle>
           <AlertDescription className="text-red-700">
-            Ce lien d'invitation est invalide ou a expiré. Veuillez demander une
-            nouvelle invitation.
+            {error?.message ||
+              "Ce lien d'invitation est invalide ou a expiré. Veuillez demander une nouvelle invitation."}
           </AlertDescription>
         </Alert>
       </div>

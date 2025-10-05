@@ -87,6 +87,18 @@ export type DeclineInvitationResponse = {
   message: string;
 };
 
+export type InvitationDetails = {
+  id: number;
+  status: "pending" | "accepted" | "declined";
+  groupe: {
+    nom: string;
+  };
+  invited_by: {
+    prenom: string;
+    nom: string;
+  };
+};
+
 export type Invitation = {
   id: number;
   id_user_envoie: number;

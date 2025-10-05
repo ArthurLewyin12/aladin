@@ -22,12 +22,15 @@ import { MemberPopoverCard } from "@/components/pages/groups/MemberPopoverCard";
 import { useQueryClient } from "@tanstack/react-query";
 import { createQueryKey } from "@/lib/request";
 
+import { useMediaQuery } from "@/services/hooks/use-media-query";
+
 const GroupPage = () => {
   const params = useParams();
   const router = useRouter();
   const groupId = params.groupId as string;
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [isCreateQuizModalOpen, setCreateQuizModalOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const { user } = useSession();
   const {
@@ -256,6 +259,7 @@ const GroupPage = () => {
         onClose={() => setInviteModalOpen(false)}
         groupId={Number(groupId)}
         groupName={groupe.nom}
+        isMobile={isMobile}
       />
 
       {/* Modal de création de quiz */}

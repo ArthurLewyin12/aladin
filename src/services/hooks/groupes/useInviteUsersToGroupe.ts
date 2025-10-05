@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inviteUsersToGroupe } from "@/services/controllers/groupe.controller";
 import { toast } from "sonner";
 import { createQueryKey } from "@/lib/request";
+import { InviteUsersToGroupePayload } from "@/services/controllers/types/common";
 
 /**
  * Hook de mutation pour inviter des utilisateurs à un groupe.
@@ -14,7 +15,10 @@ export const useInviteUsersToGroupe = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupeId, payload }: { groupeId: number; payload: any }) =>
+    mutationFn: (
+      { groupeId, payload }: 
+      { groupeId: number; payload: InviteUsersToGroupePayload }
+    ) =>
       inviteUsersToGroupe(groupeId, payload),
     onSuccess: (data, variables) => {
       if (data.errors && data.errors.length > 0) {

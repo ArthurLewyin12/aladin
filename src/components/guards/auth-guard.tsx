@@ -12,7 +12,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Redirection uniquement si le chargement est terminé et qu'il n'y a pas d'utilisateur
     if (!isLoading && !user) {
-      router.push("student/login");
+      router.push("/login");
     }
   }, [isLoading, user, router]);
 

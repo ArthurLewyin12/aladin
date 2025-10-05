@@ -22,23 +22,18 @@ export const errorHandlingMiddleware: ResponseMiddleware = (response, next) => {
 
   // Si le statut est une erreur (ex: 4xx, 5xx)
   if (response.status >= 400) {
-    // Cas où le serveur a répondu avec un format d'erreur spécifique
-    if (response.data?.error) {
-      // Si le backend renvoie à la fois `error` et `errors`, il s'agit d'une
-      // réponse "réussie" du point de vue de la requête, mais avec des erreurs
-      // métier (ex: invitation déjà envoyée). On laisse le `onSuccess` du hook
-      // `useMutation` gérer ces cas en continuant la chaîne.
-      if (Array.isArray(response.data.errors) && response.data.errors.length > 0) {
-        return next(response);
-      }
-
-      const message = response.data.message || "Une erreur est survenue";
+    // Si le backend renvoie des erreurs structurées (message, errors)
+    if (response.data) {
+      const message = response.data.message || `Erreur ${response.status}: ${response.statusText}`;
+      // Créer un objet Error personnalisé et y attacher la réponse complète
+      const customError = new Error(message);
+      (customError as any).response = response; // Attacher la réponse Axios complète
 
       if (typeof window !== "undefined") {
-        toast.error(message);
+        // Optionnel: afficher un toast générique ici, ou laisser le composant gérer
+        // toast.error(message);
       }
-
-      return Promise.reject(new Error(message));
+      return Promise.reject(customError);
     }
 
     // Pour les autres erreurs non structurées (ex: 500 Internal Server Error)

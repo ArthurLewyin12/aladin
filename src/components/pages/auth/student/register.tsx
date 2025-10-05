@@ -110,15 +110,28 @@ export default function AladinStudentInscriptionForm() {
           "user_to_activate",
           JSON.stringify(response.user),
         );
-        router.push(`/register/otp?email=${response.user.mail}`);
+        router.push(`/register/otp?email=${encodeURIComponent(response.user.mail)}`);
         form.reset();
       },
       onError: (error: any) => {
         console.error("Form submission error", error);
-        toast.error(
-          error?.response?.data?.message ||
-            "Erreur lors de l'inscription. Veuillez réessayer.",
-        );
+        console.log("Full error object:", error); // Log complet de l'objet error
+        const apiResponseData = error?.response?.data;
+        const apiErrors = apiResponseData?.errors;
+        let errorMessage = apiResponseData?.message || "Erreur lors de l'inscription. Veuillez réessayer.";
+
+        if (apiErrors) {
+          const fieldErrorMessages: string[] = [];
+          for (const field in apiErrors) {
+            if (apiErrors[field] && Array.isArray(apiErrors[field]) && apiErrors[field].length > 0) {
+              fieldErrorMessages.push(...apiErrors[field]);
+            }
+          }
+          if (fieldErrorMessages.length > 0) {
+            errorMessage = fieldErrorMessages.join(" et "); // Combine messages, e.g., "Mail déjà utilisé et Numéro déjà utilisé"
+          }
+        }
+        toast.error(errorMessage);
       },
     });
   }

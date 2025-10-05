@@ -33,6 +33,7 @@ function OtpFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
+  console.log("Email retrieved from URL in OtpForm:", email);
   const id = useId();
   const { mutate: activate, isPending: isLoading } = useActivate();
 
@@ -47,33 +48,33 @@ function OtpFormComponent() {
     e.preventDefault();
     if (otp.length !== 6 || !email) return;
 
-    activate(
-      { mail: email, code: otp },
-      {
-        onSuccess: () => {
-          toast.success("Votre compte a été activé avec succès !");
+    const payload = { mail: email, code: otp };
+    console.log("Payload for activate API in OtpForm:", payload);
 
-          // Supprimer la logique de sessionStorage.getItem("user_to_activate")
-          // et sessionStorage.removeItem("user_to_activate") car les tokens
-          // sont déjà gérés par le backend lors de l'inscription.
-          // L'utilisateur est déjà authentifié.
+    activate(payload, {
+      onSuccess: () => {
+        toast.success("Votre compte a été activé avec succès !");
 
-          // Rediriger directement vers la page d'accueil de l'étudiant
-          // ou une page par défaut si le statut n'est pas géré.
-          router.push("/student/home"); // Redirection par défaut pour les élèves
-          // Si d'autres statuts sont ajoutés, la logique de redirection
-          // devra être affinée en fonction du statut de l'utilisateur
-          // qui devrait être disponible via le hook useSession.
-        },
-        onError: (error: any) => {
-          console.error("Activation error:", error);
-          toast.error(
-            error?.response?.data?.message ||
-              "Code invalide ou expiré. Veuillez réessayer.",
-          );
-        },
+        // Supprimer la logique de sessionStorage.getItem("user_to_activate")
+        // et sessionStorage.removeItem("user_to_activate") car les tokens
+        // sont déjà gérés par le backend lors de l'inscription.
+        // L'utilisateur est déjà authentifié.
+
+        // Rediriger directement vers la page d'accueil de l'étudiant
+        // ou une page par défaut si le statut n'est pas géré.
+        router.push("/student/home"); // Redirection par défaut pour les élèves
+        // Si d'autres statuts sont ajoutés, la logique de redirection
+        // devra être affinée en fonction du statut de l'utilisateur
+        // qui devrait être disponible via le hook useSession.
       },
-    );
+      onError: (error: any) => {
+        console.error("Activation error:", error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Code invalide ou expiré. Veuillez réessayer.",
+        );
+      },
+    });
   };
 
   const handleBack = () => {

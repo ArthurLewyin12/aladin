@@ -19,6 +19,7 @@ import {
   StartGroupQuizResponse,
   SubmitGroupQuizResponse,
   QuizSubmitPayload,
+  InvitationDetails,
 } from "./types/common";
 import { NotificationEndpoints } from "@/constants/endpoints";
 
@@ -205,9 +206,14 @@ export const reactivateGroupe = async (groupeId: number): Promise<void> => {
  * @param {string} token - Le token de l'invitation.
  * @returns {Promise<any>} Une promesse résolue avec les informations de l'invitation.
  */
-export const getInvitationByToken = async (token: string): Promise<any> => {
-    const endpoint = GroupeEndpoints.GET_INVITATION_BY_TOKEN.replace("{token}", token);
-    return request.get<any>(endpoint);
+export const getInvitationByToken = async (
+  token: string,
+): Promise<InvitationDetails> => {
+  const endpoint = GroupeEndpoints.GET_INVITATION_BY_TOKEN.replace(
+    "{token}",
+    token,
+  );
+  return request.get<InvitationDetails>(endpoint);
 };
 
 /**

@@ -17,22 +17,38 @@ export const errorHandlingMiddleware: ResponseMiddleware = (response, next) => {
     if (typeof window !== "undefined") {
       toast.error("Erreur réseau ou serveur indisponible.");
     }
-    return Promise.reject(response);
+    return Promise.reject(new Error("Erreur réseau ou serveur indisponible."));
   }
 
-  // Cas où le serveur a répondu avec un format d'erreur spécifique
-  if (response.data?.error) {
-    const message = response.data.message || "Une erreur est survenue";
+  // Si le statut est une erreur (ex: 4xx, 5xx)
+  if (response.status >= 400) {
+    // Cas où le serveur a répondu avec un format d'erreur spécifique
+    if (response.data?.error) {
+      // Si le backend renvoie à la fois `error` et `errors`, il s'agit d'une
+      // réponse "réussie" du point de vue de la requête, mais avec des erreurs
+      // métier (ex: invitation déjà envoyée). On laisse le `onSuccess` du hook
+      // `useMutation` gérer ces cas en continuant la chaîne.
+      if (Array.isArray(response.data.errors) && response.data.errors.length > 0) {
+        return next(response);
+      }
 
-    // Protection SSR : on n'affiche le toast que sur le client
-    if (typeof window !== "undefined") {
-      toast.error(message);
+      const message = response.data.message || "Une erreur est survenue";
+
+      if (typeof window !== "undefined") {
+        toast.error(message);
+      }
+
+      return Promise.reject(new Error(message));
     }
 
-    // On rejette la promesse pour que les autres parties du code (ex: React Query)
-    // sachent que la requête a échoué.
-    return Promise.reject(new Error(message));
+    // Pour les autres erreurs non structurées (ex: 500 Internal Server Error)
+    const genericMessage = `Erreur ${response.status}: ${response.statusText}`;
+    if (typeof window !== "undefined") {
+      toast.error(genericMessage);
+    }
+    return Promise.reject(new Error(genericMessage));
   }
 
-  return next(response); // Changed 'data' to 'response'
+  // Pour les réponses de succès (2xx)
+  return next(response);
 };

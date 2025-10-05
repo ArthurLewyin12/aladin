@@ -65,10 +65,12 @@ export enum GroupeEndpoints {
   INVITE = "/api/groupes/{groupeId}/invitations",
   ACCEPT_INVITATION = "/api/invitations/{invitationId}/accept",
   DECLINE_INVITATION = "/api/invitations/{invitationId}/decline",
+  GET_INVITATION_BY_TOKEN = "/api/invitations/{token}",
   GET_DETAILED = "/api/groupes/{groupeId}/detailed",
-  DESACTIVATE_GROUPE = "api/groupes/{groupeId}/desactive",
+  DESACTIVATE_GROUPE = "api/groupes/{groupeId}/deactivate",
   REACTIVATE_GROUPE = "api/groupes/{groupeId}/reactivate",
   CREATE_QUIZ = "api/quizzes/generate/group",
+  START_GROUP_QUIZ = "/api/groupes/{groupeId}/quizzes/{quizId}/start",
 }
 
 /**

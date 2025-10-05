@@ -121,7 +121,7 @@ export default function AladinLoginForm() {
           <Button
             variant="outline"
             className="cursor-pointer flex-1 h-11 border-b-2  md:border border-black text-black text-[1rem] hover:bg-blue-100 hover:border-blue-300  rounded-lg"
-            onClick={() => router.push("/student/register")}
+            onClick={() => router.push("/register")}
           >
             Inscrivez vous
           </Button>

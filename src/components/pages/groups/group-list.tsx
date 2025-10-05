@@ -4,11 +4,12 @@ import { useMemo, useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGroupes } from "@/services/hooks/groupes/useGroupes";
 import { useDeactivateGroupe } from "@/services/hooks/groupes/useDeactivateGroupe";
-import { useReactivateGroupe } from "@/services/hooks/groupes/useReactivateGroupe"; // Ajout
+import { useReactivateGroupe } from "@/services/hooks/groupes/useReactivateGroupe";
 import { GroupCard } from "./group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
+import { useSession } from "@/services/hooks/auth/useSession";
 
 const CARD_COLORS = [
   "bg-[#F5E6D3]", // Beige/Pêche
@@ -20,8 +21,13 @@ const CARD_COLORS = [
 export const GroupList = () => {
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
+  const { user: currentUser } = useSession();
+
+  console.log("Groupes Data:", JSON.stringify(groupes, null, 2));
+  console.log("Current User:", JSON.stringify(currentUser, null, 2));
+
   const { mutate: deactivateGroupeMutation } = useDeactivateGroupe();
-  const { mutate: reactivateGroupeMutation } = useReactivateGroupe(); // Ajout
+  const { mutate: reactivateGroupeMutation } = useReactivateGroupe();
   const [isMobile, setIsMobile] = useState(false);
 
   // State pour la modale d'invitation
@@ -49,43 +55,50 @@ export const GroupList = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Parser les user_ids et déterminer si le groupe a des membres
   const enrichedGroupes = useMemo(() => {
     if (!groupes) return [];
 
-    return groupes.map((item, index) => {
-      const members = item.utilisateurs.filter(
-        (user) => user.id !== item.groupe.chief_user,
-      );
+    return groupes
+      .filter((item) => {
+        if (item.groupe.is_active) {
+          return true;
+        }
+        // For inactive groups, only show them to the chief
+        return currentUser?.id === item.groupe.chief_user;
+      })
+      .map((item, index) => {
+        const members = item.utilisateurs.filter(
+          (user) => user.id !== item.groupe.chief_user,
+        );
 
-      // Limiter les avatars à 6
-      const displayedMembers = members.slice(0, 6);
+        const displayedMembers = members.slice(0, 6);
 
-      // Générer les avatars des membres
-      const memberAvatars = displayedMembers.map((user) => {
-        const initials =
-          `${user.prenom?.[0] || ""}${user.nom?.[0] || ""}`.toUpperCase();
-        const imageUrl = `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random&color=fff&size=40`;
+        const memberAvatars = displayedMembers.map((user) => {
+          const initials =
+            `${user.prenom?.[0] || ""}${user.nom?.[0] || ""}`.toUpperCase();
+          const imageUrl = `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random&color=fff&size=40`;
+          return {
+            imageUrl: imageUrl,
+            profileUrl: `#user-${user.id}`,
+          };
+        });
+
+        const cardColor = CARD_COLORS[index % CARD_COLORS.length];
+
+        const isChief = currentUser?.id === item.groupe.chief_user;
+
         return {
-          imageUrl: imageUrl,
-          profileUrl: `#user-${user.id}`,
+          ...item.groupe,
+          ...item,
+          hasMembers: members.length > 0,
+          memberAvatars,
+          remainingCount: item.members_count > 6 ? item.members_count - 6 : 0,
+          cardColor,
+          index,
+          isChief, // Explicitly add the isChief property
         };
       });
-
-      // Assigner une couleur basée sur l'index du groupe
-      const cardColor = CARD_COLORS[index % CARD_COLORS.length];
-
-      return {
-        ...item.groupe,
-        ...item,
-        hasMembers: members.length > 0,
-        memberAvatars,
-        remainingCount: item.members_count > 6 ? item.members_count - 6 : 0,
-        cardColor,
-        index,
-      };
-    });
-  }, [groupes]);
+  }, [groupes, currentUser]);
 
   // Handlers
   const handleDeactivate = useCallback(

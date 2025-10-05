@@ -106,8 +106,11 @@ export default function AladinStudentInscriptionForm() {
         toast.success(
           "Inscription presque terminée! Veuillez vérifier votre email pour activer votre compte.",
         );
-        sessionStorage.setItem("user_to_activate", JSON.stringify(response.user));
-        router.push(`/student/register/otp?email=${response.user.mail}`);
+        sessionStorage.setItem(
+          "user_to_activate",
+          JSON.stringify(response.user),
+        );
+        router.push(`/register/otp?email=${response.user.mail}`);
         form.reset();
       },
       onError: (error: any) => {

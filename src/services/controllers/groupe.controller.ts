@@ -1,5 +1,5 @@
 import { request } from "@/lib/request";
-import { GroupeEndpoints } from "@/constants/endpoints";
+import { GroupeEndpoints, QuizEndpoints } from "@/constants/endpoints";
 import {
   CreateGroupePayload,
   CreateGroupeResponse,
@@ -16,6 +16,9 @@ import {
   GetNotificationsResponse,
   CreateGroupQuizPayload,
   CreateGroupQuizResponse,
+  StartGroupQuizResponse,
+  SubmitGroupQuizResponse,
+  QuizSubmitPayload,
 } from "./types/common";
 import { NotificationEndpoints } from "@/constants/endpoints";
 
@@ -140,7 +143,7 @@ export const declineInvitation = async (
 export const getDetailedGroupe = async (
   groupeId: number,
 ): Promise<GetDetailedGroupeResponse> => {
-  const endpoint = GroupeEndpoints.GET_ONE.replace(
+  const endpoint = GroupeEndpoints.GET_DETAILED.replace(
     "{groupeId}",
     groupeId.toString(),
   );
@@ -195,5 +198,55 @@ export const reactivateGroupe = async (groupeId: number): Promise<void> => {
     groupeId.toString(),
   );
   return request.post<void>(endpoint);
+};
+
+/**
+ * Récupère une invitation par son token.
+ * @param {string} token - Le token de l'invitation.
+ * @returns {Promise<any>} Une promesse résolue avec les informations de l'invitation.
+ */
+export const getInvitationByToken = async (token: string): Promise<any> => {
+    const endpoint = GroupeEndpoints.GET_INVITATION_BY_TOKEN.replace("{token}", token);
+    return request.get<any>(endpoint);
+};
+
+/**
+ * Démarre une session de quiz pour un groupe.
+ * @param {number} groupeId - L'ID du groupe.
+ * @param {number} quizId - L'ID du quiz.
+ * @returns {Promise<StartGroupQuizResponse>} Une promesse résolue avec les données du quiz à démarrer.
+ */
+export const startGroupQuiz = async ({
+  groupeId,
+  quizId,
+}: {
+  groupeId: number;
+  quizId: number;
+}): Promise<StartGroupQuizResponse> => {
+  const endpoint = GroupeEndpoints.START_GROUP_QUIZ.replace(
+    "{groupeId}",
+    groupeId.toString(),
+  ).replace("{quizId}", quizId.toString());
+  return request.post<StartGroupQuizResponse>(endpoint);
+};
+
+/**
+ * Soumet les réponses d'un quiz de groupe.
+ * @param {number} quizId - L'ID du quiz à soumettre.
+ * @param {QuizSubmitPayload} payload - Le score de l'utilisateur.
+ * @returns {Promise<SubmitGroupQuizResponse>} Une promesse résolue avec les corrections.
+ */
+export const submitGroupQuiz = async ({
+  quizId,
+  payload,
+}: {
+  quizId: number;
+  payload: QuizSubmitPayload;
+}): Promise<SubmitGroupQuizResponse> => {
+  const endpoint = QuizEndpoints.QUIZ_SUBMIT.replace(
+    "{quiz_id}",
+    quizId.toString(),
+  );
+  return request.post<SubmitGroupQuizResponse>(endpoint, payload);
 };
 

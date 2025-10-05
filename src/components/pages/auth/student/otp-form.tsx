@@ -77,7 +77,7 @@ function OtpFormComponent() {
   };
 
   const handleBack = () => {
-    router.push("/student/register");
+    router.push("/register");
   };
 
   if (!email) {

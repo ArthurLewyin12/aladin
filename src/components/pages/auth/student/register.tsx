@@ -110,7 +110,9 @@ export default function AladinStudentInscriptionForm() {
           "user_to_activate",
           JSON.stringify(response.user),
         );
-        router.push(`/register/otp?email=${encodeURIComponent(response.user.mail)}`);
+        router.push(
+          `/register/otp?email=${encodeURIComponent(response.user.mail)}`,
+        );
         form.reset();
       },
       onError: (error: any) => {
@@ -118,12 +120,18 @@ export default function AladinStudentInscriptionForm() {
         console.log("Full error object:", error); // Log complet de l'objet error
         const apiResponseData = error?.response?.data;
         const apiErrors = apiResponseData?.errors;
-        let errorMessage = apiResponseData?.message || "Erreur lors de l'inscription. Veuillez réessayer.";
+        let errorMessage =
+          apiResponseData?.message ||
+          "Erreur lors de l'inscription. Veuillez réessayer.";
 
         if (apiErrors) {
           const fieldErrorMessages: string[] = [];
           for (const field in apiErrors) {
-            if (apiErrors[field] && Array.isArray(apiErrors[field]) && apiErrors[field].length > 0) {
+            if (
+              apiErrors[field] &&
+              Array.isArray(apiErrors[field]) &&
+              apiErrors[field].length > 0
+            ) {
               fieldErrorMessages.push(...apiErrors[field]);
             }
           }
@@ -296,7 +304,7 @@ export default function AladinStudentInscriptionForm() {
               <FormItem>
                 <FormControl>
                   <Input
-                    placeholder="Email parent (Optionnel)"
+                    placeholder="Email parent"
                     type="email"
                     className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-500"
                     {...field}
@@ -315,7 +323,7 @@ export default function AladinStudentInscriptionForm() {
               <FormItem>
                 <FormControl>
                   <PhoneInput
-                    placeholder="Numéro parent (Optionnel)"
+                    placeholder="Numéro parent"
                     className="text-base h-12 bg-gray-50 border-gray-200 rounded-lg"
                     {...field}
                     defaultCountry="CI"

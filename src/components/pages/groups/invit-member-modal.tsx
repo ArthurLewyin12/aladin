@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { X, Mail, Phone, UserPlus, Plus } from "lucide-react";
+import { X, Mail, UserPlus, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,36 +36,24 @@ interface InviteUsersModalProps {
 // Composant FormContent sorti du parent pour éviter les re-renders
 interface FormContentProps {
   emails: string[];
-  phoneNumbers: string[];
   currentEmail: string;
-  currentPhone: string;
   isPending: boolean;
   groupName: string;
   setCurrentEmail: (value: string) => void;
-  setCurrentPhone: (value: string) => void;
   handleAddEmail: () => void;
-  handleAddPhone: () => void;
   handleRemoveEmail: (email: string) => void;
-  handleRemovePhone: (phone: string) => void;
   handleEmailKeyPress: (e: React.KeyboardEvent) => void;
-  handlePhoneKeyPress: (e: React.KeyboardEvent) => void;
 }
 
 const FormContent = ({
   emails,
-  phoneNumbers,
   currentEmail,
-  currentPhone,
   isPending,
   groupName,
   setCurrentEmail,
-  setCurrentPhone,
   handleAddEmail,
-  handleAddPhone,
   handleRemoveEmail,
-  handleRemovePhone,
   handleEmailKeyPress,
-  handlePhoneKeyPress,
 }: FormContentProps) => (
   <div className="space-y-6">
     {/* Section Email */}
@@ -116,61 +104,11 @@ const FormContent = ({
       )}
     </div>
 
-    {/* Section Téléphone */}
-    <div className="space-y-3">
-      <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-        <Phone className="w-4 h-4" />
-        Inviter par téléphone
-      </Label>
-      <div className="flex gap-2">
-        <Input
-          type="tel"
-          placeholder="+225 01 23 45 67 89"
-          value={currentPhone}
-          onChange={(e) => setCurrentPhone(e.target.value)}
-          onKeyPress={handlePhoneKeyPress}
-          className="bg-gray-50 border-gray-200"
-          disabled={isPending}
-        />
-        <Button
-          type="button"
-          onClick={handleAddPhone}
-          variant="outline"
-          size="icon"
-          disabled={isPending}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
-      {phoneNumbers.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {phoneNumbers.map((phone) => (
-            <Badge
-              key={phone}
-              variant="secondary"
-              className="px-3 py-1 bg-white border border-gray-200"
-            >
-              {phone}
-              <button
-                onClick={() => handleRemovePhone(phone)}
-                className="ml-2 hover:text-red-600"
-                disabled={isPending}
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
-    </div>
-
     {/* Résumé */}
-    {(emails.length > 0 || phoneNumbers.length > 0) && (
+    {emails.length > 0 && (
       <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
         <p className="text-sm text-gray-600">
-          <span className="font-medium">
-            {emails.length + phoneNumbers.length} invitation(s)
-          </span>{" "}
+          <span className="font-medium">{emails.length} invitation(s)</span>{" "}
           seront envoyées pour rejoindre{" "}
           <span className="font-semibold">{groupName}</span>
         </p>
@@ -188,20 +126,13 @@ export const InviteUsersModal = ({
   isMobile = false,
 }: InviteUsersModalProps) => {
   const [emails, setEmails] = useState<string[]>([]);
-  const [phoneNumbers, setPhoneNumbers] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
-  const [currentPhone, setCurrentPhone] = useState("");
 
   const { mutate: inviteUsers, isPending } = useInviteUsersToGroupe();
 
   // Validation email simple
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  // Validation téléphone simple
-  const isValidPhone = (phone: string) => {
-    return /^[\d\s+()-]{8,}$/.test(phone);
   };
 
   // Ajouter un email
@@ -223,41 +154,15 @@ export const InviteUsersModal = ({
     setCurrentEmail("");
   }, [currentEmail, emails]);
 
-  // Ajouter un numéro de téléphone
-  const handleAddPhone = useCallback(() => {
-    const trimmedPhone = currentPhone.trim();
-    if (!trimmedPhone) return;
-
-    if (!isValidPhone(trimmedPhone)) {
-      toast.error("Format de numéro invalide");
-      return;
-    }
-
-    if (phoneNumbers.includes(trimmedPhone)) {
-      toast.error("Ce numéro a déjà été ajouté");
-      return;
-    }
-
-    setPhoneNumbers([...phoneNumbers, trimmedPhone]);
-    setCurrentPhone("");
-  }, [currentPhone, phoneNumbers]);
-
   // Supprimer un email
   const handleRemoveEmail = useCallback((emailToRemove: string) => {
     setEmails((prev) => prev.filter((e) => e !== emailToRemove));
   }, []);
 
-  // Supprimer un numéro
-  const handleRemovePhone = useCallback((phoneToRemove: string) => {
-    setPhoneNumbers((prev) => prev.filter((p) => p !== phoneToRemove));
-  }, []);
-
   // Envoyer les invitations
   const handleInvite = useCallback(() => {
-    if (emails.length === 0 && phoneNumbers.length === 0) {
-      toast.error(
-        "Veuillez ajouter au moins un email ou un numéro de téléphone",
-      );
+    if (emails.length === 0) {
+      toast.error("Veuillez ajouter au moins un email");
       return;
     }
 
@@ -265,28 +170,26 @@ export const InviteUsersModal = ({
       {
         groupeId: groupId,
         payload: {
-          invited_emails: emails.length > 0 ? emails : undefined,
-          phone_numbers: phoneNumbers.length > 0 ? phoneNumbers : undefined,
+          member_emails: emails,
+          invitation_page_url:
+            "https://aladin-qze2.vercel.app/student/invitations",
+          register_page_url: "https://aladin-qze2.vercel.app/student/register",
         },
       },
       {
         onSuccess: () => {
           setEmails([]);
-          setPhoneNumbers([]);
           setCurrentEmail("");
-          setCurrentPhone("");
           onClose();
         },
       },
     );
-  }, [emails, phoneNumbers, groupId, inviteUsers, onClose]);
+  }, [emails, groupId, inviteUsers, onClose]);
 
   // Réinitialiser et fermer
   const handleCancel = useCallback(() => {
     setEmails([]);
-    setPhoneNumbers([]);
     setCurrentEmail("");
-    setCurrentPhone("");
     onClose();
   }, [onClose]);
 
@@ -299,16 +202,6 @@ export const InviteUsersModal = ({
       }
     },
     [handleAddEmail],
-  );
-
-  const handlePhoneKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleAddPhone();
-      }
-    },
-    [handleAddPhone],
   );
 
   // Version Desktop (Dialog)
@@ -326,19 +219,13 @@ export const InviteUsersModal = ({
           <div className="mt-4">
             <FormContent
               emails={emails}
-              phoneNumbers={phoneNumbers}
               currentEmail={currentEmail}
-              currentPhone={currentPhone}
               isPending={isPending}
               groupName={groupName}
               setCurrentEmail={setCurrentEmail}
-              setCurrentPhone={setCurrentPhone}
               handleAddEmail={handleAddEmail}
-              handleAddPhone={handleAddPhone}
               handleRemoveEmail={handleRemoveEmail}
-              handleRemovePhone={handleRemovePhone}
               handleEmailKeyPress={handleEmailKeyPress}
-              handlePhoneKeyPress={handlePhoneKeyPress}
             />
           </div>
 
@@ -354,9 +241,7 @@ export const InviteUsersModal = ({
             <Button
               onClick={handleInvite}
               className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8"
-              disabled={
-                isPending || (emails.length === 0 && phoneNumbers.length === 0)
-              }
+              disabled={isPending || emails.length === 0}
             >
               {isPending ? (
                 <>
@@ -394,19 +279,13 @@ export const InviteUsersModal = ({
         <div className="px-4 pb-4 overflow-y-auto">
           <FormContent
             emails={emails}
-            phoneNumbers={phoneNumbers}
             currentEmail={currentEmail}
-            currentPhone={currentPhone}
             isPending={isPending}
             groupName={groupName}
             setCurrentEmail={setCurrentEmail}
-            setCurrentPhone={setCurrentPhone}
             handleAddEmail={handleAddEmail}
-            handleAddPhone={handleAddPhone}
             handleRemoveEmail={handleRemoveEmail}
-            handleRemovePhone={handleRemovePhone}
             handleEmailKeyPress={handleEmailKeyPress}
-            handlePhoneKeyPress={handlePhoneKeyPress}
           />
         </div>
 
@@ -422,9 +301,7 @@ export const InviteUsersModal = ({
           <Button
             onClick={handleInvite}
             className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
-            disabled={
-              isPending || (emails.length === 0 && phoneNumbers.length === 0)
-            }
+            disabled={isPending || emails.length === 0}
           >
             {isPending ? (
               <>

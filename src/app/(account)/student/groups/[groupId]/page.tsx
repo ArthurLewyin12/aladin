@@ -9,14 +9,18 @@ import { QuizCard } from "@/components/pages/quizzes/quiz-card";
 import { useState } from "react";
 import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
 import { CreateQuizModal } from "@/components/pages/groups/create-quiz-modal";
+import { toast } from "sonner";
 import { useDeactivateQuiz, useReactivateQuiz } from "@/services/hooks/quiz";
 import { useSession } from "@/services/hooks/auth/useSession";
+import { useStartGroupQuiz } from "@/services/hooks/groupes/useStartGroupQuiz";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { MemberPopoverCard } from "@/components/pages/groups/MemberPopoverCard";
+import { useQueryClient } from "@tanstack/react-query";
+import { createQueryKey } from "@/lib/request";
 
 const GroupPage = () => {
   const params = useParams();
@@ -31,6 +35,30 @@ const GroupPage = () => {
     isLoading,
     isError,
   } = useDetailedGroupe(Number(groupId));
+
+  const { mutate: startGroupQuiz } = useStartGroupQuiz();
+  const queryClient = useQueryClient();
+
+  const handleStartQuiz = (quizId: number) => {
+    startGroupQuiz(
+      { groupeId: Number(groupId), quizId },
+      {
+        onSuccess: (data) => {
+          sessionStorage.setItem("groupQuizData", JSON.stringify(data));
+          queryClient.invalidateQueries({
+            queryKey: createQueryKey("detailedGroupe", String(groupId)),
+          });
+          router.push(`/student/groups/${groupId}/quiz/${quizId}`);
+        },
+        onError: (error: any) => {
+          toast.error(
+            error.message ||
+              "Impossible de démarrer le quiz. Veuillez réessayer.",
+          );
+        },
+      },
+    );
+  };
 
   if (isLoading) {
     return (
@@ -128,7 +156,7 @@ const GroupPage = () => {
                       <MemberPopoverCard
                         user={user}
                         bgColor={bgColor}
-                        niveauLabel={groupDetails.niveau.libelle}
+                        niveauLabel={groupDetails.niveau?.libelle || ""}
                       />
                     </PopoverContent>
                   </Popover>
@@ -149,7 +177,7 @@ const GroupPage = () => {
           </div>
 
           {/* Bouton Créer un Quiz - visible seulement si le user est chief */}
-          {isChief && (
+          {isChief && quizzes.length > 0 && (
             <Button
               size="lg"
               onClick={() => setCreateQuizModalOpen(true)}
@@ -189,6 +217,13 @@ const GroupPage = () => {
               const subject =
                 matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
 
+              const hasTaken = quiz.submissions.some(
+                (submission: { user_id: number }) =>
+                  submission.user_id === user?.id,
+              );
+              const allMembersTaken =
+                quiz.submissions.length === utilisateurs.length;
+
               return (
                 <QuizCard
                   key={quiz.id}
@@ -199,11 +234,14 @@ const GroupPage = () => {
                   quizId={quiz.id.toString()}
                   isActive={quiz.is_active}
                   index={index}
+                  hasTaken={hasTaken}
+                  allMembersTaken={allMembersTaken}
+                  onStart={() => handleStartQuiz(quiz.id)}
                   onViewGrades={() => {
-                    router.push(`/groups/${groupId}/quiz/${quiz.id}/grades`);
-                  }}
-                  onConsult={() => {
-                    router.push(`/quiz/${quiz.id}`);
+                    // TODO: Implement when backend provides an endpoint to fetch past results.
+                    toast.info(
+                      "La consultation des résultats passés n'est pas encore disponible.",
+                    );
                   }}
                 />
               );

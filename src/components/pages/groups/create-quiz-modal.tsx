@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { useCreateGroupQuiz } from "@/services/hooks/groupes/useCreateGroupQuiz";
-import { Spinner } from "@/components/ui/spinner";
 import { X } from "lucide-react";
 import { Matiere } from "@/services/controllers/types/common";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
@@ -38,6 +37,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useQueryClient } from "@tanstack/react-query";
+import { createQueryKey } from "@/lib/request";
+import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 
 interface CreateQuizModalProps {
   isOpen: boolean;
@@ -56,11 +58,19 @@ const quizFormSchema = z.object({
     .string()
     .min(1, "Le temps est requis.")
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 30, {
-      message: "Le temps doit être d'au moins 30 minutes.",
+      message: "Le temps doit être d'au moins 30 secondes.",
     }),
 });
 
 type QuizFormValues = z.infer<typeof quizFormSchema>;
+
+const quizLoadingMessages = [
+  "Génération du quiz en cours...",
+  "Construction des questions...",
+  "Analyse du chapitre...",
+  "Préparation des propositions...",
+  "Finalisation...",
+];
 
 export const CreateQuizModal = ({
   isOpen,
@@ -93,6 +103,7 @@ export const CreateQuizModal = ({
   const { data: chapitres, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(Number(watchedMatiere));
 
+  const queryClient = useQueryClient();
   const { mutate: createQuiz, isPending } = useCreateGroupQuiz();
 
   const onSubmit = (data: QuizFormValues) => {
@@ -109,6 +120,9 @@ export const CreateQuizModal = ({
         onSuccess: () => {
           onClose();
           form.reset();
+          queryClient.invalidateQueries({
+            queryKey: createQueryKey("detailedGroupe", groupId),
+          });
         },
       },
     );
@@ -122,9 +136,9 @@ export const CreateQuizModal = ({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Titre du quiz</FormLabel>
+              <FormLabel className="text-sm text-gray-600">Titre du quiz</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} className="mt-1 bg-gray-50 border-gray-200" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -136,10 +150,10 @@ export const CreateQuizModal = ({
           name="matiere_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Matière</FormLabel>
+              <FormLabel className="text-sm text-gray-600">Matière</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Sélectionner une matière" />
                   </SelectTrigger>
                 </FormControl>
@@ -161,14 +175,14 @@ export const CreateQuizModal = ({
           name="chapter_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Chapitre</FormLabel>
+              <FormLabel className="text-sm text-gray-600">Chapitre</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
                 disabled={!watchedMatiere || isLoadingChapitres}
               >
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Sélectionner un chapitre" />
                   </SelectTrigger>
                 </FormControl>
@@ -199,10 +213,10 @@ export const CreateQuizModal = ({
           name="difficulty"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Difficulté</FormLabel>
+              <FormLabel className="text-sm text-gray-600">Difficulté</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Sélectionner une difficulté" />
                   </SelectTrigger>
                 </FormControl>
@@ -222,9 +236,9 @@ export const CreateQuizModal = ({
           name="nombre_questions"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre de questions</FormLabel>
+              <FormLabel className="text-sm text-gray-600">Nombre de questions</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input type="number" {...field} className="mt-1 bg-gray-50 border-gray-200" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -236,9 +250,9 @@ export const CreateQuizModal = ({
           name="temps"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Temps (en minutes)</FormLabel>
+              <FormLabel className="text-sm text-gray-600">Temps (en secondes)</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input type="number" {...field} className="mt-1 bg-gray-50 border-gray-200" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -251,23 +265,27 @@ export const CreateQuizModal = ({
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Créer un Quiz</DrawerTitle>
-            <DrawerClose asChild>
-              <Button variant="ghost" size="icon">
-                <X className="h-4 w-4" />
-              </Button>
-            </DrawerClose>
+        <DrawerContent className="bg-white max-h-[90vh]">
+          <GenerationLoadingOverlay isLoading={isPending} messages={quizLoadingMessages} />
+          <DrawerHeader className="text-left">
+            <DrawerTitle className="text-2xl font-bold text-[#2C3E50]">Créer un Quiz</DrawerTitle>
+            <DrawerClose className="absolute right-4 top-4">
+                <X className="h-5 w-5" />
+                <span className="sr-only">Close</span>
+              </DrawerClose>
           </DrawerHeader>
-          <div className="px-4 pb-4">{FormContent}</div>
-          <DrawerFooter>
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-              {isPending ? <Spinner size="sm" /> : "Créer"}
-            </Button>
-            <Button variant="outline" onClick={onClose}>
-              Annuler
-            </Button>
+          <div className="px-4 pb-4 overflow-y-auto">{FormContent}</div>
+          <DrawerFooter className="flex-row gap-3 justify-end">
+             <Button variant="ghost" onClick={onClose} className="flex-1">
+                Annuler
+              </Button>
+              <Button
+                onClick={form.handleSubmit(onSubmit)}
+                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
+                disabled={isPending}
+              >
+                Créer
+              </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -276,12 +294,13 @@ export const CreateQuizModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px] bg-white">
+        <GenerationLoadingOverlay isLoading={isPending} messages={quizLoadingMessages} />
         <DialogHeader>
-          <DialogTitle>Créer un Quiz</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-[#2C3E50]">Créer un Quiz</DialogTitle>
         </DialogHeader>
-        <div className="py-4">{FormContent}</div>
-        <div className="flex gap-3 justify-end">
+        <div className="mt-4">{FormContent}</div>
+        <div className="flex gap-3 mt-6 justify-end">
           <Button variant="ghost" onClick={onClose} className="px-6">
             Annuler
           </Button>
@@ -290,7 +309,7 @@ export const CreateQuizModal = ({
             className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8"
             disabled={isPending}
           >
-            {isPending ? <Spinner /> : "Créer"}
+            Créer
           </Button>
         </div>
       </DialogContent>

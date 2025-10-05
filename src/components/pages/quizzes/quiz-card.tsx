@@ -16,7 +16,9 @@ interface QuizCardProps {
   canManage?: boolean;
   onStatusChange?: (newStatus: boolean) => void;
   onViewGrades?: () => void;
-  onConsult?: () => void;
+  onStart?: () => void; // New prop
+  hasTaken?: boolean; // New prop
+  allMembersTaken?: boolean; // New prop
   className?: string;
 }
 
@@ -38,7 +40,9 @@ export const QuizCard = ({
   canManage,
   onStatusChange,
   onViewGrades,
-  onConsult,
+  onStart, // New prop
+  hasTaken, // New prop
+  allMembersTaken, // New prop
   className,
 }: QuizCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
@@ -86,27 +90,37 @@ export const QuizCard = ({
       </div>
 
       {/* Footer avec boutons */}
-      <div className="flex items-center justify-between gap-3">
-        {/* Bouton Voir les notes */}
-        {onViewGrades && (
+      <div className="flex items-center justify-end gap-3">
+        {!hasTaken ? (
           <Button
-            onClick={onViewGrades}
+            onClick={onStart}
             variant="outline"
-            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium"
+            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
           >
-            Voir les notes
+            Lancer le quiz
           </Button>
-        )}
-
-        {/* Bouton Consulter */}
-        {onConsult && (
-          <Button
-            onClick={onConsult}
-            variant="outline"
-            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-8 h-11 font-medium"
-          >
-            Consulter
-          </Button>
+        ) : (
+          <>
+            <Button
+              disabled
+              variant="outline"
+              className={cn(
+                "bg-gray-200 border-2 border-gray-300 text-gray-500 rounded-xl px-6 h-11 font-medium",
+                { "w-full": !allMembersTaken }
+              )}
+            >
+              Déjà passé
+            </Button>
+            {allMembersTaken && onViewGrades && (
+              <Button
+                onClick={onViewGrades}
+                variant="outline"
+                className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium"
+              >
+                Voir les notes
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>

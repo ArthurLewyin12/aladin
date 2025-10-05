@@ -90,6 +90,11 @@ export type QuizSubmitResponse = {
   corrections: QuizQuestion[];
 };
 
+export type GetQuizResponse = {
+  quiz: QuizDefinition & { matiere: { libelle: string } }; // Assuming matiere is nested
+  questions: QuizQuestion[];
+};
+
 export type QuizNotesResponse = {
   userQuiz: {
     id: number;
@@ -107,4 +112,53 @@ export type QuizNotesResponse = {
       name: string;
     };
   }[];
+};
+
+export type StartGroupQuizResponse = {
+  quiz: {
+    id: number;
+    titre: string;
+    description: string | null;
+    difficulte: string;
+    groupe_id: number;
+    created_at: string;
+  };
+  groupe: {
+    id: number;
+    nom: string;
+    description: string;
+  };
+  data: {
+    question: string;
+    reponses: { texte: string }[];
+  }[];
+  questions_approfondissement: {
+    question: string;
+    reponse: string;
+  }[];
+  time: number;
+  started_at: string;
+};
+
+export type SubmitGroupQuizResponse = {
+  message: string;
+  note: {
+    user_id: number;
+    quiz_id: string;
+    note: number;
+    updated_at: string;
+    created_at: string;
+    id: number;
+  };
+  corrections: {
+    qcm: {
+      question: string;
+      propositions: Record<string, string>;
+      bonne_reponse: string;
+    }[];
+    questions_approfondissement: {
+      question: string;
+      reponse: string;
+    }[];
+  };
 };

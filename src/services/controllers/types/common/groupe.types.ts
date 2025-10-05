@@ -58,8 +58,10 @@ export type QuitGroupeResponse = {
 };
 
 export type InviteUsersToGroupePayload = {
-  phone_numbers?: string[];
-  invited_emails?: string[];
+  // phone_numbers?: string[];
+  member_emails: string[];
+  invitation_page_url: string; // URL de la page d'invitation
+  register_page_url: string; // URL de la page d'inscription
 };
 
 export type InviteUsersToGroupeResponse = {
@@ -117,6 +119,8 @@ export type GroupQuiz = {
   trimestre: string | null;
   created_at: string;
   updated_at: string;
+  submission_count: number;
+  submissions: { user_id: number }[];
 };
 
 export type CreateGroupQuizPayload = {

@@ -105,8 +105,8 @@ export default function RevisionPage() {
                 C'est parti pour consolider tes connaissances !
               </p>
             </div>
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-800 text-center mb-4">
+            <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center mb-6">
                 Choisis une matière
               </h2>
               {isLoadingMatieres ? (
@@ -120,15 +120,16 @@ export default function RevisionPage() {
                     {matieres.map((matiere) => (
                       <div
                         key={matiere.id}
-                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-gray-100 hover:bg-gray-50 transition-colors"
+                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
                       >
                         <RadioGroupItem
                           value={matiere.id.toString()}
                           id={`matiere-${matiere.id}`}
+                          className="border-black border-2"
                         />
                         <Label
                           htmlFor={`matiere-${matiere.id}`}
-                          className="flex-1 text-gray-700 font-medium cursor-pointer"
+                          className="flex-1 text-base font-medium cursor-pointer"
                         >
                           {matiere.libelle}
                         </Label>
@@ -144,11 +145,11 @@ export default function RevisionPage() {
                   </p>
                 </div>
               )}
-              <div className="text-center">
+              <div className="text-center mt-8">
                 <Button
                   onClick={handleSubjectNext}
                   disabled={!selectedMatiereId}
-                  className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-semibold text-lg"
                 >
                   Suivant
                 </Button>
@@ -167,8 +168,8 @@ export default function RevisionPage() {
                 chapitre t'aidera à maîtriser un concept spécifique !
               </p>
             </div>
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-800 text-center mb-4">
+            <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center mb-6">
                 Choisis un chapitre
               </h2>
               {isLoadingChapitres ? (
@@ -178,19 +179,20 @@ export default function RevisionPage() {
                   value={selectedChapitreId?.toString() || ""}
                   onValueChange={handleChapterSelect}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-80 overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-80 overflow-y-auto p-2">
                     {chapitres.map((chapitre) => (
                       <div
                         key={chapitre.id}
-                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border border-gray-100 hover:bg-gray-50 transition-colors"
+                        className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
                       >
                         <RadioGroupItem
                           value={chapitre.id.toString()}
                           id={`chapter-${chapitre.id}`}
+                          className="border-black border-2"
                         />
                         <Label
                           htmlFor={`chapter-${chapitre.id}`}
-                          className="flex-1 text-gray-700 font-medium cursor-pointer"
+                          className="flex-1 text-base font-medium cursor-pointer"
                         >
                           {chapitre.libelle}
                         </Label>
@@ -205,11 +207,11 @@ export default function RevisionPage() {
                   </p>
                 </div>
               )}
-              <div className="text-center">
+              <div className="text-center mt-8">
                 <Button
                   onClick={handleStart}
                   disabled={!selectedChapitreId}
-                  className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-semibold text-lg"
                 >
                   Commencer !
                 </Button>

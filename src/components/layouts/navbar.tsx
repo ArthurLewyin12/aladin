@@ -141,7 +141,7 @@ export default function NavBar() {
               className="px-3 sm:px-6 md:px-8 py-2 bg-[#111D4A] hover:bg-[#0d1640] rounded-md text-white cursor-pointer transition-colors text-sm md:text-base font-medium"
               aria-label="Créer un nouveau compte"
               onClick={() => {
-                router.push("/student/register");
+                router.push("/register");
               }}
             >
               S'inscrire

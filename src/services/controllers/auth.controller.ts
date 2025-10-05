@@ -1,6 +1,7 @@
 import { request } from "@/lib/request";
-import { AuthEndpoints } from "@/constants/endpoints";
+import { AuthEndpoints, UserEndpoint } from "@/constants/endpoints";
 import { LoginPayload, LoginResponse, User } from "./types/auth.types";
+import { ActivateCouponPayload, ActivateCouponResponse } from "./types/common/auth.type";
 
 /**
  * Récupère le cookie CSRF en initialisant une session sécurisée.
@@ -33,4 +34,19 @@ export const getMe = async (): Promise<User> => {
  */
 export const logout = async (): Promise<void> => {
   return request.post<void>(AuthEndpoints.AUTH_LOGOUT);
+};
+
+/**
+ * Active un abonnement utilisateur via un code promo.
+ * @param {ActivateCouponPayload} payload - Le code promo à activer.
+ * @returns {Promise<ActivateCouponResponse>} La réponse de l'API, incluant les détails de l'abonnement.
+ */
+export const activateCoupon = async (
+  payload: ActivateCouponPayload,
+): Promise<ActivateCouponResponse> => {
+  const response = await request.post<ActivateCouponResponse>(
+    UserEndpoint.ACTIVATE_COUPON,
+    payload,
+  );
+  return response;
 };

@@ -9,11 +9,37 @@ export enum AuthEndpoints {
 }
 
 /**
- * Endpoint api pour la gestion des users
+ * Endpoints relatifs à la gestion des users
  */
 export enum UserEndpoint {
   REGISTER = "api/auth/register",
   ACTIVATE = "/api/auth/activate",
+  ACTIVATE_COUPON = "/api/auth/activate/coupon",
+}
+
+/**
+ * Endpoints relatifs à la gestion des paiements.
+ */
+export enum PaymentEndpoint {
+  WAVE_USER_CHECKOUT = "/api/payments/wave/user/checkout",
+  WAVE_USER_SUCCESS = "/api/payments/wave/user/success", // {token} sera ajouté dynamiquement
+  WAVE_USER_ERROR = "/api/payments/wave/user/error", // {token} sera ajouté dynamiquement
+}
+
+/**
+ * Endpoints relatifs à la gestion des donateurs.
+ */
+export enum DonateurEndpoint {
+  INITIATE = "/api/donateurs/initiate",
+  WAVE_DONATEUR_SUCCESS = "/api/donateurs/wave/success", // {public_id} sera ajouté dynamiquement
+  WAVE_DONATEUR_ERROR = "/api/donateurs/wave/error", // {public_id} sera ajouté dynamiquement
+}
+
+/**
+ * Endpoints relatifs au statut d'essai et d'abonnement.
+ */
+export enum TrialEndpoint {
+  STATUS = "/api/trial/status",
 }
 
 /**

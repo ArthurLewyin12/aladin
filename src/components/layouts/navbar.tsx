@@ -4,7 +4,7 @@ import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/services/hooks/auth/useSession";
-import { User, LogOut, Settings, Home } from "lucide-react";
+import { User, LogOut, Settings, Home, BookOpen, ClipboardList } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,15 +99,26 @@ export default function NavBar() {
                 className="cursor-pointer"
               >
                 <Home className="mr-2 h-4 w-4" />
-                <span>Tableau de bord</span>
+                <span>Ma page d'accueil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => router.push("/student/profile")}
-                className="cursor-pointer"
-              >
-                <User className="mr-2 h-4 w-4" />
-                <span>Mon profil</span>
-              </DropdownMenuItem>
+              {user?.statut === "eleve" && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/student/quiz")}
+                    className="cursor-pointer"
+                  >
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    <span>Mes quiz</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/student/revision")}
+                    className="cursor-pointer"
+                  >
+                    <ClipboardList className="mr-2 h-4 w-4" />
+                    <span>Mes révisions</span>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem
                 onClick={() => router.push("/student/settings")}
                 className="cursor-pointer"

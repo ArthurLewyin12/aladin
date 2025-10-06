@@ -219,7 +219,7 @@ export const getInvitationByToken = async (
 /**
  * Démarre une session de quiz pour un groupe.
  * @param {number} groupeId - L'ID du groupe.
- * @param {number} quizId - L'ID du quiz.
+ * @param {number} quizId - L'ID du quiz à démarrer.
  * @returns {Promise<StartGroupQuizResponse>} Une promesse résolue avec les données du quiz à démarrer.
  */
 export const startGroupQuiz = async ({
@@ -255,4 +255,3 @@ export const submitGroupQuiz = async ({
   );
   return request.post<SubmitGroupQuizResponse>(endpoint, payload);
 };
-

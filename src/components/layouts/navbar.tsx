@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+import { usePathname } from "next/navigation";
+
 export default function NavBar() {
   const { scrollY } = useScroll();
   const { user, isLoading, logout } = useSession();
@@ -23,6 +25,7 @@ export default function NavBar() {
   const top = useTransform(scrollY, [0, 100], ["0px", "40px"]);
   const position = useTransform(scrollY, [0, 100], ["fixed", "sticky"]);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Récupérer les initiales pour l'avatar
   const getInitials = (nom?: string, prenom?: string) => {
@@ -32,7 +35,11 @@ export default function NavBar() {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
+    const publicPaths = ["/", "/tarifs"];
+    // Ne rediriger que si l'utilisateur n'est pas sur une page publique
+    if (!publicPaths.includes(pathname)) {
+      router.push("/login");
+    }
   };
 
   return (

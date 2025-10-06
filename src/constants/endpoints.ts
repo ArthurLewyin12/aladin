@@ -6,6 +6,8 @@ export enum AuthEndpoints {
   CSRF_COOKIE = "/sanctum/csrf-cookie",
   AUTH_ME = "/api/auth/me",
   AUTH_LOGOUT = "/api/auth/logout",
+  PASSWORD_RESET = "/api/auth/password/reset",
+  RESET_LINK = "api/auth/password/email",
 }
 
 /**
@@ -15,6 +17,7 @@ export enum UserEndpoint {
   REGISTER = "api/auth/register",
   ACTIVATE = "/api/auth/activate",
   ACTIVATE_COUPON = "/api/auth/activate/coupon",
+  RESEND_ACTIVATION = "/api/auth/activate/resend",
 }
 
 /**

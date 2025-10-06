@@ -1,5 +1,5 @@
 "use client";
-import { ShieldCheck } from "lucide-react";
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -34,8 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRegister } from "@/services/hooks/users/useUser";
 import { useRouter } from "next/navigation";
-import { UserStatus } from "@/constants/user-status";
-import type { RegisterResponseDto } from "@/services/controllers/types/common/user.type";
+import { Spinner } from "@/components/ui/spinner";
 
 const formSchema = z
   .object({
@@ -374,9 +373,17 @@ export default function AladinStudentInscriptionForm() {
           {/* Bouton d'inscription */}
           <Button
             type="submit"
-            className="cursor-pointer w-full h-12 bg-[#111D4A] text-white font-medium text-lg rounded-lg mt-6"
+            className="cursor-pointer w-full h-12 bg-[#111D4A] text-white font-medium text-lg rounded-lg mt-6 flex items-center justify-center"
+            disabled={isPending}
           >
-            S'inscrire
+            {isPending ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                Inscription en cours...
+              </>
+            ) : (
+              "S'inscrire"
+            )}
           </Button>
         </form>
       </Form>

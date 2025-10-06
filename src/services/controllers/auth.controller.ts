@@ -1,7 +1,18 @@
 import { request } from "@/lib/request";
 import { AuthEndpoints, UserEndpoint } from "@/constants/endpoints";
-import { LoginPayload, LoginResponse, User } from "./types/auth.types";
-import { ActivateCouponPayload, ActivateCouponResponse } from "./types/common/auth.type";
+import {
+  LoginPayload,
+  LoginResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  SendPasswordResetLinkRequest,
+  SendPasswordResetLinkResponse,
+  User,
+} from "./types/auth.types";
+import {
+  ActivateCouponPayload,
+  ActivateCouponResponse,
+} from "./types/common/auth.type";
 
 /**
  * Récupère le cookie CSRF en initialisant une session sécurisée.
@@ -49,4 +60,32 @@ export const activateCoupon = async (
     payload,
   );
   return response;
+};
+
+/**
+ * Envoie un lien de réinitialisation de mot de passe à l'email de l'utilisateur.
+ * @param {SendPasswordResetLinkRequest} payload - L'email de l'utilisateur.
+ * @returns {Promise<SendPasswordResetLinkResponse>} La réponse de l'API.
+ */
+export const sendPasswordResetLink = async (
+  payload: SendPasswordResetLinkRequest,
+): Promise<SendPasswordResetLinkResponse> => {
+  return request.post<SendPasswordResetLinkResponse>(
+    AuthEndpoints.RESET_LINK,
+    payload,
+  );
+};
+
+/**
+ * Réinitialise le mot de passe de l'utilisateur.
+ * @param {ResetPasswordRequest} payload - Le token, l'email et le nouveau mot de passe.
+ * @returns {Promise<ResetPasswordResponse>} La réponse de l'API.
+ */
+export const resetPassword = async (
+  payload: ResetPasswordRequest,
+): Promise<ResetPasswordResponse> => {
+  return request.post<ResetPasswordResponse>(
+    AuthEndpoints.PASSWORD_RESET,
+    payload,
+  );
 };

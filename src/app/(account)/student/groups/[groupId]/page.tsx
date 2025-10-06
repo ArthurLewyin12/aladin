@@ -161,6 +161,7 @@ const GroupPage = () => {
                         bgColor={bgColor}
                         niveauLabel={groupDetails.niveau?.libelle || ""}
                         isChief={user.id === groupDetails.groupe.chief_user}
+                        groupId={Number(groupId)}
                       />
                     </PopoverContent>
                   </Popover>

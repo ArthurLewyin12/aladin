@@ -12,6 +12,7 @@ import { OTPInput, type SlotProps } from "input-otp";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useActivate } from "@/services/hooks/users/useUser";
+import { useResendActivationCode } from "@/services/hooks/users/useResendActivationCode";
 import { UserStatus } from "@/constants/user-status";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -33,48 +34,67 @@ function OtpFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
-  console.log("Email retrieved from URL in OtpForm:", email);
   const id = useId();
-  const { mutate: activate, isPending: isLoading } = useActivate();
+  const { mutate: activate, isPending: isActivating } = useActivate();
+  const { mutate: resendCode, isPending: isResending } =
+    useResendActivationCode();
+  const [countdown, setCountdown] = useState(0);
+
+  const isLoading = isActivating || isResending;
 
   useEffect(() => {
     if (!email) {
       toast.error("Email non trouvé. Veuillez recommencer.");
-      router.push("/student/register");
+      router.push("/register");
     }
   }, [email, router]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6 || !email) return;
 
     const payload = { mail: email, code: otp };
-    console.log("Payload for activate API in OtpForm:", payload);
 
     activate(payload, {
       onSuccess: () => {
         toast.success("Votre compte a été activé avec succès !");
-
-        // Supprimer la logique de sessionStorage.getItem("user_to_activate")
-        // et sessionStorage.removeItem("user_to_activate") car les tokens
-        // sont déjà gérés par le backend lors de l'inscription.
-        // L'utilisateur est déjà authentifié.
-
-        // Rediriger directement vers la page d'accueil de l'étudiant
-        // ou une page par défaut si le statut n'est pas géré.
-        router.push("/student/home"); // Redirection par défaut pour les élèves
-        // Si d'autres statuts sont ajoutés, la logique de redirection
-        // devra être affinée en fonction du statut de l'utilisateur
-        // qui devrait être disponible via le hook useSession.
+        router.push("/student/home");
       },
       onError: (error: any) => {
-        console.error("Activation error:", error);
         toast.error(
           error?.response?.data?.message ||
             "Code invalide ou expiré. Veuillez réessayer.",
         );
       },
     });
+  };
+
+  const handleResendCode = () => {
+    if (!email || countdown > 0) return;
+
+    resendCode(
+      { mail: email },
+      {
+        onSuccess: () => {
+          toast.success("Un nouveau code a été envoyé.");
+          setCountdown(60); // Démarre le compte à rebours de 60 secondes
+        },
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.message ||
+              "Erreur lors du renvoi du code. Veuillez réessayer.",
+          );
+        },
+      },
+    );
   };
 
   const handleBack = () => {
@@ -119,10 +139,17 @@ function OtpFormComponent() {
 
             <Button
               type="submit"
-              className="cursor-pointer w-full h-12 bg-[#111D4A] text-white font-medium text-lg rounded-lg mt-6"
+              className="cursor-pointer w-full h-12 bg-[#111D4A] text-white font-medium text-lg rounded-lg mt-6 flex items-center justify-center"
               disabled={isLoading || otp.length !== 6}
             >
-              {isLoading ? "Vérification..." : "Activer mon compte"}
+              {isActivating ? (
+                <>
+                  <Spinner size="sm" className="mr-2" />
+                  Vérification...
+                </>
+              ) : (
+                "Activer mon compte"
+              )}
             </Button>
 
             <div className="flex justify-between items-center">
@@ -134,6 +161,17 @@ function OtpFormComponent() {
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Retour
+              </Button>
+
+              <Button
+                type="button"
+                variant="link"
+                onClick={handleResendCode}
+                disabled={isLoading || countdown > 0}
+              >
+                {countdown > 0
+                  ? `Renvoyer dans ${countdown}s`
+                  : "Renvoyer le code"}
               </Button>
             </div>
           </div>

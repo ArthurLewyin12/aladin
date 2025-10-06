@@ -85,6 +85,7 @@ export const GroupCard = ({
               id={`group-status-${groupId}`}
               checked={isActive}
               onCheckedChange={handleStatusChange}
+              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
             />
           </div>
         )}

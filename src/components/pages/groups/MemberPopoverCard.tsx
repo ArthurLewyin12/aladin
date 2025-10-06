@@ -7,9 +7,10 @@ interface MemberPopoverCardProps {
   user: AuthUser;
   bgColor: string;
   niveauLabel: string;
+  isChief: boolean;
 }
 
-export const MemberPopoverCard = ({ user, bgColor, niveauLabel }: MemberPopoverCardProps) => {
+export const MemberPopoverCard = ({ user, bgColor, niveauLabel, isChief }: MemberPopoverCardProps) => {
   return (
     <div className="rounded-xl overflow-hidden shadow-lg bg-white max-w-xs w-full">
       <div className={`h-20 ${bgColor}`} />
@@ -24,7 +25,9 @@ export const MemberPopoverCard = ({ user, bgColor, niveauLabel }: MemberPopoverC
           <h3 className="text-xl font-bold text-gray-900">
             {user.prenom} {user.nom}
           </h3>
-          <p className="text-sm text-gray-500">Membre du groupe</p>
+          <p className="text-sm text-gray-500">
+            {isChief ? "Auteur du Groupe" : "Membre du Groupe"}
+          </p>
         </div>
         <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
           <div className="flex items-center text-sm text-gray-700">

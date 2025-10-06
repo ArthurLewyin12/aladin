@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, Settings, BookOpen, ClipboardList } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +24,7 @@ export function AccountHeader() {
   };
 
   const handleProfile = () => {
-    router.push("/student/profile");
+    router.push("/student/home");
   };
 
   const handleSettings = () => {
@@ -87,8 +87,26 @@ export function AccountHeader() {
               className="cursor-pointer"
             >
               <User className="mr-2 h-4 w-4" />
-              <span>Profil</span>
+              <span>Ma page d'accueil</span>
             </DropdownMenuItem>
+            {user?.statut === "eleve" && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => router.push("/student/quiz")}
+                  className="cursor-pointer"
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <span>Mes quiz</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push("/student/revision")}
+                  className="cursor-pointer"
+                >
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  <span>Mes révisions</span>
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuItem
               onClick={handleSettings}
               className="cursor-pointer"

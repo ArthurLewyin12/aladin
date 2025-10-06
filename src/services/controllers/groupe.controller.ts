@@ -20,6 +20,7 @@ import {
   SubmitGroupQuizResponse,
   QuizSubmitPayload,
   InvitationDetails,
+  GetAllQuizNotesSuccessResponse,
 } from "./types/common";
 import { NotificationEndpoints } from "@/constants/endpoints";
 
@@ -254,4 +255,24 @@ export const submitGroupQuiz = async ({
     quizId.toString(),
   );
   return request.post<SubmitGroupQuizResponse>(endpoint, payload);
+};
+
+/**
+ * Récupère toutes les notes d'un quiz de groupe.
+ * @param {number} groupeId - L'ID du groupe.
+ * @param {number} quizId - L'ID du quiz.
+ * @returns {Promise<GetAllQuizNotesSuccessResponse>} Une promesse résolue avec les notes et corrections.
+ */
+export const getGroupQuizNotes = async ({
+  groupeId,
+  quizId,
+}: {
+  groupeId: number;
+  quizId: number;
+}): Promise<GetAllQuizNotesSuccessResponse> => {
+  const endpoint = GroupeEndpoints.GROUP_QUIZ_NOTES.replace(
+    "{groupeId}",
+    groupeId.toString(),
+  ).replace("{quizId}", quizId.toString());
+  return request.get<GetAllQuizNotesSuccessResponse>(endpoint);
 };

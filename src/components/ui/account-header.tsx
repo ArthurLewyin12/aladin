@@ -64,8 +64,10 @@ export function AccountHeader() {
               <span className="text-sm font-medium text-gray-900">
                 {user?.prenom} {user?.nom}
               </span>
-              <span className="text-xs text-gray-500">
-                {user?.statut === "eleve" ? "Élève" : user?.statut}
+              <span className="text-xs text-gray-500 capitalize">
+                {user?.statut === "eleve" && user?.niveau
+                  ? `Élève en ${user.niveau.libelle}`
+                  : user?.statut}
               </span>
             </div>
           </DropdownMenuTrigger>

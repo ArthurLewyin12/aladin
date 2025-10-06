@@ -243,10 +243,7 @@ const GroupPage = () => {
                   allMembersTaken={allMembersTaken}
                   onStart={() => handleStartQuiz(quiz.id)}
                   onViewGrades={() => {
-                    // TODO: Implement when backend provides an endpoint to fetch past results.
-                    toast.info(
-                      "La consultation des résultats passés n'est pas encore disponible.",
-                    );
+                    router.push(`/student/groups/${groupId}/quiz/${quiz.id}/notes`);
                   }}
                 />
               );

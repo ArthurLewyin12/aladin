@@ -6,6 +6,11 @@ export type LoginPayload = {
   password: string;
 };
 
+export type Niveau = {
+  id: number;
+  libelle: string;
+};
+
 export type User = {
   id: number;
   nom: string;
@@ -17,6 +22,7 @@ export type User = {
   date_debut_abonnement: string;
   date_fin_abonnement: string;
   niveau_id: number;
+  niveau?: Niveau; // Ajout de l'objet niveau
   nombre_modification_niveau: number | null;
   preference: string | null;
   email_verified_at: string | null;

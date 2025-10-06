@@ -4,7 +4,14 @@ import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/services/hooks/auth/useSession";
-import { User, LogOut, Settings, Home, BookOpen, ClipboardList } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Settings,
+  Home,
+  BookOpen,
+  ClipboardList,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,6 +104,11 @@ export default function NavBar() {
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user.mail}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground capitalize pt-1">
+                    {user.statut === "eleve" && user.niveau
+                      ? `Élève en ${user.niveau.libelle}`
+                      : user.statut}
                   </p>
                 </div>
               </DropdownMenuLabel>

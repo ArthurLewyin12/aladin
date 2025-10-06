@@ -150,3 +150,51 @@ export type CreateGroupQuizResponse = {
   questions_approfondissement: any[];
   message: string;
 };
+
+// Pas de payload pour la requête (GET, pas de body)
+export type GetAllQuizNotesRequest = Record<string, never>; // Vide, ou query params optionnels si ajoutés plus tard
+
+// Interface pour le payload de réponse en cas de succès
+export interface GetAllQuizNotesSuccessResponse {
+  notes: Array<{
+    id: number;
+    user_id: number;
+    quiz_id: number;
+    note: number; // Score (ex. 15.5/20)
+    created_at: string; // ISO date
+    user: {
+      id: number;
+      nom: string;
+      prenom: string;
+    };
+  }>; // Trié par created_at desc
+  corrections: Array<{
+    id?: number;
+    question: string; // Texte nettoyé (LaTeX -> MathJax)
+    reponses: Array<{
+      texte: string; // Options nettoyées
+      // Autres champs possibles (ex. correct: boolean)
+    }>;
+    // Autres champs question (ex. type, explication)
+  }>;
+  questions_approfondissement: Array<{
+    // Structure similaire à corrections, pour questions ouvertes
+    question: string;
+    // ...
+  }>;
+}
+
+// Interface pour le payload de réponse en cas d'erreur d'autorisation
+export interface GetAllQuizNotesAuthErrorResponse {
+  error: "Seul le chef du groupe peut voir toutes les notes.";
+}
+
+// Interface pour le payload de réponse en cas de quiz introuvable
+export interface GetAllQuizNotesNotFoundResponse {
+  error: "Quiz introuvable.";
+}
+
+// Interface générique pour les réponses d'erreur (ex. 403/404)
+export interface GetAllQuizNotesErrorResponse {
+  error: string; // Message d'erreur générique
+}

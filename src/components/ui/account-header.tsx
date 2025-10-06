@@ -94,18 +94,27 @@ export function AccountHeader() {
             {user?.statut === "eleve" && (
               <>
                 <DropdownMenuItem
+                  onClick={() => router.push("/student/revision")}
+                  className="cursor-pointer"
+                >
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  <span>Mes révisions</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
                   onClick={() => router.push("/student/quiz")}
                   className="cursor-pointer"
                 >
                   <BookOpen className="mr-2 h-4 w-4" />
                   <span>Mes quiz</span>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem
-                  onClick={() => router.push("/student/revision")}
+                  onClick={() => router.push("/student/groups")}
                   className="cursor-pointer"
                 >
-                  <ClipboardList className="mr-2 h-4 w-4" />
-                  <span>Mes révisions</span>
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <span>Mes groupes</span>
                 </DropdownMenuItem>
               </>
             )}

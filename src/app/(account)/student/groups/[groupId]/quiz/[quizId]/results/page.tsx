@@ -2,8 +2,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Trophy,
+  Target,
+  BookOpen,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface CorrectionQCM {
@@ -14,27 +19,98 @@ interface CorrectionQCM {
 
 interface Corrections {
   qcm: CorrectionQCM[];
-  questions_approfondissement: any[]; // Define this type if needed
+  questions_approfondissement: any[];
 }
+
+// Composant Card pour une question QCM
+const CARD_COLORS = [
+  "bg-[#F5E6D3]", // Beige/Pêche
+  "bg-[#D4EBE8]", // Bleu clair
+  "bg-[#E5DFF7]", // Violet clair
+  "bg-[#FFE8D6]", // Orange clair
+];
+
+interface QuestionCardProps {
+  qcmItem: CorrectionQCM;
+  index: number;
+}
+
+const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
+  const bgColor = CARD_COLORS[index % CARD_COLORS.length];
+
+  return (
+    <div
+      className={`${bgColor} rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md`}
+    >
+      <div className="flex items-start gap-3 mb-4">
+        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-gray-700 font-bold text-sm flex-shrink-0">
+          {index + 1}
+        </span>
+        <div className="flex-1">
+          <p className="font-semibold text-gray-900 text-base sm:text-lg leading-relaxed">
+            {qcmItem.question}
+          </p>
+        </div>
+      </div>
+
+      {/* Affichage de toutes les propositions */}
+      <div className="space-y-2 mb-4">
+        {Object.entries(qcmItem.propositions).map(([key, value]) => {
+          const isCorrect = key === qcmItem.bonne_reponse;
+          return (
+            <div
+              key={key}
+              className={`p-3 rounded-lg border flex items-start gap-2 ${
+                isCorrect
+                  ? "bg-green-50 border-green-200"
+                  : "bg-white border-gray-200"
+              }`}
+            >
+              {isCorrect ? (
+                <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border-2 border-gray-300 mt-0.5 flex-shrink-0" />
+              )}
+              <div className="flex-1">
+                <p
+                  className={`text-sm ${
+                    isCorrect ? "text-green-900 font-medium" : "text-gray-700"
+                  }`}
+                >
+                  <span className="font-semibold mr-2">{key}.</span>
+                  {value}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export default function GroupQuizResultPage() {
   const router = useRouter();
   const params = useParams();
   const { groupId, quizId } = params;
   const [corrections, setCorrections] = useState<Corrections | null>(null);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState<number | null>(null);
 
   useEffect(() => {
     try {
       const storedCorrections = sessionStorage.getItem("groupQuizCorrections");
+      const storedScore = sessionStorage.getItem("groupQuizScore");
+
       if (storedCorrections) {
         const parsedCorrections = JSON.parse(storedCorrections);
         setCorrections(parsedCorrections);
-        // Note: The score is not directly available here, we would need to pass it via sessionStorage as well
-        // For now, we can't reliably display the score.
       } else {
         toast.error("Impossible de récupérer les résultats du quiz.");
         router.push(`/student/groups/${groupId}`);
+      }
+
+      if (storedScore) {
+        setScore(parseFloat(storedScore));
       }
     } catch (error) {
       toast.error("Erreur lors du chargement des résultats.");
@@ -48,96 +124,121 @@ export default function GroupQuizResultPage() {
 
   if (!corrections) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        Chargement des résultats...
+      <div className="flex justify-center items-center min-h-screen bg-[#F5F4F1]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement des résultats...</p>
+        </div>
       </div>
     );
   }
 
   const totalQuestions = corrections.qcm.length;
+  const hasScore = score !== null;
 
   return (
     <div
-      className="min-h-screen w-full"
+      className="min-h-screen bg-[#F5F4F1]"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "80px 80px",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.2'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
+        backgroundSize: "100px 100px",
       }}
     >
-      {/* Header */}
-      <div
-        className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4"
-      >
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToGroup}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white px-4 py-2"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            <span className="text-sm">Retour au groupe</span>
-          </Button>
-          <h1 className="text-orange-600 text-4xl md:text-[3rem]">
-            Résultats du Quiz
-          </h1>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="w-full mx-auto max-w-3xl px-4 md:px-8 pt-2 pb-8 py-2">
-        {/* Congratulations Message */}
-        <div className="text-center mb-8 mt-22">
-          <div className="mb-4">
-            <span className="text-2xl">👏</span>
-            <span className="text-lg text-gray-700 mx-4">
-              Mission accomplie
-            </span>
-            <span className="text-2xl">👏</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBackToGroup}
+              className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+              Résultats du Quiz
+            </h1>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Tu as bien travaillé ! Voici la correction de ton quiz.
+        </div>
+
+        {/* Message de félicitations */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 mb-8 text-center">
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <span className="text-4xl">👏</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Mission accomplie !
+            </h2>
+            <span className="text-4xl">👏</span>
+          </div>
+          <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
+            Tu as bien travaillé ! Voici la correction détaillée de ton quiz.
           </p>
         </div>
 
-        {/* Score Display (Placeholder) */}
-        <div className="text-center mb-6">
-          <div className="text-3xl font-bold text-orange-500">
-            {/* TODO: Pass score via sessionStorage to display it here */}
-            Nombre de questions : {totalQuestions}
+        {/* Statistiques */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {hasScore && (
+            <div className="bg-white p-5 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <Trophy className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Ta note</p>
+                  <p className="text-2xl font-bold text-gray-900">{score}/20</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white p-5 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Target className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Questions</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {totalQuestions}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <BookOpen className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Type</p>
+                <p className="text-lg font-bold text-gray-900">QCM</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Questions and Corrections */}
-        <div className="space-y-4 mb-6">
-          {corrections.qcm.map((qcmItem: CorrectionQCM, index: number) => (
-            <Card
-              key={index}
-              className="bg-blue-50 border-blue-200 shadow-sm"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 mb-2">
-                      Question {index + 1}: {qcmItem.question}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-green-700 font-medium">
-                        Bonne réponse: {qcmItem.propositions[qcmItem.bonne_reponse]}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Section Corrections */}
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Correction Détaillée
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            {corrections.qcm.map((qcmItem: CorrectionQCM, index: number) => (
+              <QuestionCard key={index} qcmItem={qcmItem} index={index} />
+            ))}
+          </div>
         </div>
 
-        <div className="flex justify-end items-center">
-          <Button onClick={handleBackToGroup}>Retour au groupe</Button>
+        {/* Bouton retour */}
+        <div className="flex justify-center sm:justify-end">
+          <Button
+            onClick={handleBackToGroup}
+            className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
+          >
+            Retour au groupe
+          </Button>
         </div>
       </div>
     </div>

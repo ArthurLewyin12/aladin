@@ -16,8 +16,11 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useLogin } from "@/services/hooks/auth/useLogin";
 import { useSession } from "@/services/hooks/auth/useSession";
+import { Spinner } from "@/components/ui/spinner";
 
 import { useRouter } from "next/navigation";
+
+import Link from "next/link";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Nom d'utilisateur requis"),
@@ -97,13 +100,30 @@ export default function AladinLoginForm() {
             )}
           />
 
+          {/* Lien mot de passe oublié */}
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-gray-700 hover:underline hover:text-black"
+            >
+              Mot de passe oublié ?
+            </Link>
+          </div>
+
           {/* Bouton de connexion */}
           <Button
             type="submit"
-            className="cursor-pointer w-full h-12 bg-[#111D4A]  text-white font-medium rounded-lg mt-6"
+            className="cursor-pointer w-full h-12 bg-[#111D4A]  text-white font-medium rounded-lg mt-6 flex items-center justify-center"
             disabled={isPending}
           >
-            {isPending ? "Connexion en cours..." : "Se connecter"}
+            {isPending ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                Connexion en cours...
+              </>
+            ) : (
+              "Se connecter"
+            )}
           </Button>
         </form>
       </Form>

@@ -1,16 +1,55 @@
-"use client";
-
 import { AuthUser } from "@/services/controllers/types/common/user.type";
-import { Mail, GraduationCap } from "lucide-react";
+import { Mail, GraduationCap, LogOut } from "lucide-react";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useQuitGroupe } from "@/services/hooks/groupes/useQuitGroupe";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface MemberPopoverCardProps {
   user: AuthUser;
   bgColor: string;
   niveauLabel: string;
   isChief: boolean;
+  groupId: number;
 }
 
-export const MemberPopoverCard = ({ user, bgColor, niveauLabel, isChief }: MemberPopoverCardProps) => {
+export const MemberPopoverCard = ({
+  user,
+  bgColor,
+  niveauLabel,
+  isChief,
+  groupId,
+}: MemberPopoverCardProps) => {
+  const { user: currentUser } = useSession();
+  const { mutate: quitGroupe, isPending } = useQuitGroupe();
+  const router = useRouter();
+
+  const isCurrentUser = currentUser?.id === user.id;
+
+  const handleQuitGroup = () => {
+    quitGroupe(groupId, {
+      onSuccess: () => {
+        toast.success("Vous avez quitté le groupe.");
+        router.push("/student/groups");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Impossible de quitter le groupe.");
+      },
+    });
+  };
+
   return (
     <div className="rounded-xl overflow-hidden shadow-lg bg-white max-w-xs w-full">
       <div className={`h-20 ${bgColor}`} />
@@ -39,6 +78,42 @@ export const MemberPopoverCard = ({ user, bgColor, niveauLabel, isChief }: Membe
             <span>{niveauLabel}</span>
           </div>
         </div>
+        {isCurrentUser && !isChief && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  disabled={isPending}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Quitter le groupe
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Êtes-vous sûr de vouloir quitter ?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Cette action est irréversible. Vous ne pourrez plus accéder
+                    aux ressources de ce groupe.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleQuitGroup}
+                    disabled={isPending}
+                  >
+                    {isPending ? "Départ en cours..." : "Quitter"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
       </div>
     </div>
   );

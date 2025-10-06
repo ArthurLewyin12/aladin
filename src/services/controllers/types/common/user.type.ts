@@ -61,3 +61,32 @@ export type ActivateResponseDto = {
   success: boolean;
   message: string;
 };
+
+// Interface pour le payload de la requête (body de la POST request)
+export interface ResendActivationCodeRequest {
+  mail: string; // Email valide et existant dans la DB (compte non vérifié)
+}
+
+// Interface pour le payload de réponse en cas de succès
+export interface ResendActivationCodeSuccessResponse {
+  success: true;
+  message: "Code d'activation envoyé.";
+}
+
+// Interface pour le payload de réponse en cas de compte déjà vérifié
+export interface ResendActivationCodeAlreadyVerifiedResponse {
+  success: false;
+  message: "Ce compte est déjà vérifié.";
+}
+
+// Interface pour le payload de réponse en cas de trop de demandes
+export interface ResendActivationCodeRateLimitResponse {
+  success: false;
+  message: "Trop de demandes. Réessayez dans X secondes."; // X est dynamique (ex. '30')
+}
+
+// Interface générique pour les réponses d'erreur de validation (422)
+export interface ResendActivationCodeValidationErrorResponse {
+  success: false;
+  message: string; // Ex. email invalide ou inexistant
+}

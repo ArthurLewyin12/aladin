@@ -39,14 +39,13 @@ export default function GroupQuizTakingPage() {
         setQuizDefinition(quiz);
         // The question format from the API is different, we need to adapt it
         const formattedQuestions = data.map((q: any, index: number) => ({
-          id: `q_${index}`,
+          id: q.id || `q_${index}`,
           question: q.question,
-          propositions: q.reponses.map((r: any, r_index: number) => ({
-            id: `q_${index}_${r_index}`,
-            text: r.texte,
+          propositions: Object.entries(q.propositions).map(([key, value]) => ({
+            id: key,
+            text: value as string,
           })),
-          // Note: bonne_reponse_id is not provided by the start endpoint, it comes with corrections.
-          bonne_reponse_id: "",
+          bonne_reponse_id: q.bonne_reponse_id || "",
         }));
         setQuizQuestions(formattedQuestions);
         setTimeLimit(time);

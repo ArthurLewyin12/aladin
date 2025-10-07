@@ -105,7 +105,8 @@ export default function GroupsPage() {
   };
 
   const handleCreateGroup = () => {
-    if (!user || user.niveau_id === undefined) {
+    const niveauId = user?.niveau?.id ?? user?.niveau_id;
+    if (!user || niveauId === undefined) {
       toast.error(
         "Impossible de créer le groupe : niveau utilisateur non défini.",
       );
@@ -120,7 +121,7 @@ export default function GroupsPage() {
       {
         nom: groupName,
         description: groupDescription,
-        niveau_id: user.niveau_id.toString(),
+        niveau_id: niveauId.toString(),
       },
       {
         onSuccess: () => {

@@ -23,7 +23,7 @@ export default function RevisionPage() {
 
   // Fetching data with hooks
   const { data: matieresData, isLoading: isLoadingMatieres } =
-    useMatieresByNiveau(user?.niveau_id || 0);
+    useMatieresByNiveau(user?.niveau?.id || user?.niveau_id || 0);
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
 

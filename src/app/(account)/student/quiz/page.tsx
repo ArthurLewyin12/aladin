@@ -67,7 +67,7 @@ export default function QuizPage() {
   }, [searchParams]);
 
   const { data: matieresData, isLoading: isLoadingMatieres } =
-    useMatieresByNiveau(user?.niveau_id || 0);
+    useMatieresByNiveau(user?.niveau?.id || user?.niveau_id || 0);
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
 

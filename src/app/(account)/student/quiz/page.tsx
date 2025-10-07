@@ -157,18 +157,10 @@ export default function QuizPage() {
 
       const transformedCorrections = result.corrections.map(
         (question: any, index: number) => {
-          // Handle cases where propositions might be an object or an array
-          const propositionsArray = Array.isArray(question.propositions)
-            ? question.propositions
-            : Object.entries(question.propositions).map(([key, value]) => ({
-                id: key,
-                text: value as string,
-              }));
-
-          const propositions = propositionsArray.map(
-            (proposition: any, propIndex: number) => ({
-              id: proposition.id ?? propIndex,
-              text: proposition.text || proposition,
+          const propositions = Object.entries(question.propositions).map(
+            ([key, value]) => ({
+              id: key,
+              text: value as string,
             }),
           );
 
@@ -177,6 +169,7 @@ export default function QuizPage() {
             question: question.question,
             propositions: propositions,
             bonne_reponse_id: question.bonne_reponse,
+            user_answer: userAnswers[question.id],
           };
         },
       );

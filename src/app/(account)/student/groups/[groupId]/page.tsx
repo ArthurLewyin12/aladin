@@ -23,6 +23,86 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createQueryKey } from "@/lib/request";
 
 import { useMediaQuery } from "@/services/hooks/use-media-query";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
+
+const MemberDrawer = ({
+  isOpen,
+  onClose,
+  user,
+  bgColor,
+  niveauLabel,
+  isChief,
+  groupId,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  user: any;
+  bgColor: string;
+  niveauLabel: string;
+  isChief: boolean;
+  groupId: number;
+}) => {
+  if (!user) return null;
+
+  return (
+    <Drawer open={isOpen} onOpenChange={onClose}>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader className="text-left pb-4">
+          <div className="flex items-center gap-4 mb-2">
+            <div
+              className={`w-16 h-16 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-2xl`}
+            >
+              {user.prenom.charAt(0).toUpperCase()}
+              {user.nom.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <DrawerTitle className="text-xl">
+                {user.prenom} {user.nom}
+              </DrawerTitle>
+              {isChief && (
+                <span className="inline-block mt-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
+                  Chef du groupe
+                </span>
+              )}
+            </div>
+          </div>
+          <DrawerDescription className="text-base">
+            {niveauLabel}
+          </DrawerDescription>
+        </DrawerHeader>
+
+        <div className="px-4 pb-8 space-y-4">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Email</p>
+              <p className="text-gray-900 font-medium">{user.email}</p>
+            </div>
+
+            {user.telephone && (
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Téléphone</p>
+                <p className="text-gray-900 font-medium">{user.telephone}</p>
+              </div>
+            )}
+          </div>
+
+          {user.bio && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-500 mb-1">Bio</p>
+              <p className="text-gray-700">{user.bio}</p>
+            </div>
+          )}
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+};
 
 const GroupPage = () => {
   const params = useParams();
@@ -30,6 +110,8 @@ const GroupPage = () => {
   const groupId = params.groupId as string;
   const [isInviteModalOpen, setInviteModalOpen] = useState(false);
   const [isCreateQuizModalOpen, setCreateQuizModalOpen] = useState(false);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const { user } = useSession();
@@ -145,6 +227,26 @@ const GroupPage = () => {
                 ];
                 const bgColor = colors[index % colors.length];
 
+                const handleAvatarClick = () => {
+                  setSelectedUser({ ...user, bgColor });
+                  if (isMobile) {
+                    setDrawerOpen(true);
+                  }
+                };
+
+                if (isMobile) {
+                  return (
+                    <div
+                      key={user.id}
+                      onClick={handleAvatarClick}
+                      className={`w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-lg cursor-pointer`}
+                    >
+                      {user.prenom.charAt(0).toUpperCase()}
+                      {user.nom.charAt(0).toUpperCase()}
+                    </div>
+                  );
+                }
+
                 return (
                   <Popover key={user.id}>
                     <PopoverTrigger asChild>
@@ -243,7 +345,9 @@ const GroupPage = () => {
                   allMembersTaken={allMembersTaken}
                   onStart={() => handleStartQuiz(quiz.id)}
                   onViewGrades={() => {
-                    router.push(`/student/groups/${groupId}/quiz/${quiz.id}/notes`);
+                    router.push(
+                      `/student/groups/${groupId}/quiz/${quiz.id}/notes`,
+                    );
                   }}
                 />
               );
@@ -251,6 +355,16 @@ const GroupPage = () => {
           </div>
         )}
       </div>
+
+      <MemberDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        user={selectedUser}
+        bgColor={selectedUser?.bgColor}
+        niveauLabel={groupDetails.niveau?.libelle || ""}
+        isChief={selectedUser?.id === groupDetails.groupe.chief_user}
+        groupId={Number(groupId)}
+      />
 
       {/* Modal d'invitation */}
       <InviteUsersModal

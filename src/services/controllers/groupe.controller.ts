@@ -214,6 +214,7 @@ export const getInvitationByToken = async (
     "{token}",
     token,
   );
+  console.log("Requesting endpoint:", endpoint);
   return request.get<InvitationDetails>(endpoint);
 };
 

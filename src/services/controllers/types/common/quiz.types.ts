@@ -112,6 +112,10 @@ export type QuizNotesResponse = {
       name: string;
     };
   }[];
+  questions_approfondissement: {
+    question: string;
+    reponse: string;
+  }[];
 };
 
 export type StartGroupQuizResponse = {

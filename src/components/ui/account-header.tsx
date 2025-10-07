@@ -41,11 +41,11 @@ export function AccountHeader() {
       {/* Logo */}
       <div className="flex items-center">
         <Image
-          height={50}
-          width={50}
+          height={80}
+          width={80}
           src="/logo.png"
-          alt="Logo Aladin"
-          className="md:h-[70px] md:w-[80px] cursor-pointer"
+          alt="Logo du site"
+          className="sm:h-[60px] sm:w-[60px] md:h-[70px] md:w-[70px] lg:h-[80px] lg:w-[80px] cursor-pointer"
           onClick={() => router.push("/")}
         />
       </div>

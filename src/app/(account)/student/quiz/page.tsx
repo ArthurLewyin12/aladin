@@ -439,7 +439,7 @@ export default function QuizPage() {
                     handleAnswerSelect(currentQuestion.id, value)
                   }
                 >
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {currentQuestion.propositions.map((proposition, index) => {
                       const letters = ["a", "b", "c", "d", "e", "f"];
                       return (

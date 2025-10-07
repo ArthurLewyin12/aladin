@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useDetailedGroupe } from "@/services/hooks/groupes/useDetailedGroupe";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ArrowLeft } from "lucide-react";
+import { PlusIcon, ArrowLeft, Mail, GraduationCap, LogOut } from "lucide-react";
 import { QuizCard } from "@/components/pages/quizzes/quiz-card";
 import { useState } from "react";
 import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useDeactivateQuiz, useReactivateQuiz } from "@/services/hooks/quiz";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useStartGroupQuiz } from "@/services/hooks/groupes/useStartGroupQuiz";
+import { useQuitGroupe } from "@/services/hooks/groupes/useQuitGroupe";
 import {
   Popover,
   PopoverContent,
@@ -30,6 +31,17 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const MemberDrawer = ({
   isOpen,
@@ -48,56 +60,97 @@ const MemberDrawer = ({
   isChief: boolean;
   groupId: number;
 }) => {
+  const { user: currentUser } = useSession();
+  const { mutate: quitGroupe, isPending } = useQuitGroupe();
+  const router = useRouter();
+
   if (!user) return null;
+
+  const isCurrentUser = currentUser?.id === user.id;
+
+  const handleQuitGroup = () => {
+    quitGroupe(groupId, {
+      onSuccess: () => {
+        toast.success("Vous avez quitté le groupe.");
+        router.push("/student/groups");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Impossible de quitter le groupe.");
+      },
+    });
+  };
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="text-left pb-4">
-          <div className="flex items-center gap-4 mb-2">
+      <DrawerContent className="max-h-[70vh]">
+        <div className="mx-auto w-full max-w-sm">
+          <div className={`h-12 `} />
+
+          <div className="px-4 pb-6 relative">
             <div
-              className={`w-16 h-16 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-2xl`}
+              className={`w-16 h-16 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-xl absolute -top-8 left-1/2 -translate-x-1/2 border-4 border-white shadow-lg`}
             >
               {user.prenom.charAt(0).toUpperCase()}
               {user.nom.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1">
-              <DrawerTitle className="text-xl">
+
+            <div className="pt-10 text-center">
+              <h3 className="text-lg font-bold text-gray-900">
                 {user.prenom} {user.nom}
-              </DrawerTitle>
-              {isChief && (
-                <span className="inline-block mt-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                  Chef du groupe
-                </span>
-              )}
-            </div>
-          </div>
-          <DrawerDescription className="text-base">
-            {niveauLabel}
-          </DrawerDescription>
-        </DrawerHeader>
-
-        <div className="px-4 pb-8 space-y-4">
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Email</p>
-              <p className="text-gray-900 font-medium">{user.email}</p>
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {isChief ? "Auteur du Groupe" : "Membre du Groupe"}
+              </p>
             </div>
 
-            {user.telephone && (
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Téléphone</p>
-                <p className="text-gray-900 font-medium">{user.telephone}</p>
+            <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+              <div className="flex items-center text-sm text-gray-700">
+                <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                <span className="break-all">{user.mail}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-700">
+                <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+                <span>{niveauLabel}</span>
+              </div>
+            </div>
+
+            {isCurrentUser && !isChief && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      disabled={isPending}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Quitter le groupe
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Êtes-vous sûr de vouloir quitter ?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Cette action est irréversible. Vous ne pourrez plus
+                        accéder aux ressources de ce groupe.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleQuitGroup}
+                        disabled={isPending}
+                      >
+                        {isPending ? "Départ en cours..." : "Quitter"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </div>
-
-          {user.bio && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-500 mb-1">Bio</p>
-              <p className="text-gray-700">{user.bio}</p>
-            </div>
-          )}
         </div>
       </DrawerContent>
     </Drawer>

@@ -19,6 +19,8 @@ export enum UserEndpoint {
   ACTIVATE = "/api/auth/activate",
   ACTIVATE_COUPON = "/api/auth/activate/coupon",
   RESEND_ACTIVATION = "/api/auth/activate/resend",
+  UPDATE_USER_SETTINGS = "/api/settings/profile",
+  UPDATE_USER_PASSWORD = "/api/settings/password",
 }
 
 /**

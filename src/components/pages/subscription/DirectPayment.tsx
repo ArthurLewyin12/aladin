@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import { useWaveCheckout } from "@/services/hooks/payments/useWaveCheckout";
@@ -20,16 +20,19 @@ export default function DirectPayment() {
             // Rediriger l'utilisateur vers la page de paiement de Wave
             window.location.href = data.launch_url;
           } else {
-            toast.error(
-              "Impossible d'initier le paiement. URL non disponible.",
-            );
+            toast({
+              variant: "error",
+              title: "Erreur de paiement",
+              message: "Impossible d\'initier le paiement. URL non disponible.",
+            });
           }
         },
         onError: (error: any) => {
-          const errorMessage =
-            error.response?.data?.message ||
-            "Une erreur est survenue lors de l'initialisation du paiement.";
-          toast.error(errorMessage);
+          toast({
+            variant: "error",
+            title: "Erreur de paiement",
+            message: error.response?.data?.message || "Une erreur est survenue lors de l'initialisation du paiement.",
+          });
         },
       },
     );

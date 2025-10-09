@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -102,9 +102,11 @@ export default function AladinStudentInscriptionForm() {
 
     register(payload, {
       onSuccess: (response) => {
-        toast.success(
-          "Inscription presque terminée! Veuillez vérifier votre email pour activer votre compte.",
-        );
+        toast({
+          variant: "success",
+          title: "Inscription presque terminée !",
+          message: "Veuillez vérifier votre email pour activer votre compte.",
+        });
         sessionStorage.setItem(
           "user_to_activate",
           JSON.stringify(response.user),
@@ -138,7 +140,11 @@ export default function AladinStudentInscriptionForm() {
             errorMessage = fieldErrorMessages.join(" et "); // Combine messages, e.g., "Mail déjà utilisé et Numéro déjà utilisé"
           }
         }
-        toast.error(errorMessage);
+        toast({
+          variant: "error",
+          title: "Erreur d'inscription",
+          message: errorMessage,
+        });
       },
     });
   }

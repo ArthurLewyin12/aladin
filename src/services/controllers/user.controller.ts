@@ -9,9 +9,11 @@ import {
   ResendActivationCodeSuccessResponse,
   ResendActivationCodeAlreadyVerifiedResponse,
   ResendActivationCodeRateLimitResponse,
+  UpdateUserInfoPayload,
+  UpdateUserPasswordPayload,
 } from "./types/common/user.type";
 
-type ResendActivationCodeResponse = 
+type ResendActivationCodeResponse =
   | ResendActivationCodeSuccessResponse
   | ResendActivationCodeAlreadyVerifiedResponse
   | ResendActivationCodeRateLimitResponse;
@@ -50,4 +52,27 @@ export const resendActivationCode = async (
     UserEndpoint.RESEND_ACTIVATION,
     payload,
   );
+};
+
+/**
+ * met à jour les infos utilisateurs
+ * @param payload
+ * @returns une string appelé message
+ */
+export const UpdateUserInfo = async (
+  payload: Partial<UpdateUserInfoPayload>,
+): Promise<string> => {
+  return request.post(UserEndpoint.UPDATE_USER_SETTINGS, payload);
+};
+
+/**
+ * met à jour le password du user
+ * @param payload
+ * @returns  elle retourne une promise d'un string message
+ */
+
+export const UpdateUserPassword = async (
+  payload: UpdateUserPasswordPayload,
+): Promise<String> => {
+  return request.post(UserEndpoint.UPDATE_USER_PASSWORD, payload);
 };

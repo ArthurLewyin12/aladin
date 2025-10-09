@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { ResponseMiddleware } from "./types/response.middleware";
 import { refreshToken } from "../controllers/auth.controller";
 import Cookies from "js-cookie";
@@ -44,7 +44,11 @@ export const errorHandlingMiddleware: ResponseMiddleware = async (
   if (!response) {
     // Cas d'une erreur réseau où le serveur n'a pas répondu
     if (typeof window !== "undefined") {
-      toast.error("Erreur réseau ou serveur indisponible.");
+      toast({
+        variant: "error",
+        title: "Erreur réseau",
+        message: "Le serveur ne répond pas ou est indisponible.",
+      });
     }
     return Promise.reject(new Error("Erreur réseau ou serveur indisponible."));
   }
@@ -115,7 +119,11 @@ export const errorHandlingMiddleware: ResponseMiddleware = async (
     // Pour les autres erreurs non structurées (ex: 500 Internal Server Error)
     const genericMessage = `Erreur ${response.status}: ${response.statusText}`;
     if (typeof window !== "undefined") {
-      toast.error(genericMessage);
+      toast({
+        variant: "error",
+        title: `Erreur ${response.status}`,
+        message: response.statusText,
+      });
     }
     return Promise.reject(new Error(genericMessage));
   }

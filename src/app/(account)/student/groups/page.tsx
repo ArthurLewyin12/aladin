@@ -26,7 +26,8 @@ import { useGroupes } from "@/services/hooks/groupes/useGroupes";
 import { useCreateGroupe } from "@/services/hooks/groupes/useCreateGroupe";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
+// import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 // 🔥 FIX: Sortir FormContent en dehors du composant parent
 interface FormContentProps {
@@ -107,13 +108,18 @@ export default function GroupsPage() {
   const handleCreateGroup = () => {
     const niveauId = user?.niveau?.id ?? user?.niveau_id;
     if (!user || niveauId === undefined) {
-      toast.error(
-        "Impossible de créer le groupe : niveau utilisateur non défini.",
-      );
+      toast({
+        variant: "error",
+        message:
+          "Impossible de créer le groupe : niveau utilisateur non défini.",
+      });
       return;
     }
     if (!groupName.trim()) {
-      toast.error("Le nom du groupe ne peut pas être vide.");
+      toast({
+        variant: "warning",
+        message: "Le nom du groupe ne peut pas être vide.",
+      });
       return;
     }
 

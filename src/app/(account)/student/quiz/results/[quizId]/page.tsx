@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { QuizQuestion } from "@/services/controllers/types/common";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { QuizExplanations } from "@/components/pages/quizzes/quiz-explanations";
 
 export default function QuizResultPage() {
@@ -22,7 +22,11 @@ export default function QuizResultPage() {
     if (storedCorrections) {
       setCorrections(JSON.parse(storedCorrections));
     } else {
-      toast.error("Impossible de récupérer les résultats du quiz.");
+      toast({
+        variant: "error",
+        title: "Erreur",
+        message: "Impossible de récupérer les résultats du quiz.",
+      });
       router.push("/student/home");
     }
   }, [router]);
@@ -46,12 +50,19 @@ export default function QuizResultPage() {
           `/student/quiz?matiereId=${config.matiereId}&chapitreId=${config.chapitreId}&difficulty=${config.difficulty}`,
         );
       } else {
-        toast.error("La configuration du quiz est invalide.");
+        toast({
+          variant: "error",
+          title: "Erreur de configuration",
+          message: "La configuration du quiz est invalide.",
+        });
       }
     } else {
-      toast.error(
-        "Impossible de trouver la configuration pour repasser le quiz.",
-      );
+      toast({
+        variant: "error",
+        title: "Erreur",
+        message:
+          "Impossible de trouver la configuration pour repasser le quiz.",
+      });
     }
   };
 

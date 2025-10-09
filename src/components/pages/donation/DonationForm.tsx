@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useInitiateDonation } from "@/services/hooks/donateurs/useInitiateDonation";
 import type { InitiateDonationPayload } from "@/services/controllers/types/common/donateur.type";
 import { CURRENCY, STUDENT_SUBSCRIPTION_AMOUNT } from "@/constants/payment";
@@ -72,7 +72,10 @@ export default function DonationForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.nombre_coupons <= 0) {
-      toast.error("Le nombre de coupons doit être supérieur à zéro.");
+      toast({
+        variant: "error",
+        message: "Le nombre de coupons doit être supérieur à zéro.",
+      });
       return;
     }
 
@@ -80,14 +83,19 @@ export default function DonationForm() {
       { ...formData, currency: CURRENCY },
       {
         onSuccess: () => {
-          toast.success(
-            "Demande enregistrée. Redirection vers la page de paiement en cours...",
-          );
+          toast({
+            variant: "success",
+            message:
+              "Demande enregistrée. Redirection vers la page de paiement en cours...",
+          });
         },
         onError: (error: any) => {
-          const errorMessage =
-            error.response?.data?.message || "Une erreur est survenue.";
-          toast.error(errorMessage);
+          toast({
+            variant: "error",
+            title: "Erreur",
+            message:
+              error.response?.data?.message || "Une erreur est survenue.",
+          });
         },
       },
     );

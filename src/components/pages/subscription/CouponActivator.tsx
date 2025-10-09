@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ export default function CouponActivator() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponCode.trim()) {
-      toast.error("Veuillez entrer un code de coupon.");
+      toast({ variant: "error", message: "Veuillez entrer un code de coupon." });
       return;
     }
 
@@ -27,16 +27,17 @@ export default function CouponActivator() {
       { coupon_code: couponCode.trim().toUpperCase() },
       {
         onSuccess: (data) => {
-          toast.success(data.message || "Coupon activé avec succès !");
+          toast({ variant: "success", message: data.message || "Coupon activé avec succès !" });
           // On pourrait vouloir rafraîchir la page ou les données de la session
           // pour que le changement de statut soit immédiatement visible.
           router.refresh();
         },
         onError: (error: any) => {
-          const errorMessage =
-            error.response?.data?.message ||
-            "Une erreur est survenue lors de l'activation du coupon.";
-          toast.error(errorMessage);
+          toast({
+            variant: "error",
+            title: "Erreur d'activation",
+            message: error.response?.data?.message || "Une erreur est survenue lors de l'activation du coupon.",
+          });
         },
       },
     );

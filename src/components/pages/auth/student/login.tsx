@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,12 +44,16 @@ export default function AladinLoginForm() {
     mutate(values, {
       onSuccess: (data) => {
         login(data.user);
-        toast.success("Connexion réussie!");
+        toast({ variant: "success", message: "Connexion réussie !" });
         router.push("/student/home");
       },
       onError: (error) => {
         console.error("Login error", error);
-        toast.error("Erreur lors de la connexion. Veuillez réessayer.");
+        toast({
+          variant: "error",
+          title: "Erreur de connexion",
+          message: "Vos identifiants sont incorrects. Veuillez réessayer.",
+        });
       },
     });
   }

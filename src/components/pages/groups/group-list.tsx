@@ -8,7 +8,7 @@ import { useReactivateGroupe } from "@/services/hooks/groupes/useReactivateGroup
 import { GroupCard } from "./group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { useSession } from "@/services/hooks/auth/useSession";
 
 const CARD_COLORS = [

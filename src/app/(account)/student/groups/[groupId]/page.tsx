@@ -9,7 +9,8 @@ import { QuizCard } from "@/components/pages/quizzes/quiz-card";
 import { useState } from "react";
 import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
 import { CreateQuizModal } from "@/components/pages/groups/create-quiz-modal";
-import { toast } from "sonner";
+// import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useDeactivateQuiz, useReactivateQuiz } from "@/services/hooks/quiz";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useStartGroupQuiz } from "@/services/hooks/groupes/useStartGroupQuiz";
@@ -71,11 +72,17 @@ const MemberDrawer = ({
   const handleQuitGroup = () => {
     quitGroupe(groupId, {
       onSuccess: () => {
-        toast.success("Vous avez quitté le groupe.");
+        toast({
+          variant: "success",
+          message: "Vous avez quitté le groupe.",
+        });
         router.push("/student/groups");
       },
       onError: (error: any) => {
-        toast.error(error.message || "Impossible de quitter le groupe.");
+        toast({
+          variant: "error",
+          message: error.message || "Impossible de quitter le groupe.",
+        });
       },
     });
   };
@@ -189,10 +196,12 @@ const GroupPage = () => {
           router.push(`/student/groups/${groupId}/quiz/${quizId}`);
         },
         onError: (error: any) => {
-          toast.error(
-            error.message ||
+          toast({
+            variant: "error",
+            message:
+              error.message ||
               "Impossible de démarrer le quiz. Veuillez réessayer.",
-          );
+          });
         },
       },
     );

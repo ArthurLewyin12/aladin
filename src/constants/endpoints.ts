@@ -117,3 +117,7 @@ export enum NiveauEndpoints {
   GET_ALL = "/api/niveaux",
   GET_ONE = "/api/niveaux/{niveauId}",
 }
+
+export enum ConctactAdminEndpoints {
+  CONTACT = "/api/settings/contact-admin",
+}

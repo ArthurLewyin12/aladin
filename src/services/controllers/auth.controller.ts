@@ -8,6 +8,7 @@ import {
   SendPasswordResetLinkRequest,
   SendPasswordResetLinkResponse,
   User,
+  GetMeResponse,
 } from "./types/auth.types";
 import {
   ActivateCouponPayload,
@@ -26,7 +27,7 @@ export const getCsrfCookie = async (): Promise<void> => {
 /**
  * Tente de connecter un utilisateur avec ses identifiants.
  * @param {LoginPayload} payload - Les informations de connexion (email, mot de passe).
- * @returns {Promise<LoginResponse>} La réponse de l'API, incluant potentiellement un token.
+ * @returns {Promise<LoginResponse>} La réponse de l'API.
  */
 export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
   return request.post<LoginResponse>(AuthEndpoints.LOGIN, payload);
@@ -34,10 +35,10 @@ export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
 
 /**
  * Récupère les informations de l'utilisateur actuellement authentifié.
- * @returns {Promise<User>} Les données de l'utilisateur.
+ * @returns {Promise<GetMeResponse>} Les données de l'utilisateur.
  */
-export const getMe = async (): Promise<User> => {
-  return request.get<User>(AuthEndpoints.AUTH_ME);
+export const getMe = async (): Promise<GetMeResponse> => {
+  return request.get<GetMeResponse>(AuthEndpoints.AUTH_ME);
 };
 
 /**

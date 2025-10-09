@@ -62,7 +62,7 @@ export const resendActivationCode = async (
 export const UpdateUserInfo = async (
   payload: Partial<UpdateUserInfoPayload>,
 ): Promise<string> => {
-  return request.post(UserEndpoint.UPDATE_USER_SETTINGS, payload);
+  return request.put(UserEndpoint.UPDATE_USER_SETTINGS, payload);
 };
 
 /**
@@ -74,5 +74,5 @@ export const UpdateUserInfo = async (
 export const UpdateUserPassword = async (
   payload: UpdateUserPasswordPayload,
 ): Promise<String> => {
-  return request.post(UserEndpoint.UPDATE_USER_PASSWORD, payload);
+  return request.put(UserEndpoint.UPDATE_USER_PASSWORD, payload);
 };

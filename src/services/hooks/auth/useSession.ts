@@ -34,7 +34,9 @@ export const useSession = () => {
     queryFn: async () => {
       const userCookie = Cookies.get("user_" + ENVIRONNEMENTS.UNIVERSE);
       if (userCookie) {
-        return JSON.parse(userCookie) as User;
+        const parsedCookie = JSON.parse(userCookie);
+        // Check if the cookie contains the full API response or just the user object
+        return (parsedCookie.user || parsedCookie) as User;
       }
 
       const token = Cookies.get("token_" + ENVIRONNEMENTS.UNIVERSE);
@@ -43,7 +45,8 @@ export const useSession = () => {
       }
 
       try {
-        const fetchedUser = await getMe();
+        const fetchedResponse = await getMe();
+        const fetchedUser = fetchedResponse.user; // Extract the user object
         Cookies.set(
           "user_" + ENVIRONNEMENTS.UNIVERSE,
           JSON.stringify(fetchedUser),

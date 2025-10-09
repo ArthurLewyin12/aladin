@@ -31,6 +31,11 @@ export type User = {
   tentatives: number;
 } & AuditFields;
 
+export type GetMeResponse = {
+  success: boolean;
+  user: User;
+};
+
 export type LoginResponse = {
   success: boolean;
   message: string;

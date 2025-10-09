@@ -10,7 +10,8 @@ import {
   Share2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+// import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export default function StudentHomePage() {
   const router = useRouter();
@@ -25,15 +26,24 @@ export default function StudentHomePage() {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-        toast.success("Contenu partagé avec succès !");
+        toast({
+          variant: "success",
+          message: "Contenu partagé avec succès !",
+        });
       } catch (error) {
         console.error("Erreur lors du partage :", error);
-        toast.error("Le partage a été annulé ou a échoué.");
+        toast({
+          variant: "error",
+          message: "Le partage a été annulé ou a échoué.",
+        });
       }
     } else {
       // Fallback pour les navigateurs qui ne supportent pas l'API de partage Web ou les systèmes d'exploitation
       navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-      toast.info("Le lien a été copié dans le presse-papiers !");
+      toast({
+        variant: "default",
+        message: "Le lien a été copié dans le presse-papiers !",
+      });
     }
   };
 

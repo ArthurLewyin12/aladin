@@ -19,7 +19,7 @@ export const Pricing = forwardRef<HTMLDivElement>((props, ref) => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.05),transparent_50%)]" />
       {/* Section Header */}
       <div className="text-center mb-12">
-        <h2 className="text-5xl font-extrabold text-[#2C3E50] mb-6">
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#2C3E50] mb-6">
           Des Forfaits Adaptés à Chaque Parcours
         </h2>
         <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">

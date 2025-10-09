@@ -14,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useQuitGroupe } from "@/services/hooks/groupes/useQuitGroupe";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 interface MemberPopoverCardProps {
@@ -41,11 +41,15 @@ export const MemberPopoverCard = ({
   const handleQuitGroup = () => {
     quitGroupe(groupId, {
       onSuccess: () => {
-        toast.success("Vous avez quitté le groupe.");
+        toast({ variant: "success", message: "Vous avez quitté le groupe." });
         router.push("/student/groups");
       },
       onError: (error: any) => {
-        toast.error(error.message || "Impossible de quitter le groupe.");
+        toast({
+          variant: "error",
+          title: "Erreur",
+          message: error.message || "Impossible de quitter le groupe.",
+        });
       },
     });
   };

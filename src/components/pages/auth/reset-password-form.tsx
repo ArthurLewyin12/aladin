@@ -3,7 +3,7 @@
 import type React from "react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,7 +24,7 @@ function ResetPasswordFormComponent() {
 
   useEffect(() => {
     if (!token || !email) {
-      toast.error("Lien invalide ou expiré. Veuillez refaire une demande.");
+      toast({ variant: "error", title: "Lien invalide", message: "Ce lien est invalide ou a expiré. Veuillez refaire une demande." });
       router.push("/login");
     }
   }, [token, email, router]);
@@ -32,7 +32,7 @@ function ResetPasswordFormComponent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !email || !password || password !== passwordConfirmation) {
-      toast.error("Les mots de passe ne correspondent pas ou sont vides.");
+      toast({ variant: "error", title: "Erreur de saisie", message: "Les mots de passe ne correspondent pas ou sont vides." });
       return;
     }
 
@@ -46,17 +46,18 @@ function ResetPasswordFormComponent() {
     resetPassword(payload, {
       onSuccess: (data) => {
         if (data.success) {
-          toast.success("Votre mot de passe a été réinitialisé avec succès !");
+          toast({ variant: "success", message: "Votre mot de passe a été réinitialisé avec succès !" });
           router.push("/login");
         } else {
-          toast.error(data.message || "Une erreur est survenue.");
+          toast({ variant: "error", message: data.message || "Une erreur est survenue." });
         }
       },
       onError: (error: any) => {
-        toast.error(
-          error?.response?.data?.message ||
-            "Une erreur est survenue. Veuillez réessayer.",
-        );
+        toast({
+          variant: "error",
+          title: "Erreur serveur",
+          message: error?.response?.data?.message || "Une erreur est survenue. Veuillez réessayer.",
+        });
       },
     });
   };

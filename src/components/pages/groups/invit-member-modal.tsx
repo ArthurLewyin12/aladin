@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { useInviteUsersToGroupe } from "@/services/hooks/groupes/useInviteUsersToGroupe";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface InviteUsersModalProps {
   isOpen: boolean;
@@ -141,12 +141,20 @@ export const InviteUsersModal = ({
     if (!trimmedEmail) return;
 
     if (!isValidEmail(trimmedEmail)) {
-      toast.error("Format d'email invalide");
+      toast({
+        variant: "error",
+        title: "Email invalide",
+        message: "Le format de l'email que vous avez entré n'est pas valide.",
+      });
       return;
     }
 
     if (emails.includes(trimmedEmail)) {
-      toast.error("Cet email a déjà été ajouté");
+      toast({
+        variant: "warning",
+        title: "Email déjà présent",
+        message: "Cet email a déjà été ajouté à la liste d'invitation.",
+      });
       return;
     }
 
@@ -162,7 +170,11 @@ export const InviteUsersModal = ({
   // Envoyer les invitations
   const handleInvite = useCallback(() => {
     if (emails.length === 0) {
-      toast.error("Veuillez ajouter au moins un email");
+      toast({
+        variant: "error",
+        title: "Liste vide",
+        message: "Veuillez ajouter au moins un email à inviter.",
+      });
       return;
     }
 

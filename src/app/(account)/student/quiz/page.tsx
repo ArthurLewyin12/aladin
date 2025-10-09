@@ -15,7 +15,7 @@ import {
   QuizQuestion,
   QuizGeneratePayload,
 } from "@/services/controllers/types/common";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 
 const quizLoadingMessages = [
@@ -101,7 +101,7 @@ export default function QuizPage() {
 
   const handleGenerateQuiz = async () => {
     if (!selectedChapitreId || !selectedDifficulty) {
-      toast.error("Veuillez sélectionner un chapitre et une difficulté.");
+      toast({ variant: "error", message: "Veuillez sélectionner un chapitre et une difficulté." });
       return;
     }
 
@@ -130,7 +130,11 @@ export default function QuizPage() {
       const errorMessage =
         error.response?.data?.error?.message ||
         "Impossible de générer le quiz. Veuillez réessayer.";
-      toast.error(errorMessage);
+      toast({ 
+        variant: "error", 
+        title: "Erreur de génération", 
+        message: errorMessage 
+      });
     }
   };
 
@@ -150,10 +154,11 @@ export default function QuizPage() {
         quizId: activeQuizId,
         payload: { score },
       });
-      toast.success(
-        result.message ||
-          `Quiz terminé! Votre score: ${result.score}/${quizQuestions.length}`,
-      );
+      toast({
+        variant: "success",
+        title: "Quiz terminé !",
+        message: result.message || `Votre score: ${result.score}/${quizQuestions.length}`,
+      });
 
       const transformedCorrections = result.corrections.map(
         (question: any, index: number) => {
@@ -182,7 +187,11 @@ export default function QuizPage() {
       router.push(`/student/quiz/results/${result.userQuiz.id}`);
     } catch (error) {
       console.error("Erreur lors de la soumission du quiz", error);
-      toast.error("Impossible de soumettre le quiz. Veuillez réessayer.");
+      toast({ 
+        variant: "error", 
+        title: "Erreur de soumission", 
+        message: "Impossible de soumettre le quiz. Veuillez réessayer." 
+      });
     }
   };
 

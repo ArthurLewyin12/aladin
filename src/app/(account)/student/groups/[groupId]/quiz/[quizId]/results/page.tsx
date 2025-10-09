@@ -9,7 +9,8 @@ import {
   Target,
   BookOpen,
 } from "lucide-react";
-import { toast } from "sonner";
+// import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface CorrectionQCM {
   question: string;
@@ -105,7 +106,10 @@ export default function GroupQuizResultPage() {
         const parsedCorrections = JSON.parse(storedCorrections);
         setCorrections(parsedCorrections);
       } else {
-        toast.error("Impossible de récupérer les résultats du quiz.");
+        toast({
+          variant: "error",
+          message: "Impossible de récupérer les résultats du quiz.",
+        });
         router.push(`/student/groups/${groupId}`);
       }
 
@@ -113,7 +117,10 @@ export default function GroupQuizResultPage() {
         setScore(parseFloat(storedScore));
       }
     } catch (error) {
-      toast.error("Erreur lors du chargement des résultats.");
+      toast({
+        variant: "error",
+        message: "Erreur lors du chargement des résultats.",
+      });
       router.push(`/student/groups/${groupId}`);
     }
   }, [router, groupId]);

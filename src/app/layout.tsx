@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Advent_Pro } from "next/font/google";
+import { Advent_Pro } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
-
 import { Providers } from "@/components/provider";
+import { ToasterProvider } from "@/components/toaster-provider";
+
 const adventPro = Advent_Pro({
   weight: ["400"],
   subsets: ["latin"],
@@ -29,7 +29,7 @@ export default function RootLayout({
       >
         <Providers>
           {children}
-          <Toaster richColors />
+          <ToasterProvider />
         </Providers>
       </body>
     </html>

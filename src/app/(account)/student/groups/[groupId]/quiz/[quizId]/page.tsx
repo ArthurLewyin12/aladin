@@ -10,9 +10,8 @@ import {
   QuizQuestion,
   QuizSubmitPayload,
 } from "@/services/controllers/types/common";
-import { toast } from "sonner";
-
-// NOTE: This is a simplified version of the individual quiz page, adapted for group quizzes.
+// import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -50,11 +49,17 @@ export default function GroupQuizTakingPage() {
         setQuizQuestions(formattedQuestions);
         setTimeLimit(time);
       } else {
-        toast.error("Données du quiz non trouvées. Redirection...");
+        toast({
+          variant: "error",
+          message: "Données du quiz non trouvées. Redirection...",
+        });
         router.push(`/student/groups/${groupId}`);
       }
     } catch (error) {
-      toast.error("Erreur lors du chargement du quiz.");
+      toast({
+        variant: "error",
+        message: "Erreur lors du chargement du quiz.",
+      });
       router.push(`/student/groups/${groupId}`);
     } finally {
       setIsLoading(false);
@@ -95,7 +100,10 @@ export default function GroupQuizTakingPage() {
         quizId: Number(quizId),
         payload,
       });
-      toast.success(result.message || "Quiz terminé avec succès!");
+      toast({
+        variant: "success",
+        message: result.message || "Quiz terminé avec succès!",
+      });
 
       sessionStorage.setItem(
         "groupQuizCorrections",
@@ -108,7 +116,10 @@ export default function GroupQuizTakingPage() {
       router.push(`/student/groups/${groupId}/quiz/${quizId}/results`);
     } catch (error) {
       console.error("Erreur lors de la soumission du quiz", error);
-      toast.error("Impossible de soumettre le quiz. Veuillez réessayer.");
+      toast({
+        variant: "error",
+        message: "Impossible de soumettre le quiz. Veuillez réessayer.",
+      });
     }
   };
 

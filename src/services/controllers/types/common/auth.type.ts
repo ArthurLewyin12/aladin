@@ -12,3 +12,18 @@ export interface ActivateCouponResponse {
   message: string;
   subscription: SubscriptionDetails;
 }
+
+export type RefreshTokenSuccesResponse = {
+  succes: true;
+  token: string;
+  refresh_token: string;
+};
+
+export type RefreshTokenErrorResponse = {
+  succes: false;
+  message: string;
+};
+
+export type RefreshTokenResponse =
+  | RefreshTokenSuccesResponse
+  | RefreshTokenErrorResponse;

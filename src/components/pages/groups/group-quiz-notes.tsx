@@ -11,7 +11,6 @@ import {
   Award,
   TrendingUp,
   Users,
-  CircleDot,
 } from "lucide-react";
 
 // Composant Card pour les notes (Mobile)

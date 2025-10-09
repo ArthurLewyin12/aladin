@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { OTPInput, type SlotProps } from "input-otp";
 import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useActivate } from "@/services/hooks/users/useUser";
 import { useResendActivationCode } from "@/services/hooks/users/useResendActivationCode";
 import { UserStatus } from "@/constants/user-status";
@@ -44,7 +44,11 @@ function OtpFormComponent() {
 
   useEffect(() => {
     if (!email) {
-      toast.error("Email non trouvé. Veuillez recommencer.");
+      toast({
+        variant: "error",
+        title: "Erreur",
+        message: "Email non trouvé. Veuillez recommencer.",
+      });
       router.push("/register");
     }
   }, [email, router]);
@@ -65,14 +69,20 @@ function OtpFormComponent() {
 
     activate(payload, {
       onSuccess: () => {
-        toast.success("Votre compte a été activé avec succès !");
+        toast({
+          variant: "success",
+          message: "Votre compte a été activé avec succès !",
+        });
         router.push("/student/home");
       },
       onError: (error: any) => {
-        toast.error(
-          error?.response?.data?.message ||
+        toast({
+          variant: "error",
+          title: "Code invalide",
+          message:
+            error?.response?.data?.message ||
             "Code invalide ou expiré. Veuillez réessayer.",
-        );
+        });
       },
     });
   };
@@ -84,14 +94,20 @@ function OtpFormComponent() {
       { mail: email },
       {
         onSuccess: () => {
-          toast.success("Un nouveau code a été envoyé.");
+          toast({
+            variant: "success",
+            message: "Un nouveau code a été envoyé.",
+          });
           setCountdown(60); // Démarre le compte à rebours de 60 secondes
         },
         onError: (error: any) => {
-          toast.error(
-            error?.response?.data?.message ||
+          toast({
+            variant: "error",
+            title: "Erreur",
+            message:
+              error?.response?.data?.message ||
               "Erreur lors du renvoi du code. Veuillez réessayer.",
-          );
+          });
         },
       },
     );

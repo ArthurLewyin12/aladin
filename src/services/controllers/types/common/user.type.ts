@@ -90,3 +90,15 @@ export interface ResendActivationCodeValidationErrorResponse {
   success: false;
   message: string; // Ex. email invalide ou inexistant
 }
+
+export type UpdateUserInfoPayload = {
+  nom: string;
+  prenom: string;
+  numero: string;
+  mail: string;
+};
+
+export type UpdateUserPasswordPayload = {
+  old_password: string;
+  new_password: string;
+};

@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ export default function ForgotPasswordForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error("Veuillez entrer une adresse e-mail.");
+      toast({ variant: "error", message: "Veuillez entrer une adresse e-mail." });
       return;
     }
 

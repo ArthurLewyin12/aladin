@@ -8,7 +8,7 @@ export default function ParametreTabs() {
   return (
     <Tabs defaultValue="tab-1">
       <ScrollArea>
-        <TabsList className="ml-30 mb-3 gap-1 bg-transparent px-1.5">
+        <TabsList className="mb-3 gap-1 bg-transparent px-1.5 md:ml-30">
           <TabsTrigger
             value="tab-1"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none"
@@ -53,12 +53,12 @@ export default function ParametreTabs() {
       </TabsContent>
       <TabsContent value="tab-2">
         <p className="text-muted-foreground p-4 pt-1 text-center text-xs">
-          Content for Tab 2
+          Contenu pour le tab2
         </p>
       </TabsContent>
       <TabsContent value="tab-3">
         <p className="text-muted-foreground p-4 pt-1 text-center text-xs">
-          Content for Tab 3
+          Contenu pour le tab3
         </p>
       </TabsContent>
     </Tabs>

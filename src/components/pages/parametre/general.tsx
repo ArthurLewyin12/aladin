@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,6 +22,7 @@ import { useUpdateUserPassword } from "@/services/hooks/auth/useUpdateUserPasswo
 import { UpdateUserInfoPayload } from "@/services/controllers/types/common/user.type";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { User } from "@/services/controllers/types/auth.types";
+import { useContactAdmin } from "@/services/hooks/contact/useContactAdmin";
 
 // Schema pour les informations du profil
 const profileSchema = z.object({
@@ -97,6 +98,8 @@ export default function SettingsGeneralPage() {
     useUpdateUserInfo();
   const { mutate: updateUserPassword, isPending: isUpdatingUserPassword } =
     useUpdateUserPassword();
+  const { mutate: contactAdmin, isPending: isContactingAdmin } =
+    useContactAdmin();
 
   function onSubmitProfile(values: z.infer<typeof profileSchema>) {
     const payload: Partial<UpdateUserInfoPayload> = {
@@ -107,10 +110,10 @@ export default function SettingsGeneralPage() {
     };
     updateUserInfo(payload, {
       onSuccess: () => {
-        toast.success("Modifications enregistrées!");
+        toast({ variant: "success", message: "Modifications enregistrées!" });
       },
       onError: (error) => {
-        toast.error("Échec de la mise à jour du profil.");
+        toast({ variant: "error", title: "Erreur de mise à jour", message: "Échec de la mise à jour du profil." });
         console.error("Update profile error:", error);
       },
     });
@@ -124,11 +127,11 @@ export default function SettingsGeneralPage() {
       },
       {
         onSuccess: () => {
-          toast.success("Mot de passe changé!");
+          toast({ variant: "success", message: "Mot de passe changé!" });
           passwordForm.reset();
         },
         onError: (error) => {
-          toast.error("Échec du changement de mot de passe.");
+          toast({ variant: "error", title: "Erreur de changement de mot de passe", message: "Échec du changement de mot de passe." });
           console.error("Update password error:", error);
         },
       },
@@ -136,10 +139,16 @@ export default function SettingsGeneralPage() {
   }
 
   function onSubmitContact(values: z.infer<typeof contactSchema>) {
-    // TODO: Intégrer l'API ici avec useContactAdmin hook
-    console.log("Contact data:", values);
-    toast.success("Message envoyé!");
-    contactForm.reset();
+    contactAdmin(values.message, {
+      onSuccess: () => {
+        toast({ variant: "success", message: "Message envoyé!" });
+        contactForm.reset();
+      },
+      onError: (error) => {
+        toast({ variant: "error", title: "Erreur d'envoi de message", message: "Échec de l'envoi du message." });
+        console.error("Contact admin error:", error);
+      },
+    });
   }
 
   return (
@@ -353,8 +362,9 @@ export default function SettingsGeneralPage() {
             <Button
               type="submit"
               className="h-12 px-8 bg-[#111D4A] hover:bg-[#1a2a5e] text-white font-medium rounded-lg"
+              disabled={isContactingAdmin}
             >
-              Envoyer
+              {isContactingAdmin ? "Envoi..." : "Envoyer"}
             </Button>
           </form>
         </Form>

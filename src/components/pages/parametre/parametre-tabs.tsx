@@ -8,7 +8,7 @@ export default function ParametreTabs() {
   return (
     <Tabs defaultValue="tab-1">
       <ScrollArea>
-        <TabsList className="mb-3 gap-1 bg-transparent">
+        <TabsList className="ml-30 mb-3 gap-1 bg-transparent px-1.5">
           <TabsTrigger
             value="tab-1"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none"
@@ -18,7 +18,7 @@ export default function ParametreTabs() {
               size={16}
               aria-hidden="true"
             />*/}
-            Général
+            <span className="text-[1.3rem] ">Général</span>
           </TabsTrigger>
           <TabsTrigger
             value="tab-2"
@@ -29,7 +29,7 @@ export default function ParametreTabs() {
               size={16}
               aria-hidden="true"
             />*/}
-            Mes Abonnements
+            <span className="text-[1.3rem]">Mes Abonnements</span>
           </TabsTrigger>
           <TabsTrigger
             value="tab-3"
@@ -40,7 +40,7 @@ export default function ParametreTabs() {
               size={16}
               aria-hidden="true"
             />*/}
-            Mes Classes
+            <span className="text-[1.3rem]">Mes Classes</span>
           </TabsTrigger>
         </TabsList>
         <ScrollBar orientation="horizontal" />

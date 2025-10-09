@@ -103,34 +103,36 @@ const Toaster = forwardRef<ToasterRef, { defaultPosition?: Position }>(
               exit="exit"
               transition={{ duration: 0.3, ease: "easeOut" }}
               className={cn(
-                "flex items-center justify-between w-full max-w-xs p-3 rounded-xl border shadow-md",
+                "flex items-center justify-between w-full max-w-sm sm:max-w-md p-4 rounded-xl border shadow-lg",
                 variantStyles[variant],
               )}
             >
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-3">
                 <Icon
                   className={cn(
-                    "h-4 w-4 mt-0.5 flex-shrink-0",
+                    "h-5 w-5 sm:h-6 sm:w-6 mt-0.5 flex-shrink-0",
                     iconColor[variant],
                   )}
                 />
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   {title && (
                     <h3
                       className={cn(
-                        "text-xs font-medium leading-none",
+                        "text-[13px] sm:text-sm font-semibold leading-tight",
                         titleColor[variant],
-                        highlightTitle && titleColor["success"], // override for meeting case
+                        highlightTitle && titleColor["success"],
                       )}
                     >
                       {title}
                     </h3>
                   )}
-                  <p className="text-xs text-muted-foreground">{message}</p>
+                  <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed">
+                    {message}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ml-3">
                 {actions?.label && (
                   <Button
                     variant={actions.variant || "outline"}
@@ -140,7 +142,7 @@ const Toaster = forwardRef<ToasterRef, { defaultPosition?: Position }>(
                       sonnerToast.dismiss(toastId);
                     }}
                     className={cn(
-                      "cursor-pointer",
+                      "cursor-pointer h-8 text-xs sm:text-[13px] font-medium",
                       variant === "success"
                         ? "text-green-600 border-green-600 hover:bg-green-600/10 dark:hover:bg-green-400/20"
                         : variant === "error"
@@ -159,10 +161,10 @@ const Toaster = forwardRef<ToasterRef, { defaultPosition?: Position }>(
                     sonnerToast.dismiss(toastId);
                     onDismiss?.();
                   }}
-                  className="rounded-full p-1 hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="rounded-full p-1.5 hover:bg-muted/50 dark:hover:bg-muted/30 transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
                   aria-label="Dismiss notification"
                 >
-                  <X className="h-3 w-3 text-muted-foreground" />
+                  <X className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
             </motion.div>
@@ -180,5 +182,7 @@ const Toaster = forwardRef<ToasterRef, { defaultPosition?: Position }>(
     );
   },
 );
+
+Toaster.displayName = "Toaster";
 
 export default Toaster;

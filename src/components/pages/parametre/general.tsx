@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useUpdateUserInfo } from "@/services/hooks/auth/useUpdateUserInfo";
+import { useUpdateUserPassword } from "@/services/hooks/auth/useUpdateUserPassword";
+import { UpdateUserInfoPayload } from "@/services/controllers/types/common/user.type";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { User } from "@/services/controllers/types/auth.types";
 
 // Schema pour les informations du profil
 const profileSchema = z.object({
@@ -42,17 +48,33 @@ const contactSchema = z.object({
 
 export default function SettingsGeneralPage() {
   const [showOldPassword, setShowOldPassword] = useState(false);
+  const { user } = useSession();
+
+  console.log("User from useSession:", user);
 
   // Form pour le profil
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: "Konan",
-      lastName: "Megan Forrest",
-      phone: "+225 0708090099",
-      email: "meganforrest@gmail.com",
+      firstName: user?.prenom || "",
+      lastName: user?.nom || "",
+      phone: user?.numero || "",
+      email: user?.mail || "",
     },
   });
+
+  console.log("Profile form default values:", profileForm.getValues());
+
+  useEffect(() => {
+    if (user) {
+      profileForm.reset({
+        firstName: user.prenom || "",
+        lastName: user.nom || "",
+        phone: user.numero || "",
+        email: user.mail || "",
+      });
+    }
+  }, [user, profileForm]);
 
   // Form pour le mot de passe
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
@@ -71,17 +93,46 @@ export default function SettingsGeneralPage() {
     },
   });
 
+  const { mutate: updateUserInfo, isPending: isUpdatingUserInfo } =
+    useUpdateUserInfo();
+  const { mutate: updateUserPassword, isPending: isUpdatingUserPassword } =
+    useUpdateUserPassword();
+
   function onSubmitProfile(values: z.infer<typeof profileSchema>) {
-    // TODO: Intégrer l'API ici avec useUpdateProfile hook
-    console.log("Profile data:", values);
-    toast.success("Modifications enregistrées!");
+    const payload: Partial<UpdateUserInfoPayload> = {
+      nom: values.lastName,
+      prenom: values.firstName,
+      numero: values.phone,
+      mail: values.email,
+    };
+    updateUserInfo(payload, {
+      onSuccess: () => {
+        toast.success("Modifications enregistrées!");
+      },
+      onError: (error) => {
+        toast.error("Échec de la mise à jour du profil.");
+        console.error("Update profile error:", error);
+      },
+    });
   }
 
   function onSubmitPassword(values: z.infer<typeof passwordSchema>) {
-    // TODO: Intégrer l'API ici avec useChangePassword hook
-    console.log("Password data:", values);
-    toast.success("Mot de passe changé!");
-    passwordForm.reset();
+    updateUserPassword(
+      {
+        old_password: values.oldPassword,
+        new_password: values.newPassword,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Mot de passe changé!");
+          passwordForm.reset();
+        },
+        onError: (error) => {
+          toast.error("Échec du changement de mot de passe.");
+          console.error("Update password error:", error);
+        },
+      },
+    );
   }
 
   function onSubmitContact(values: z.infer<typeof contactSchema>) {
@@ -183,8 +234,11 @@ export default function SettingsGeneralPage() {
             <Button
               type="submit"
               className="h-12 px-8 bg-[#111D4A] hover:bg-[#1a2a5e] text-white font-medium rounded-lg"
+              disabled={isUpdatingUserInfo}
             >
-              Enregistrer les modifications
+              {isUpdatingUserInfo
+                ? "Enregistrement..."
+                : "Enregistrer les modifications"}
             </Button>
           </form>
         </Form>
@@ -209,23 +263,12 @@ export default function SettingsGeneralPage() {
                 <FormItem>
                   <FormControl>
                     <div className="relative">
-                      <Input
+                      <PasswordInput
                         type={showOldPassword ? "text" : "password"}
                         placeholder="Ancien Mot de passe :"
                         className="h-12 bg-white border-gray-300 rounded-lg pr-10"
                         {...field}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowOldPassword(!showOldPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      >
-                        {showOldPassword ? (
-                          <EyeOff className="w-5 h-5" />
-                        ) : (
-                          <Eye className="w-5 h-5" />
-                        )}
-                      </button>
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -247,7 +290,7 @@ export default function SettingsGeneralPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
+                    <PasswordInput
                       type="password"
                       placeholder="Nouveau  Mot de passe :"
                       className="h-12 bg-white border-gray-300 rounded-lg"
@@ -263,8 +306,11 @@ export default function SettingsGeneralPage() {
             <Button
               type="submit"
               className="h-12 px-8 bg-[#111D4A] hover:bg-[#1a2a5e] text-white font-medium rounded-lg"
+              disabled={isUpdatingUserPassword}
             >
-              Changer de mot de passe
+              {isUpdatingUserPassword
+                ? "Changement..."
+                : "Changer de mot de passe"}
             </Button>
           </form>
         </Form>

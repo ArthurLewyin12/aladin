@@ -107,7 +107,7 @@ export default function NavBar() {
                   </p>
                   <p className="text-xs leading-none text-muted-foreground capitalize pt-1">
                     {user.statut === "eleve" && user.niveau
-                      ? `Élève en ${user.niveau.libelle}`
+                      ? `Élève - ${user.niveau.libelle}`
                       : user.statut}
                   </p>
                 </div>

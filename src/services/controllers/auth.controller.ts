@@ -12,6 +12,7 @@ import {
 import {
   ActivateCouponPayload,
   ActivateCouponResponse,
+  RefreshTokenResponse,
 } from "./types/common/auth.type";
 
 /**
@@ -88,4 +89,17 @@ export const resetPassword = async (
     AuthEndpoints.PASSWORD_RESET,
     payload,
   );
+};
+
+/**
+ * Rafraîchit le token d'authentification en utilisant un token de rafraîchissement.
+ * @param refresh_token
+ * @returns {Promise<RefreshTokenResponse>}
+ */
+export const refreshToken = async (
+  refresh_token: string,
+): Promise<RefreshTokenResponse> => {
+  return request.post<RefreshTokenResponse>(AuthEndpoints.REFRESH_TOKEN, {
+    refresh_token,
+  });
 };

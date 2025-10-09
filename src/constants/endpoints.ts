@@ -8,6 +8,7 @@ export enum AuthEndpoints {
   AUTH_LOGOUT = "/api/auth/logout",
   PASSWORD_RESET = "/api/auth/password/reset",
   RESET_LINK = "api/auth/password/email",
+  REFRESH_TOKEN = "/api/auth/refresh-token",
 }
 
 /**
@@ -108,4 +109,9 @@ export enum GroupeEndpoints {
  */
 export enum NotificationEndpoints {
   GET_NOTIFICATIONS = "/api/notifications",
+}
+
+export enum NiveauEndpoints {
+  GET_ALL = "/api/niveaux",
+  GET_ONE = "/api/niveaux/{niveauId}",
 }

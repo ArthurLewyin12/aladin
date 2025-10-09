@@ -66,7 +66,7 @@ export function AccountHeader() {
               </span>
               <span className="text-xs text-gray-500 capitalize">
                 {user?.statut === "eleve" && user?.niveau
-                  ? `Élève en ${user.niveau.libelle}`
+                  ? `Élève - ${user.niveau.libelle}`
                   : user?.statut}
               </span>
             </div>

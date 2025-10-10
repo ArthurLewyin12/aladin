@@ -72,7 +72,12 @@ export const CourseDetailsDialog: React.FC<CourseDetailsDialogProps> = ({
         {courseData.text_preview}
       </p>
       <div className="mt-4 flex justify-end">
-        <Button onClick={handleGoToDetailsPage}>Voir le cours complet</Button>
+        <Button
+          onClick={handleGoToDetailsPage}
+          className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+        >
+          Voir le cours complet
+        </Button>
       </div>
     </div>
   );

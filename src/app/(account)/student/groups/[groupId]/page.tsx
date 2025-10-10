@@ -272,91 +272,101 @@ const GroupPage = () => {
           </p>
         </div>
 
-        {/* Section Membres + Bouton Créer Quiz */}
-        <div className="flex items-center justify-between mb-12">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Membres du groupe :
-            </h2>
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Avatars des membres */}
-              {utilisateurs.map((user, index) => {
-                const colors = [
-                  "bg-purple-300",
-                  "bg-green-500",
-                  "bg-yellow-400",
-                  "bg-pink-400",
-                ];
-                const bgColor = colors[index % colors.length];
+        {/* Section Membres */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Membres du groupe :
+          </h2>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Avatars des membres */}
+            {utilisateurs.map((user, index) => {
+              const colors = [
+                "bg-purple-300",
+                "bg-green-500",
+                "bg-yellow-400",
+                "bg-pink-400",
+              ];
+              const bgColor = colors[index % colors.length];
 
-                const handleAvatarClick = () => {
-                  setSelectedUser({ ...user, bgColor });
-                  if (isMobile) {
-                    setDrawerOpen(true);
-                  }
-                };
-
+              const handleAvatarClick = () => {
+                setSelectedUser({ ...user, bgColor });
                 if (isMobile) {
-                  return (
+                  setDrawerOpen(true);
+                }
+              };
+
+              if (isMobile) {
+                return (
+                  <div
+                    key={user.id}
+                    onClick={handleAvatarClick}
+                    className={`w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-lg cursor-pointer`}
+                  >
+                    {user.prenom.charAt(0).toUpperCase()}
+                    {user.nom.charAt(0).toUpperCase()}
+                  </div>
+                );
+              }
+
+              return (
+                <Popover key={user.id}>
+                  <PopoverTrigger asChild>
                     <div
-                      key={user.id}
-                      onClick={handleAvatarClick}
                       className={`w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-lg cursor-pointer`}
                     >
                       {user.prenom.charAt(0).toUpperCase()}
                       {user.nom.charAt(0).toUpperCase()}
                     </div>
-                  );
-                }
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border-0 shadow-xl">
+                    <MemberPopoverCard
+                      user={user}
+                      bgColor={bgColor}
+                      niveauLabel={groupDetails.niveau?.libelle || ""}
+                      isChief={user.id === groupDetails.groupe.chief_user}
+                      groupId={Number(groupId)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              );
+            })}
 
-                return (
-                  <Popover key={user.id}>
-                    <PopoverTrigger asChild>
-                      <div
-                        className={`w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-gray-900 font-bold text-lg cursor-pointer`}
-                      >
-                        {user.prenom.charAt(0).toUpperCase()}
-                        {user.nom.charAt(0).toUpperCase()}
-                      </div>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 border-0 shadow-xl">
-                      <MemberPopoverCard
-                        user={user}
-                        bgColor={bgColor}
-                        niveauLabel={groupDetails.niveau?.libelle || ""}
-                        isChief={user.id === groupDetails.groupe.chief_user}
-                        groupId={Number(groupId)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                );
-              })}
-
-              {/* Bouton + pour inviter (seulement pour le chef)*/}
-              {isChief && (
-                <button
-                  onClick={() => setInviteModalOpen(true)}
-                  className="w-14 h-14 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
-                  aria-label="Inviter des membres"
-                >
-                  <PlusIcon className="w-6 h-6" />
-                </button>
-              )}
-            </div>
+            {/* Bouton + pour inviter (seulement pour le chef)*/}
+            {isChief && (
+              <button
+                onClick={() => setInviteModalOpen(true)}
+                className="w-14 h-14 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+                aria-label="Inviter des membres"
+              >
+                <PlusIcon className="w-6 h-6" />
+              </button>
+            )}
           </div>
-
-          {/* Bouton Créer un Quiz - visible seulement si le user est chief */}
-          {isChief && quizzes.length > 0 && (
-            <Button
-              size="lg"
-              onClick={() => setCreateQuizModalOpen(true)}
-              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 py-3 rounded-lg shadow-lg transition-all hover:shadow-xl"
-            >
-              <PlusIcon className="w-5 h-5 mr-2" />
-              Créer un Quiz
-            </Button>
-          )}
         </div>
+
+        {/* En-tête Quiz avec titre et bouton */}
+        {quizzes.length > 0 && (
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm mb-6">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+                Quiz du groupe
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                {quizzes.length} quiz {quizzes.length > 1 ? "disponibles" : "disponible"}
+              </p>
+            </div>
+            {isChief && (
+              <button
+                onClick={() => setCreateQuizModalOpen(true)}
+                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
+              >
+                <span className="text-lg mr-2">+</span>
+                <span className="hidden sm:inline">Nouveau quiz</span>
+                <span className="sm:hidden">Créer</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Contenu principal */}
         {quizzes.length === 0 ? (

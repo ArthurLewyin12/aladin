@@ -11,6 +11,7 @@ import {
   Home,
   BookOpen,
   ClipboardList,
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,14 +24,35 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import { usePathname } from "next/navigation";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
 
 export default function NavBar() {
   const { scrollY } = useScroll();
   const { user, isLoading, logout } = useSession();
-  const width = useTransform(scrollY, [0, 100], ["100%", "90%"]);
-  const borderRadius = useTransform(scrollY, [0, 100], ["0px", "20px"]);
-  const top = useTransform(scrollY, [0, 100], ["0px", "40px"]);
-  const position = useTransform(scrollY, [0, 100], ["fixed", "sticky"]);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Sur mobile, désactiver les animations de scroll
+  const width = useTransform(
+    scrollY,
+    [0, 100],
+    isMobile ? ["100%", "100%"] : ["100%", "90%"],
+  );
+  const borderRadius = useTransform(
+    scrollY,
+    [0, 100],
+    isMobile ? ["0px", "0px"] : ["0px", "20px"],
+  );
+  const top = useTransform(
+    scrollY,
+    [0, 100],
+    isMobile ? ["0px", "0px"] : ["0px", "40px"],
+  );
+  const position = useTransform(
+    scrollY,
+    [0, 100],
+    isMobile ? ["fixed", "fixed"] : ["fixed", "sticky"],
+  );
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -126,6 +148,13 @@ export default function NavBar() {
               </DropdownMenuItem>
               {user?.statut === "eleve" && (
                 <>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/student/dashboard")}
+                    className="cursor-pointer"
+                  >
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <span>Mon tableau de bord</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => router.push("/student/revision")}
                     className="cursor-pointer"

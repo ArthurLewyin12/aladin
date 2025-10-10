@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SlideContent {
   id: number;
@@ -75,26 +75,43 @@ function FeatureCarousel({ slides }: FeatureCarouselProps) {
     setActiveSlide(slideIndex);
   };
 
+  // Auto-scroll toutes les 5 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
   const currentSlide = slides[activeSlide];
 
   return (
-    <div>
+    <div className="w-full">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSlide}
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{
+            duration: 0.6,
+            ease: [0.4, 0, 0.2, 1]
+          }}
+          className="mb-6 sm:mb-8"
         >
-          <h3 className="text-2xl font-bold flex flex-col mb-4 min-h-[4rem]">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">
             {currentSlide.title.map((line, i) => (
-              <span key={i}>{line}</span>
+              <span key={i} className="block">
+                {line}
+              </span>
             ))}
           </h3>
-          <p className="text-lg text-gray-700 leading-relaxed mb-6 flex flex-col min-h-[6rem]">
+          <p className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed">
             {currentSlide.description.map((line, i) => (
-              <span key={i}>{line}</span>
+              <span key={i} className="block">
+                {line}
+              </span>
             ))}
           </p>
         </motion.div>
@@ -104,13 +121,13 @@ function FeatureCarousel({ slides }: FeatureCarouselProps) {
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`w-8 h-1.5 rounded-full transition-all duration-300 ${
+            className={`h-1.5 rounded-full transition-all duration-300 ${
               index === activeSlide
-                ? "bg-gray-800"
-                : "bg-gray-300 hover:bg-gray-400"
+                ? "bg-gray-800 w-10 sm:w-12"
+                : "bg-gray-300 hover:bg-gray-400 w-6 sm:w-8"
             }`}
             onClick={() => handleSlideChange(index)}
-            aria-label={`Go to slide ${index + 1}`}
+            aria-label={`Aller à la diapositive ${index + 1}`}
           />
         ))}
       </div>
@@ -121,22 +138,22 @@ function FeatureCarousel({ slides }: FeatureCarouselProps) {
 export default function MiddleSection4() {
   return (
     <section
-      className="relative py-22 pb-8 flex flex-col justify-center bg-center overflow-hidden "
+      className="relative py-12 sm:py-16 md:py-20 lg:py-24 flex flex-col justify-center bg-center overflow-hidden"
       style={{ backgroundImage: "url('/bg1.png')", backgroundSize: "30%" }}
     >
       <div className="absolute inset-0 bg-green-200 opacity-60 z-0"></div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16 space-y-16 pb-0">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 space-y-12 sm:space-y-16">
         {/* Première section - Titre + Image */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center">
           <motion.div
-            className="space-y-8 text-center lg:text-left"
+            className="space-y-6 sm:space-y-8 text-center lg:text-left"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#FF6B47] text-balance">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#FF6B47] text-balance">
               Répétiteurs,
               <br />
               avec aladin, vous gagnez
@@ -152,7 +169,7 @@ export default function MiddleSection4() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
           >
-            <div className="relative w-full max-w-xl">
+            <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-xl">
               <img
                 src="/mathematics-pana.png"
                 alt="Enseignant au tableau"
@@ -164,7 +181,7 @@ export default function MiddleSection4() {
 
         {/* Deuxième section - Features */}
         <motion.div
-          className="grid lg:grid-cols-2 gap-12 items-start"
+          className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-start"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
@@ -172,9 +189,9 @@ export default function MiddleSection4() {
         >
           {/* Feature 1 - Révisions */}
           <div className="flex flex-col items-start gap-4">
-            <div className="flex-shrink-0 w-14 h-14 bg-[#FF6B47] rounded-xl flex items-center justify-center">
+            <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-[#FF6B47] rounded-xl flex items-center justify-center">
               <svg
-                className="w-7 h-7 text-white"
+                className="w-6 h-6 sm:w-7 sm:h-7 text-white"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -186,9 +203,9 @@ export default function MiddleSection4() {
 
           {/* Feature 2 - Quiz */}
           <div className="flex flex-col items-start gap-4">
-            <div className="flex-shrink-0 w-14 h-14 bg-[#FF6B47] rounded-xl flex items-center justify-center">
+            <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-[#FF6B47] rounded-xl flex items-center justify-center">
               <svg
-                className="w-7 h-7 text-white"
+                className="w-6 h-6 sm:w-7 sm:h-7 text-white"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >

@@ -36,46 +36,6 @@ interface StudyTimeChartProps {
   defaultPeriod?: PeriodType;
 }
 
-// Données mockées par défaut (pour le développement)
-const defaultMockData: Record<PeriodType, StudyData[]> = {
-  week: [
-    { day: "Lun", PH: 2, Math: 1, Anglais: 0.5, Histoire: 0.5 },
-    { day: "Mar", PH: 2.5, Math: 0.5, Anglais: 0.3, Histoire: 0.2 },
-    { day: "Mer", Math: 1.5, Anglais: 1, Histoire: 0.5, Français: 1 },
-    { day: "Jeu", PH: 1, Math: 1.5, Anglais: 0.5, Histoire: 0.5 },
-    { day: "Ven", Math: 2, Anglais: 1, Français: 1.5, Espagnol: 0.5 },
-    { day: "Sam", PH: 1, Math: 1.5, Anglais: 1.5, Espagnol: 2 },
-    { day: "Dim", Anglais: 1, Espagnol: 0.5 },
-  ],
-  month: [
-    { day: "S1", PH: 8, Math: 6, Anglais: 4, Histoire: 3 },
-    { day: "S2", PH: 7, Math: 8, Anglais: 5, Français: 4 },
-    { day: "S3", Math: 9, Anglais: 6, Histoire: 3, Espagnol: 5 },
-    { day: "S4", PH: 6, Math: 10, Français: 7, Espagnol: 4 },
-  ],
-  quarter: [
-    { day: "M1", PH: 25, Math: 30, Anglais: 20, Histoire: 15 },
-    { day: "M2", PH: 28, Math: 32, Français: 22, Espagnol: 18 },
-    { day: "M3", Math: 35, Anglais: 25, Histoire: 20, Espagnol: 20 },
-  ],
-  year: [
-    { day: "T1", PH: 80, Math: 95, Anglais: 70, Histoire: 60 },
-    { day: "T2", PH: 85, Math: 100, Français: 75, Espagnol: 65 },
-    { day: "T3", Math: 105, Anglais: 80, Histoire: 70, Espagnol: 75 },
-    { day: "T4", PH: 90, Math: 110, Français: 85, Espagnol: 80 },
-  ],
-};
-
-// Matières par défaut (pour le développement)
-const defaultSubjects: SubjectConfig[] = [
-  { name: "PH", color: "#B4A5D9" },
-  { name: "Math", color: "#E897C5" },
-  { name: "Anglais", color: "#A8D5A8" },
-  { name: "Histoire", color: "#F5A57A" },
-  { name: "Français", color: "#7EC8E3" },
-  { name: "Espagnol", color: "#F5C27A" },
-];
-
 const periodLabels: Record<PeriodType, string> = {
   week: "Cette semaine",
   month: "Ce mois-ci",
@@ -116,14 +76,34 @@ const extractSubjectsFromData = (data: StudyData[]): string[] => {
 };
 
 export function StudyTimeChart({
-  data = defaultMockData,
+  data,
   subjects,
   defaultPeriod = "week",
 }: StudyTimeChartProps) {
   const [selectedPeriod, setSelectedPeriod] =
     useState<PeriodType>(defaultPeriod);
 
+  // Vérifier si les données sont fournies et valides
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Aucune donnée disponible</p>
+      </div>
+    );
+  }
+
   const currentData = data[selectedPeriod];
+
+  // Vérifier si les données pour la période sélectionnée sont vides
+  if (!currentData || currentData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">
+          Aucune donnée disponible pour cette période
+        </p>
+      </div>
+    );
+  }
 
   // Si les matières ne sont pas fournies, les extraire des données
   const subjectsList =
@@ -134,9 +114,8 @@ export function StudyTimeChart({
     }));
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
+    <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold">Temps d'étude</h2>
         <Select
           value={selectedPeriod}
           onValueChange={(value) => setSelectedPeriod(value as PeriodType)}

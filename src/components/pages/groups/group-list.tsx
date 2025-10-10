@@ -18,7 +18,11 @@ const CARD_COLORS = [
   "bg-[#FFE8D6]", // Orange clair
 ];
 
-export const GroupList = () => {
+interface GroupListProps {
+  onCreateGroup: () => void;
+}
+
+export const GroupList = ({ onCreateGroup }: GroupListProps) => {
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
   const { user: currentUser } = useSession();
@@ -185,26 +189,51 @@ export const GroupList = () => {
   // Liste des groupes
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {enrichedGroupes.map((groupe) => (
-          <GroupCard
-            key={groupe.id}
-            title={groupe.nom}
-            description={groupe.description}
-            groupId={groupe.id.toString()}
-            members={groupe.hasMembers ? groupe.memberAvatars : undefined}
-            numPeople={groupe.remainingCount}
-            isActive={groupe.groupe.is_active}
-            isChief={groupe.isChief}
-            index={groupe.index}
-            onDeactivate={() => handleDeactivate(groupe.id)}
-            onActivate={() => handleActivate(groupe.id)} // Ajout
-            onOpen={() => handleOpen(groupe.id)}
-            onInvite={() =>
-              handleInvite(groupe.id, groupe.nom, groupe.cardColor)
-            }
-          />
-        ))}
+      <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+        {/* En-tête avec titre et bouton */}
+        <div className=" flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+              Mes Groupes
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              {enrichedGroupes.length} groupe
+              {enrichedGroupes.length > 1 ? "s" : ""}{" "}
+              {enrichedGroupes.length > 1 ? "disponibles" : "disponible"}
+            </p>
+          </div>
+          <button
+            onClick={onCreateGroup}
+            className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3  text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
+          >
+            <span className="text-lg mr-2">+</span>
+            <span className="hidden sm:inline">Nouveau groupe</span>
+            <span className="sm:hidden">Créer</span>
+          </button>
+        </div>
+
+        {/* Grille des groupes */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {enrichedGroupes.map((groupe) => (
+            <GroupCard
+              key={groupe.id}
+              title={groupe.nom}
+              description={groupe.description}
+              groupId={groupe.id.toString()}
+              members={groupe.hasMembers ? groupe.memberAvatars : undefined}
+              numPeople={groupe.remainingCount}
+              isActive={groupe.groupe.is_active}
+              isChief={groupe.isChief}
+              index={groupe.index}
+              onDeactivate={() => handleDeactivate(groupe.id)}
+              onActivate={() => handleActivate(groupe.id)}
+              onOpen={() => handleOpen(groupe.id)}
+              onInvite={() =>
+                handleInvite(groupe.id, groupe.nom, groupe.cardColor)
+              }
+            />
+          ))}
+        </div>
       </div>
 
       {/* Modale d'invitation */}

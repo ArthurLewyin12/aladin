@@ -132,7 +132,7 @@ export enum ConctactAdminEndpoints {
 }
 
 export enum DashboardEndpoints {
-  STATS = "/api/eleve/stats/{eleveId}",
-  DASHBOARD = "/api/eleve/{eleveId}?period={period}",
-  CLASSES = "/api/eleve/classes/{eleveId}",
+  STATS = "/api/eleves/{eleveId}/stats",
+  DASHBOARD = "/api/eleves/{eleveId}/dashboard?period={period}",
+  CLASSES = "/api/eleves/{eleveId}/classes",
 }

@@ -1,6 +1,13 @@
 "use client";
 import Image from "next/image";
-import { User, LogOut, Settings, BookOpen, ClipboardList, BarChart3 } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Settings,
+  BookOpen,
+  ClipboardList,
+  BarChart3,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,7 +115,7 @@ export function AccountHeader() {
                   className="cursor-pointer"
                 >
                   <ClipboardList className="mr-2 h-4 w-4" />
-                  <span>Mes révisions</span>
+                  <span>Mes cours</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem

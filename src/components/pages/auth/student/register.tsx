@@ -221,9 +221,10 @@ export default function AladinStudentInscriptionForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="eleve">élève</SelectItem>
-                    <SelectItem value="parent">parent</SelectItem>
-                    <SelectItem value="enseignant">enseignant</SelectItem>
+                    <SelectItem value="eleve">Élève</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                    <SelectItem value="professeur">Professeur</SelectItem>
+                    <SelectItem value="repetiteur">Répétiteur</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

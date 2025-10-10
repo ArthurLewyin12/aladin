@@ -17,7 +17,6 @@ import {
 } from "@/services/controllers/types/common";
 import { toast } from "@/lib/toast";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
-import { QuizList } from "@/components/pages/user-quizzes/quiz-list";
 
 const quizLoadingMessages = [
   "Génération du quiz en cours...",
@@ -33,10 +32,9 @@ const difficulties = [
   { id: "Difficile", name: "Difficile" },
 ];
 
-export default function QuizPage() {
-  const [step, setStep] = useState<
-    "subject" | "config" | "quiz" | "my-quizzes"
-  >("my-quizzes");
+export default function GenerateQuizPage() {
+  // Changement ici : on démarre directement avec "subject"
+  const [step, setStep] = useState<"subject" | "config" | "quiz">("subject");
   const [selectedMatiereId, setSelectedMatiereId] = useState<number | null>(
     null,
   );
@@ -211,7 +209,8 @@ export default function QuizPage() {
     setSelectedChapitreId(null);
     setSelectedDifficulty("");
   };
-  const handleBackToHome = () => router.push("/student/home");
+  // Changement ici : retourner vers la liste des quiz
+  const handleBackToQuizList = () => router.push("/student/quiz");
 
   // --- RENDER ---
   return (
@@ -241,7 +240,7 @@ export default function QuizPage() {
             size="sm"
             onClick={
               step === "subject"
-                ? handleBackToHome
+                ? handleBackToQuizList // Changement ici
                 : step === "config"
                   ? handleConfigBack
                   : () => setStep("config")

@@ -47,10 +47,15 @@ export const UserCourseCard = ({
         <p className="text-base text-gray-500">
           Niveau : {course.chapitre?.niveau?.libelle || "N/A"}
         </p>
-        {/* Assuming created_at is available in course.chapitre or course itself */}
-        {/* <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 line-clamp-3">
+          Aperçu : {course.text_preview || "Pas d'aperçu disponible."}
+        </p>
+        <p className="text-sm text-gray-500">
+          Questions : {course.questions_count}
+        </p>
+        <p className="text-sm text-gray-500">
           Généré le : {new Date(course.created_at).toLocaleDateString()}
-        </p> */}
+        </p>
       </div>
 
       {/* Footer avec bouton "Voir les détails" */}

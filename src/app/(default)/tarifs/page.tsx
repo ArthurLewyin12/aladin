@@ -12,7 +12,7 @@ export default function TarifsPage() {
       <div className="absolute inset-0 bg-blue-100/80 z-0"></div>
 
       {/* Contenu de la section Pricing */}
-      <div className="relative z-10">
+      <div className="relative z-10 mx-auto">
         <Pricing />
       </div>
     </section>

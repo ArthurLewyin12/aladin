@@ -84,6 +84,7 @@ export enum QuizEndpoints {
  */
 export enum CourseEndpoints {
   COURSES_BY_CHAPITRE = "/api/cours/expliquer",
+  ALL_QUIZ_GENERATED = "/api/cours/my-generated",
 }
 
 /**

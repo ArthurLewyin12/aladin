@@ -128,18 +128,18 @@ export function QuizDetailsModal({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-slate-200/60">
             <TabsTrigger value="questions">
-              <FileQuestion className="w-4 h-4 mr-2" />
+              {/*<FileQuestion className="w-4 h-4 mr-2" />*/}
               Questions ({quizData.questions.length})
             </TabsTrigger>
             <TabsTrigger
               value="approfondissement"
               disabled={quizData.questions_approfondissement.length === 0}
             >
-              <HelpCircle className="w-4 h-4 mr-2" />
+              {/*<HelpCircle className="w-4 h-4 mr-2" />*/}
               Approfondissement
             </TabsTrigger>
             <TabsTrigger value="notes" disabled={quizData.notes.length === 0}>
-              <List className="w-4 h-4 mr-2" />
+              {/*<List className="w-4 h-4 mr-2" />*/}
               Mes Notes
             </TabsTrigger>
           </TabsList>

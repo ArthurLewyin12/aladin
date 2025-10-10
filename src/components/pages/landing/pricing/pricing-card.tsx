@@ -23,25 +23,25 @@ export const PricingCard = ({
   return (
     <Card
       className={cn(
-        "flex relative flex-col p-6 sm:p-8 rounded-xl border backdrop-blur-sm transition-all duration-300 hover:scale-105",
+        "flex relative flex-col p-4 sm:p-6 lg:p-8 rounded-xl border backdrop-blur-sm transition-all duration-300 hover:scale-105",
         isHighlighted
           ? "bg-gradient-to-b from-blue-300 border-blue-200 shadow-xl via-blue-300/75 to-blue-500/80"
           : "bg-white/80 hover:bg-blue-50/50",
       )}
     >
       {isPopular && (
-        <div className="absolute -top-4 left-0 right-0 mx-auto w-fit px-6 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-full flex items-center gap-2 shadow-lg shadow-blue-500/20">
-          <Sparkles className="w-4 h-4" />
+        <div className="absolute -top-3 sm:-top-4 left-0 right-0 mx-auto w-fit px-4 sm:px-6 py-1 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm font-semibold rounded-full flex items-center gap-2 shadow-lg shadow-blue-500/20">
+          <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
           Plus populaire
         </div>
       )}
 
-      <div className="space-y-6">
-        <h3 className="text-2xl font-bold tracking-tight text-gray-900">
+      <div className="space-y-4 sm:space-y-6">
+        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
           {tier.name}
         </h3>
         <div>
-          <div className="flex gap-2 items-baseline">
+          <div className="flex gap-2 items-baseline flex-wrap">
             {typeof price === "number" ? (
               <>
                 <NumberFlow
@@ -51,24 +51,28 @@ export const PricingCard = ({
                     trailingZeroDisplay: "stripIfInteger",
                   }}
                   value={price}
-                  className="text-3xl sm:text-4xl font-bold text-blue-600"
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600"
                 />
-                <span className="text-gray-600">/an</span>
+                <span className="text-sm sm:text-base text-gray-600">/an</span>
               </>
             ) : (
-              <p className="text-3xl sm:text-4xl font-bold text-blue-600">{price}</p>
+              <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600">
+                {price}
+              </p>
             )}
           </div>
-          <p className="mt-3 text-gray-600">{tier.description}</p>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-gray-600">
+            {tier.description}
+          </p>
         </div>
       </div>
 
       <div className="flex-1">
-        <ul className="mt-8 space-y-4">
+        <ul className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
           {tier.features.map((feature, index) => (
-            <li key={index} className="flex gap-3 items-start">
-              <Check className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-              <span className="text-sm leading-relaxed text-gray-700">
+            <li key={index} className="flex gap-2 sm:gap-3 items-start">
+              <Check className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 shrink-0 mt-0.5" />
+              <span className="text-xs sm:text-sm leading-relaxed text-gray-700">
                 {feature}
               </span>
             </li>
@@ -80,7 +84,7 @@ export const PricingCard = ({
         <Link href="/donate" className="w-full">
           <Button
             className={cn(
-              "py-6 mt-8 w-full text-base font-semibold transition-all duration-300",
+              "py-4 sm:py-6 mt-6 sm:mt-8 w-full text-sm sm:text-base font-semibold transition-all duration-300",
               isHighlighted
                 ? "text-white bg-blue-600 shadow-lg hover:bg-blue-700 hover:shadow-blue-500/25"
                 : "text-gray-900 bg-gray-100 hover:bg-gray-200",
@@ -92,7 +96,7 @@ export const PricingCard = ({
       ) : (
         <Button
           className={cn(
-            "py-6 mt-8 w-full text-base font-semibold transition-all duration-300",
+            "py-4 sm:py-6 mt-6 sm:mt-8 w-full text-sm sm:text-base font-semibold transition-all duration-300",
             isHighlighted
               ? "text-white bg-blue-600 shadow-lg hover:bg-blue-700 hover:shadow-blue-500/25"
               : "text-gray-900 bg-gray-100 hover:bg-gray-200",

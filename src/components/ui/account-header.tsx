@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { User, LogOut, Settings, BookOpen, ClipboardList } from "lucide-react";
+import { User, LogOut, Settings, BookOpen, ClipboardList, BarChart3 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,6 +96,13 @@ export function AccountHeader() {
             </DropdownMenuItem>
             {user?.statut === "eleve" && (
               <>
+                <DropdownMenuItem
+                  onClick={() => router.push("/student/dashboard")}
+                  className="cursor-pointer"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  <span>Mon tableau de bord</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => router.push("/student/revision")}
                   className="cursor-pointer"

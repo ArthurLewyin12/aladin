@@ -18,7 +18,12 @@ export interface DashboardResponse {
     id: number;
     nom: string;
     prenom: string;
-    niveau: string; // ex: "CE1"
+    niveau: {
+      id: number;
+      libelle: string;
+      created_at: string;
+      updated_at: string;
+    };
   };
   counters: {
     cours: number; // Total chapitres disponibles

@@ -1,39 +1,47 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { pie, arc, PieArcDatum } from "d3";
 import {
   GenericDonutChart,
   ChartItem,
 } from "@/components/ui/charts/pie-charts";
 
-const BestSubjectChart: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("Cette semaine");
+interface BestSubjectChartProps {
+  data?: Array<{
+    matiere: string;
+    avg_note: number;
+  }>;
+}
 
-  const periods = ["Cette semaine", "Ce mois-ci", "Cette année"];
+const BestSubjectChart: React.FC<BestSubjectChartProps> = ({ data }) => {
+  // Si pas de données ou données vides, afficher un message
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 max-w-md mx-auto">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500">Aucune donnée disponible</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Données mockées dynamiques par période (valeurs = scores en %)
-  const dataByPeriod: Record<string, ChartItem[]> = {
-    "Cette semaine": [
-      { name: "Mathématiques", value: 40, color: "#ec4899" }, // Rose
-      { name: "Anglais", value: 80, color: "#10b981" }, // Vert
-    ],
-    "Ce mois-ci": [
-      { name: "Mathématiques", value: 70, color: "#ec4899" },
-      { name: "Anglais", value: 85, color: "#10b981" },
-    ],
-    "Cette année": [
-      { name: "Mathématiques", value: 65, color: "#ec4899" },
-      { name: "Anglais", value: 90, color: "#10b981" },
-    ],
-  };
+  // Convertir les données de l'API en format pour le graphique
+  const chartData: ChartItem[] = data
+    .filter((item) => item.matiere !== null)
+    .slice(0, 5)
+    .map((item, index) => ({
+      name: item.matiere,
+      value: (item.avg_note / 20) * 100, // Convertir la note en pourcentage
+      color: ["#ec4899", "#10b981", "#f59e0b", "#8b5cf6", "#3b82f6"][
+        index % 5
+      ],
+    }));
 
-  const currentData =
-    dataByPeriod[selectedPeriod] || dataByPeriod["Cette semaine"];
-  const customColors = currentData
+  const customColors = chartData
     .map((item) => item.color)
     .filter((c): c is string => !!c);
 
-  // Config pour les labels externes (dupliqué de GenericDonutChart pour le wrapper)
+  // Config pour les labels externes
   const radius = 420;
   const gap = 0.01;
   const labelExternalRadius = radius + 40;
@@ -44,7 +52,7 @@ const BestSubjectChart: React.FC = () => {
   const arcExternal = arc<PieArcDatum<ChartItem>>()
     .innerRadius(labelExternalRadius)
     .outerRadius(labelExternalRadius);
-  const arcs = pieLayout(currentData);
+  const arcs = pieLayout(chartData);
 
   const computeAngle = (d: PieArcDatum<ChartItem>) => {
     return ((d.endAngle - d.startAngle) * 180) / Math.PI;
@@ -52,27 +60,16 @@ const BestSubjectChart: React.FC = () => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 max-w-md mx-auto">
-      {/* Header : Titre + Dropdown */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Meilleure matière
+          Meilleures matières
         </h2>
-        <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
-          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {periods.map((period) => (
-            <option key={period} value={period}>
-              {period}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Légende avec points colorés */}
-      <div className="flex space-x-6 mb-6">
-        {currentData.map((item, i) => (
+      <div className="flex flex-wrap gap-4 mb-6">
+        {chartData.map((item, i) => (
           <span
             key={item.name}
             className="flex items-center text-sm text-gray-700 dark:text-gray-300"
@@ -89,11 +86,11 @@ const BestSubjectChart: React.FC = () => {
       {/* Chart wrapper avec labels superposés */}
       <div className="relative">
         <GenericDonutChart
-          data={currentData}
+          data={chartData}
           customColors={customColors}
           radius={radius}
           gap={gap}
-          showLabels={false} // Désactive les labels internes
+          showLabels={false}
           showTooltips={true}
           className="max-w-[16rem] mx-auto"
         />
@@ -108,7 +105,6 @@ const BestSubjectChart: React.FC = () => {
             if (angle < minAngle) return null;
 
             let centroid: [number, number] = arcExternal.centroid(d) || [0, 0];
-            // Ajustement de position comme dans GenericDonutChart
             if (d.endAngle > Math.PI) {
               centroid[0] += 10;
               centroid[1] += 10;
@@ -120,7 +116,7 @@ const BestSubjectChart: React.FC = () => {
             const percent = d.data.value.toFixed(0) + "%";
             const rectWidth = 50;
             const rectHeight = 32;
-            const rx = 16; // Pour forme pilule
+            const rx = 16;
             const x = centroid[0] - rectWidth / 2;
             const y = centroid[1] - rectHeight / 2;
 

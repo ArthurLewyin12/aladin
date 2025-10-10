@@ -144,10 +144,10 @@ export default function MiddleSection(): React.JSX.Element {
                   <motion.div
                     key={`header-${activeSlide}`}
                     className="flex items-center gap-4"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.4 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                   >
                     <div className="flex-shrink-0 w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
                       {currentSlide.icon}
@@ -192,7 +192,7 @@ export default function MiddleSection(): React.JSX.Element {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                       >
                         {currentSlide.description}
                       </motion.p>

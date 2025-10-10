@@ -160,7 +160,7 @@ export default function NavBar() {
                     className="cursor-pointer"
                   >
                     <ClipboardList className="mr-2 h-4 w-4" />
-                    <span>Mes révisions</span>
+                    <span>Mes cours</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem

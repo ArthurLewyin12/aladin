@@ -69,8 +69,7 @@ export default function QuizResultPage() {
   if (isLoadingNotes || corrections.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>{" "}
-        {/* Spinner plus soft et thémé */}
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
       </div>
     );
   }
@@ -95,6 +94,48 @@ export default function QuizResultPage() {
   const totalQuestions = corrections.length || 0;
   const explanations = notesData?.questions_approfondissement || [];
 
+  // Calculer le pourcentage
+  const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+
+  // Fonction pour obtenir le message adapté au score
+  const getScoreMessage = () => {
+    if (percentage >= 90) {
+      return {
+        emoji: "🏆",
+        title: "Excellent !",
+        message:
+          "Tu maîtrises parfaitement ce chapitre ! Continue comme ça, tu es sur la bonne voie pour devenir un expert.",
+        titleEmoji: "🌟",
+      };
+    } else if (percentage >= 70) {
+      return {
+        emoji: "👏",
+        title: "Bien joué !",
+        message:
+          "Tu as bien travaillé ! Tu maîtrises déjà beaucoup de choses, quelques petites révisions et ce sera parfait.",
+        titleEmoji: "🎉",
+      };
+    } else if (percentage >= 50) {
+      return {
+        emoji: "💪",
+        title: "Bon début !",
+        message:
+          "Tu es sur la bonne voie ! Quelques notions sont à revoir, mais tu progresses. Continue à t'entraîner.",
+        titleEmoji: "📚",
+      };
+    } else {
+      return {
+        emoji: "🎯",
+        title: "Continue tes efforts !",
+        message:
+          "Ce chapitre demande encore du travail, mais ne te décourage pas ! Révise bien les corrections et réessaie, tu vas y arriver.",
+        titleEmoji: "💡",
+      };
+    }
+  };
+
+  const scoreMessage = getScoreMessage();
+
   return (
     <div
       className="min-h-screen w-full"
@@ -105,28 +146,23 @@ export default function QuizResultPage() {
     >
       {/* Header */}
       <div
-        className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-6" // Padding up pour plus d'air
+        className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-6"
         style={{
           backgroundImage: `url("/bg-2.png")`,
           backgroundSize: "80px 80px",
         }}
       >
         <div className="flex items-center space-x-6">
-          {" "}
-          {/* Space-x boosté */}
           <Button
             variant="ghost"
-            size="lg" // Taille up
+            size="lg"
             onClick={handleBackToHome}
-            className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 border rounded-xl bg-white/80 px-6 py-3 shadow-sm hover:shadow-md transition-all duration-300" // Bord arrondi, animation soft, ombre
+            className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 border rounded-xl bg-white/80 px-6 py-3 shadow-sm hover:shadow-md transition-all duration-300"
           >
-            <ArrowLeft className="w-5 h-5" /> {/* Icône up */}
-            <span className="text-base font-medium">Retour</span>{" "}
-            {/* Texte up */}
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-base font-medium">Retour</span>
           </Button>
           <h1 className="text-orange-600 text-5xl md:text-6xl font-bold">
-            {" "}
-            {/* Taille explosive pour impact */}
             Quiz Time !
           </h1>
         </div>
@@ -134,85 +170,66 @@ export default function QuizResultPage() {
 
       {/* Main Content */}
       <div className="w-full mx-auto max-w-4xl px-4 md:px-8 pt-4 pb-12">
-        {" "}
-        {/* Max-w up pour aération, pb up */}
-        {/* Congratulations Message */}
+        {/* Message adaptatif basé sur le score */}
         <div className="text-center mb-12 mt-8 animate-fade-in">
-          {" "}
-          {/* Animation d'entrée soft */}
           <div className="mb-6 flex items-center justify-center gap-4">
-            {" "}
-            {/* Gap up */}
-            <span className="text-4xl">👏</span> {/* Emoji up */}
+            <span className="text-4xl">{scoreMessage.emoji}</span>
             <span className="text-2xl text-gray-700 font-semibold">
-              {" "}
-              {/* Texte up */}
-              Mission accomplie
+              {scoreMessage.title}
             </span>
-            <span className="text-4xl">👏</span>
+            <span className="text-4xl">{scoreMessage.emoji}</span>
           </div>
           <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed text-lg">
-            {" "}
-            {/* Texte up, max-w pour flow */}
-            Tu as bien travaillé, et j'ai noté ce que tu maîtrises déjà et ce
-            qu'on peut encore revoir ensemble.
+            {scoreMessage.message}
           </p>
         </div>
-        {/* Félicitations Section */}
+
+        {/* Félicitations Section avec emoji adaptatif */}
         <div className="text-center mb-12 animate-fade-in">
-          {" "}
-          {/* Même anim */}
           <div className="mb-6 flex items-center justify-center gap-4">
-            <span className="text-4xl">🎉</span>
-            <h2 className="text-3xl font-bold text-gray-800">
-              Félicitations
-            </h2>{" "}
-            {/* Titre up */}
-            <span className="text-4xl">🎉</span>
+            <span className="text-4xl">{scoreMessage.titleEmoji}</span>
+            <h2 className="text-3xl font-bold text-gray-800">Résultat</h2>
+            <span className="text-4xl">{scoreMessage.titleEmoji}</span>
           </div>
         </div>
-        {/* Score Display */}
+
+        {/* Score Display avec couleur adaptative */}
         <div className="text-center mb-8 animate-bounce-in">
-          {" "}
-          {/* Petite anim fun sur score */}
-          <div className="text-5xl font-bold text-orange-500 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-            {" "}
-            {/* Gradient thématique */}
+          <div
+            className={`text-5xl font-bold ${
+              percentage >= 70
+                ? "text-green-500 bg-gradient-to-r from-green-400 to-green-600"
+                : percentage >= 50
+                  ? "text-orange-500 bg-gradient-to-r from-orange-400 to-orange-600"
+                  : "text-red-500 bg-gradient-to-r from-red-400 to-red-600"
+            } bg-clip-text text-transparent`}
+          >
             Score : {score}/{totalQuestions}
           </div>
+          <div className="text-lg text-gray-600 mt-2">
+            {percentage.toFixed(0)}% de réussite
+          </div>
         </div>
+
         {/* Questions and Corrections */}
         <div className="space-y-8">
-          {" "}
-          {/* Space-y up pour respiration */}
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-8 animate-fade-in">
-            {" "}
-            {/* Titre up, mb up */}
             Correction détaillée
           </h2>
           <div className="grid gap-6">
-            {" "}
-            {/* Grid pour flex si besoin, mais space-y suffit */}
             {corrections.map((correction, index) => (
               <Card
                 key={correction.id}
-                className="shadow-lg rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fade-in" // Ombres up, arrondis xl, hover lift soft
+                className="shadow-lg rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fade-in"
               >
                 <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6">
-                  {" "}
-                  {/* Gradient subtil header */}
                   <CardTitle className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    {" "}
-                    {/* Texte up, gap */}
-                    <span className="text-orange-500">Q{index + 1}</span>{" "}
-                    {/* Badge coloré */}
+                    <span className="text-orange-500">Q{index + 1}</span>
                     {correction.question}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <ul className="space-y-4">
-                    {" "}
-                    {/* Space-y up */}
                     {correction.propositions.map((proposition) => {
                       const isCorrect =
                         proposition.id === correction.bonne_reponse_id;
@@ -228,11 +245,9 @@ export default function QuizResultPage() {
                       return (
                         <li
                           key={proposition.id}
-                          className={`flex items-center p-4 rounded-xl border-2 ${stateClass} transition-all duration-200 hover:bg-opacity-80`} // Padding up, arrondis, hover soft
+                          className={`flex items-center p-4 rounded-xl border-2 ${stateClass} transition-all duration-200 hover:bg-opacity-80`}
                         >
                           <span className="flex-grow text-base leading-relaxed">
-                            {" "}
-                            {/* Texte up */}
                             <span className="font-medium text-gray-800 mr-2">
                               {proposition.id}.
                             </span>
@@ -240,8 +255,7 @@ export default function QuizResultPage() {
                           </span>
                           {isCorrect && (
                             <div className="flex items-center text-green-600 px-3 py-2 bg-green-100 rounded-lg">
-                              <CheckCircle className="w-6 h-6 mr-2" />{" "}
-                              {/* Icône up */}
+                              <CheckCircle className="w-6 h-6 mr-2" />
                               <span className="font-semibold">
                                 Bonne réponse
                               </span>
@@ -262,23 +276,20 @@ export default function QuizResultPage() {
             ))}
           </div>
         </div>
-        {/* Boutons bas - Structure originale restaurée */}
+
+        {/* Boutons bas */}
         <div className="mb-8 mt-4 hover:scale-105 transform transition-all duration-300 ">
-          {" "}
-          {/* mb-8 comme avant, centré */}
           <Button
             onClick={handleRetakeQuiz}
             variant="ghost"
-            size="lg" // Taille up
-            className="text-gray-600 hover:text-gray-800 border-none rounded-xl px-8 py-3 text-lg font-medium transition-all duration-300" // Couleurs ghost original, arrondis et anim soft
+            size="lg"
+            className="text-gray-600 hover:text-gray-800 border-none rounded-xl px-8 py-3 text-lg font-medium transition-all duration-300"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Repasser le test
           </Button>
         </div>
         <div className="flex justify-between items-center">
-          {" "}
-          {/* Flex justify-between comme avant */}
           <QuizExplanations
             explanations={explanations}
             open={isExplanationsOpen}

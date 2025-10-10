@@ -1,3 +1,5 @@
+import { Chapitre } from "./chapitre.types";
+
 export interface QuestionReponse {
   question: string;
   reponse: string;
@@ -40,3 +42,12 @@ export interface GenerateCoursErrorResponse {
 export type GenerateCoursResponse =
   | GenerateCoursSuccessResponse
   | GenerateCoursErrorResponse;
+
+export type Course = {
+  id: number;
+  chapitre: Chapitre;
+};
+
+export type Courses = {
+  courses: Course[];
+};

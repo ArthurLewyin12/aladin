@@ -1,5 +1,5 @@
 import { CourseEndpoints } from "@/constants/endpoints";
-import { GenerateCoursResponse } from "./types/common/cours.type";
+import { Courses, GenerateCoursResponse } from "./types/common/cours.type";
 import { request } from "@/lib/request";
 
 /**
@@ -15,4 +15,12 @@ export const expliquerCours = async (
     { chapter_id },
     { timeout: 60000 }, // 60 seconds timeout
   );
+};
+
+/**
+ * cette route permet de récupérer tous les cours générés par les utilisateurs.
+ * @returns une promise contenant un tableau de cours
+ */
+export const getAllUserGeneratedCourses = async (): Promise<Courses> => {
+  return request.get(CourseEndpoints.ALL_QUIZ_GENERATED);
 };

@@ -157,7 +157,7 @@ export default function DashboardPage() {
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
           <p className="text-gray-600 text-lg">
-            Chargement de ton tableau de bord...
+            Chargement de mon tableau de bord...
           </p>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
             <span className="text-2xl sm:text-3xl">📊</span>
             <div className="flex-1">
               <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
-                Ton tableau de bord
+                Mon tableau de bord
               </h1>
               <p className="text-xs sm:text-[1.5rem] text-gray-600 mt-1">
                 Bienvenue {user?.prenom}, voici tes statistiques{" "}
@@ -301,20 +301,20 @@ export default function DashboardPage() {
             iconColor="text-[#F5C27A]"
           />
           <StatCard
-            title="Total des groupes"
-            value={dashboardData.counters.groupes.toString()}
-            subtitle="Groupes"
-            icon={<Users className="h-16 w-16" />}
-            bgColor="bg-[#D4EBE8]"
-            iconColor="text-[#7EC8BF]"
-          />
-          <StatCard
             title="Total des quiz"
             value={dashboardData.counters.quiz.toString()}
             subtitle="Quiz"
             icon={<Brain className="h-16 w-16" />}
             bgColor="bg-[#F5D7D7]"
             iconColor="text-[#E89999]"
+          />
+          <StatCard
+            title="Total des groupes"
+            value={dashboardData.counters.groupes.toString()}
+            subtitle="Groupes"
+            icon={<Users className="h-16 w-16" />}
+            bgColor="bg-[#D4EBE8]"
+            iconColor="text-[#7EC8BF]"
           />
           <StatCard
             title="Total de documents"

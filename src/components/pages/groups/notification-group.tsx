@@ -104,7 +104,7 @@ export const NotificationsBell = ({ className }: NotificationsBellProps) => {
 
       <PopoverContent
         align="end"
-        className="w-full md:w-[380px] p-0 border border-gray-200 dark:border-gray-800"
+        className="w-full md:w-[380px] p-0 border border-gray-200 dark:border-gray-800 rounded-2xl"
       >
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100">

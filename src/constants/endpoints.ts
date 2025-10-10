@@ -76,6 +76,7 @@ export enum QuizEndpoints {
   DESACTIVATE_QUIZ = "/api/quizzes/{quizId}/deactivate",
   REACTIVATE_QUIZ = "/api/quizzes/{quizId}/reactivate",
   QUIZ_GET_ALL = "/api/quizzes/my-generated",
+  GET_ONE_QUIZ = "api/quizzes/eleves/my-generated/{quizId}",
 }
 
 /**

@@ -54,7 +54,7 @@ export function AccountHeader() {
       <div className="flex items-center gap-4">
         <NotificationsBell />
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center space-x-3 hover:bg-gray-200 rounded-lg p-2 transition-colors cursor-pointer">
+          <DropdownMenuTrigger className="flex items-center space-x-3 hover:bg-gray-200 rounded-xl p-2 transition-colors cursor-pointer">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-[#111D4A] text-white font-semibold">
                 {getInitials(user?.nom, user?.prenom)}
@@ -72,7 +72,10 @@ export function AccountHeader() {
             </div>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className="w-56" align="end">
+          <DropdownMenuContent
+            className="w-56 rounded-xl bg-gray-100"
+            align="end"
+          >
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">

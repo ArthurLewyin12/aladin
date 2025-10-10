@@ -146,10 +146,10 @@ export default function QuizResultPage() {
     >
       {/* Header */}
       <div
-        className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-6"
+        className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
         style={{
           backgroundImage: `url("/bg-2.png")`,
-          backgroundSize: "80px 80px",
+          backgroundSize: "180px 180px",
         }}
       >
         <div className="flex items-center space-x-6">

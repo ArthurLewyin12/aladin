@@ -176,3 +176,24 @@ export type AllQuizDefinitionsResponse = {
   difficulte: string;
   time: number;
 } & AuditFields;
+
+export type ApprofondissementQuestion = {
+  question: string;
+  reponse: string;
+};
+
+export interface Quiz {
+  id: number;
+  chapitre: Chapitre;
+  difficulte: string;
+  time: number;
+  created_at: string;
+  updated_at: string;
+  questions: QuizQuestion[];
+  questions_approfondissement: ApprofondissementQuestion[];
+  notes: any[];
+}
+
+export interface SingleQuizResponse {
+  quiz: Quiz;
+}

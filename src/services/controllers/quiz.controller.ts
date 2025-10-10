@@ -10,7 +10,10 @@ import {
   QuizSubmitResponse,
   QuizNotesResponse,
   AllQuizDefinitionsResponse,
-} from "./types/common";
+  SingleQuizResponse,
+  QuizQuestion,
+  ApprofondissementQuestion,
+} from "./types/common/quiz.types";
 
 /**
  * Récupère l'historique des quiz passés par l'utilisateur.
@@ -97,8 +100,12 @@ export const getQuiz = async (quizId: number): Promise<UserQuizInstance> => {
  * @returns QUizDefinitionsResponse - Liste de tous les quiz définis dans le système pour l'année en cours pour le user.
  */
 
-export const getAllUserQuiz = async (): Promise<{ quizzes: AllQuizDefinitionsResponse[] }> => {
-  return request.get<{ quizzes: AllQuizDefinitionsResponse[] }>(QuizEndpoints.QUIZ_GET_ALL);
+export const getAllUserQuiz = async (): Promise<{
+  quizzes: AllQuizDefinitionsResponse[];
+}> => {
+  return request.get<{ quizzes: AllQuizDefinitionsResponse[] }>(
+    QuizEndpoints.QUIZ_GET_ALL,
+  );
 };
 
 /**
@@ -170,4 +177,61 @@ export const reactivateQuiz = async (quizId: number): Promise<void> => {
     quizId.toString(),
   );
   return request.post<void>(endpoint);
+};
+
+/**
+ * permet de recuperer un quiz que l'utilisateur a deja généré
+ * @param quizId
+ * @returns un quiz unique
+ */
+export const singleQuiz = async (
+  quizId: number,
+): Promise<SingleQuizResponse> => {
+  const endpoint = QuizEndpoints.GET_ONE_QUIZ.replace(
+    "{quizId}",
+    quizId.toString(),
+  );
+
+  const rawResponse = await request.get<any>(endpoint); // Fetch raw response
+
+  // Transform questions
+  const transformedQuestions = rawResponse.quiz.questions.map(
+    (question: any, index: number) => {
+      const propositionsArray = Array.isArray(question.propositions)
+        ? question.propositions
+        : Object.entries(question.propositions).map(([key, value]) => ({
+            id: key,
+            text: value,
+          }));
+
+      const propositions = propositionsArray.map(
+        (proposition: any, propIndex: number) => ({
+          id: proposition.id ?? propIndex,
+          text: proposition.text || proposition,
+        }),
+      );
+
+      return {
+        id: `q_${index}`,
+        question: question.question,
+        propositions: propositions,
+        bonne_reponse_id: question.bonne_reponse, // bonne_reponse is 'a', 'b', 'c' from API
+      };
+    },
+  );
+
+  // Transform questions_approfondissement
+  const transformedApprofondissement =
+    rawResponse.quiz.questions_approfondissement.map((q: any) => ({
+      question: q.question,
+      reponse: q.reponse,
+    }));
+
+  return {
+    quiz: {
+      ...rawResponse.quiz,
+      questions: transformedQuestions,
+      questions_approfondissement: transformedApprofondissement,
+    },
+  };
 };

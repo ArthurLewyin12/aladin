@@ -203,22 +203,7 @@ export default function GroupsPage() {
 
         {groupes && groupes.length > 0 ? (
           // Scénario: Des groupes sont présents
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-gray-600 text-lg">
-                Ici, tu retrouves tous les groupes que tu as créés ou rejoints.
-              </p>
-              <Button
-                size="lg"
-                onClick={() => setIsOpen(true)}
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Créer un groupe
-              </Button>
-            </div>
-            <GroupList />
-          </>
+          <GroupList onCreateGroup={() => setIsOpen(true)} />
         ) : (
           // Scénario: Aucun groupe (contenu placeholder original)
           <>

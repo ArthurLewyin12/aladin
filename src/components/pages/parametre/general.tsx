@@ -113,7 +113,11 @@ export default function SettingsGeneralPage() {
         toast({ variant: "success", message: "Modifications enregistrées!" });
       },
       onError: (error) => {
-        toast({ variant: "error", title: "Erreur de mise à jour", message: "Échec de la mise à jour du profil." });
+        toast({
+          variant: "error",
+          title: "Erreur de mise à jour",
+          message: "Échec de la mise à jour du profil.",
+        });
         console.error("Update profile error:", error);
       },
     });
@@ -131,7 +135,11 @@ export default function SettingsGeneralPage() {
           passwordForm.reset();
         },
         onError: (error) => {
-          toast({ variant: "error", title: "Erreur de changement de mot de passe", message: "Échec du changement de mot de passe." });
+          toast({
+            variant: "error",
+            title: "Erreur de changement de mot de passe",
+            message: "Échec du changement de mot de passe.",
+          });
           console.error("Update password error:", error);
         },
       },
@@ -145,7 +153,11 @@ export default function SettingsGeneralPage() {
         contactForm.reset();
       },
       onError: (error) => {
-        toast({ variant: "error", title: "Erreur d'envoi de message", message: "Échec de l'envoi du message." });
+        toast({
+          variant: "error",
+          title: "Erreur d'envoi de message",
+          message: "Échec de l'envoi du message.",
+        });
         console.error("Contact admin error:", error);
       },
     });
@@ -331,8 +343,8 @@ export default function SettingsGeneralPage() {
           Contacter l'administrateur
         </h2>
         <p className="text-gray-600 text-sm mb-6">
-          Besoin d'aide ? Expliquez brièvement votre problème et un
-          administrateur vous contactera après traitement de votre demande.
+          Besoin d'aide ? Explique brièvement ton problème et un administrateur
+          te contactera après traitement de ta demande.
         </p>
 
         <Form {...contactForm}>
@@ -348,9 +360,10 @@ export default function SettingsGeneralPage() {
                 <FormItem>
                   <FormControl>
                     <Textarea
-                      placeholder="Description de la classe"
+                      placeholder="Décris ton problème"
                       className="min-h-[150px] bg-gray-100 border-gray-300 rounded-lg resize-none"
                       {...field}
+                      maxLength={500}
                     />
                   </FormControl>
                   <FormMessage />

@@ -16,23 +16,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Course } from "@/services/controllers/types/common/cours.type";
 import { useRouter } from "next/navigation";
-import { useMediaQuery } from "@/services/hooks/use-media-query"; // Import the hook
+import { useMediaQuery } from "@/services/hooks/use-media-query";
 
-interface CourseDetailsResponsiveDialogProps {
+interface CourseDetailsDialogProps {
   courseId: number | null;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  courseData?: Course; // Optional: if we want to pass the full course object
+  courseData?: Course;
 }
 
-export const CourseDetailsResponsiveDialog: React.FC<
-  CourseDetailsResponsiveDialogProps
-> = ({ courseId, isOpen, onOpenChange, courseData }) => {
+export const CourseDetailsDialog: React.FC<CourseDetailsDialogProps> = ({
+  courseId,
+  isOpen,
+  onOpenChange,
+  courseData,
+}) => {
   const router = useRouter();
-  const isDesktop = useMediaQuery("(min-width: 768px)"); // Tailwind's 'md' breakpoint
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (!courseData && courseId) {
-    // Placeholder for loading state if courseData is not provided
     const Content = isDesktop ? DialogContent : DrawerContent;
     const Header = isDesktop ? DialogHeader : DrawerHeader;
     const Title = isDesktop ? DialogTitle : DrawerTitle;
@@ -55,11 +57,11 @@ export const CourseDetailsResponsiveDialog: React.FC<
   }
 
   if (!courseData) {
-    return null; // Don't render if no course data is available
+    return null;
   }
 
   const handleGoToDetailsPage = () => {
-    router.push(`/student/courses/${courseData.id}`);
+    // router.push(`/student/courses/${courseData.id}`);
     onOpenChange(false); // Close modal/drawer after navigation
   };
 
@@ -106,7 +108,6 @@ export const CourseDetailsResponsiveDialog: React.FC<
   );
 };
 
-// Helper Wrapper component to avoid repetition for loading state
 const Wrapper: React.FC<{
   isDesktop: boolean;
   isOpen: boolean;

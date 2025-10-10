@@ -7,7 +7,7 @@ import { Plus, BookOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCourseCard } from "./user-course-card";
 import { Course } from "@/services/controllers/types/common/cours.type";
-import { CourseDetailsResponsiveDialog } from "./course-details-dialog"; // Import the responsive dialog
+import { CourseDetailsDialog } from "./course-details-dialog"; // Import the responsive dialog
 
 export function CourseList() {
   const router = useRouter();
@@ -127,7 +127,7 @@ export function CourseList() {
           ))}
         </div>
       </div>
-      <CourseDetailsResponsiveDialog
+      <CourseDetailsDialog
         courseId={selectedCourseId}
         isOpen={selectedCourseId !== null}
         onOpenChange={handleCloseDetails}

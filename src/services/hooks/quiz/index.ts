@@ -12,6 +12,7 @@ import {
   deactivateQuiz,
   reactivateQuiz,
   getAllUserQuiz,
+  singleQuiz,
 } from "@/services/controllers/quiz.controller";
 import {
   QuizSubmitPayload,
@@ -121,6 +122,23 @@ export const useQuizNotes = (quizId: number) => {
     queryKey: createQueryKey("quizNotes", quizId),
     queryFn: () => getQuizNotes(quizId),
     enabled: !!quizId, // La requête ne s'exécute que si quizId est fourni.
+  });
+};
+
+/**
+ *  Hook de requête pour récupérer un unique quiz par son ID.
+ * @param quizId
+ * @returns retourne une query qui contient un unique quiz
+ */
+export const useGetOneQuiz = (
+  quizId: number | null,
+  options?: { enabled?: boolean },
+) => {
+  return useQuery({
+    queryKey: createQueryKey("oneQuiz", quizId!),
+    queryFn: () => singleQuiz(quizId!),
+    // La requête ne s'exécute que si quizId est fourni et que le hook est explicitement activé
+    enabled: !!quizId && (options?.enabled ?? true),
   });
 };
 

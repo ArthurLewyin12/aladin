@@ -31,7 +31,7 @@ export default function CoursePage() {
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
 
     return courseData.text.split("\n").map((line, index) => {
-      const isTitle = 
+      const isTitle =
         romanNumeralRegex.test(line) || line.toUpperCase() === line;
       return {
         id: index,
@@ -98,15 +98,18 @@ export default function CoursePage() {
         backgroundSize: "80px 80px",
       }}
     >
-      <GenerationLoadingOverlay isLoading={isLoading} messages={courseLoadingMessages} />
+      <GenerationLoadingOverlay
+        isLoading={isLoading}
+        messages={courseLoadingMessages}
+      />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm">
+      <div className="sticky top-0 z-20  backdrop-blur-sm">
         <div
-          className="w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4"
+          className="mt-10 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-6 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
-            backgroundSize: "80px 80px",
+            backgroundSize: "180px 180px",
           }}
         >
           <div className="flex items-center space-x-4">
@@ -120,7 +123,7 @@ export default function CoursePage() {
               <span className="text-sm">Retour</span>
             </Button>
             <div className="hidden md:block">
-              <p className="text-gray-500 text-sm">{introText}...</p>
+              <p className="text-gray-500 text-[1.5rem]">{introText}...</p>
             </div>
           </div>
         </div>
@@ -158,7 +161,10 @@ export default function CoursePage() {
               </h2>
             </div>
             {/* ← Utilisation de MathText pour le résumé */}
-            <MathText text={summary} className="text-blue-800 leading-relaxed" />
+            <MathText
+              text={summary}
+              className="text-blue-800 leading-relaxed"
+            />
           </section>
 
           {/* FAQ Section */}
@@ -191,6 +197,5 @@ export default function CoursePage() {
         </main>
       )}
     </div>
-
   );
 }

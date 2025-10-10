@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useGetAllQuiz } from "@/services/hooks/quiz";
 import { UserQuizCard } from "./user-quiz-card";
 import { Spinner } from "@/components/ui/spinner";
@@ -7,11 +8,21 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QuizDetailsModal } from "./quiz-details-modal";
 
 export function QuizList() {
   const router = useRouter();
   const { data, isLoading, isError } = useGetAllQuiz();
   const quizzes = (data?.quizzes as AllQuizDefinitionsResponse[]) || [];
+  const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
+
+  const handleOpenDetails = (quizId: number) => {
+    setSelectedQuizId(quizId);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedQuizId(null);
+  };
 
   if (isLoading) {
     return (
@@ -75,35 +86,51 @@ export function QuizList() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
-      {/* Bouton en haut quand il y a des quiz */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4  backdrop-blur-sm rounded-lg p-3 sm:p-4 shadow-sm">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-            Mes Quiz
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {quizzes.length} quiz{" "}
-            {quizzes.length > 1 ? "disponibles" : "disponible"}
-          </p>
+    <>
+      <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+        {/* Bouton en haut quand il y a des quiz */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4  backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+              Mes Quiz
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              {quizzes.length} quiz{" "}
+              {quizzes.length > 1 ? "disponibles" : "disponible"}
+            </p>
+          </div>
+          <Button
+            size="lg"
+            onClick={() => router.push("/student/quiz/generate")}
+            className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+            <span className="hidden sm:inline">Nouveau quiz</span>
+            <span className="sm:hidden">Créer</span>
+          </Button>
         </div>
-        <Button
-          size="lg"
-          onClick={() => router.push("/student/quiz/generate")}
-          className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
-        >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Nouveau quiz</span>
-          <span className="sm:hidden">Créer</span>
-        </Button>
-      </div>
 
-      {/* Grille des quiz */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {quizzes.map((quiz, index) => (
-          <UserQuizCard key={quiz.id} quiz={quiz} index={index} />
-        ))}
+        {/* Grille des quiz */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {quizzes.map((quiz, index) => (
+            <UserQuizCard
+              key={quiz.id}
+              quiz={quiz}
+              index={index}
+              onDetailsClick={() => handleOpenDetails(quiz.id)}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+      <QuizDetailsModal
+        quizId={selectedQuizId}
+        isOpen={selectedQuizId !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleCloseDetails();
+          }
+        }}
+      />
+    </>
   );
 }

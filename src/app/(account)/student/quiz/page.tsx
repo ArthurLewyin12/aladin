@@ -48,7 +48,7 @@ export default function QuizPage() {
         {/* Description */}
         <div className="text-center mb-8 sm:mb-12 px-2">
           <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto leading-relaxed">
-            Génère des quiz adaptés à tes besoins et révise à ton rythme. L'IA
+            Génère des quiz adaptés à tes besoins et révise à ton rythme. ALADIN
             crée des questions personnalisées pour t'aider à progresser
             efficacement dans tes études.
           </p>

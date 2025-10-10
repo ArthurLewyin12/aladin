@@ -213,7 +213,7 @@ export default function GroupsPage() {
                 Crée ton groupe d'étude en quelques clics, invite tes amis ou
                 camarades de classe et avancez ensemble. Posez-vous des
                 questions, faites des quiz en groupe et entraidez-vous avec
-                l'aide de l'IA.
+                l'aide d'ALADIN.
               </p>
             </div>
 

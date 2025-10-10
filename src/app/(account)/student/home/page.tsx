@@ -50,7 +50,7 @@ export default function StudentHomePage() {
   const homeActions = [
     {
       id: "dashboard",
-      title: "je consulte mon tableau de bord",
+      title: "Je consulte mon tableau de bord",
       icon: BarChart3,
       handler: () => router.push("/student/dashboard"),
     },
@@ -69,13 +69,13 @@ export default function StudentHomePage() {
 
     {
       id: "group",
-      title: "Je créer un groupe d'étude",
+      title: "Je crée un groupe d'étude",
       icon: Users,
       handler: () => router.push("/student/groups"),
     },
     {
       id: "share",
-      title: "Partager Aladin",
+      title: "Je partage Aladin",
       icon: Share2,
       handler: handleShare,
     },
@@ -96,9 +96,8 @@ export default function StudentHomePage() {
             Hello!
           </h1>
           <p className="text-base sm:text-lg lg:text-[1.3rem] text-gray-600 leading-relaxed">
-            Je suis là pour t'aider à apprendre à ton rythme, t'expliquer ce que
-            tu ne comprends pas, et t'accompagner tout au long de ton parcours.
-            Prêt(e) ? Par quoi on commence ensemble ?
+            Je suis là pour t'aider à apprendre à ton rythme et t'accompagner
+            tout au long de ton parcours.
           </p>
         </div>
         {/* Section principale avec illustration et actions */}

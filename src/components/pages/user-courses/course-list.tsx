@@ -7,22 +7,26 @@ import { Plus, BookOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCourseCard } from "./user-course-card";
 import { Course } from "@/services/controllers/types/common/cours.type";
+import { CourseDetailsResponsiveDialog } from "./course-details-dialog"; // Import the responsive dialog
 
 export function CourseList() {
   const router = useRouter();
   const { data, isLoading, isError, error } = useGetAllCourses();
-  // Assuming data.courses is an array of Course, and handling the potential typo in cours.type.ts
   const courses: Course[] = (data?.courses as Course[]) || [];
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | undefined>(
+    undefined,
+  );
 
   const handleOpenDetails = (courseId: number) => {
+    const course = courses.find((c) => c.id === courseId);
+    setSelectedCourse(course);
     setSelectedCourseId(courseId);
-    // à créer la page de détails du cours comme pour les quiz
-    // router.push(`/student/courses/${courseId}`);
   };
 
   const handleCloseDetails = () => {
     setSelectedCourseId(null);
+    setSelectedCourse(undefined);
   };
 
   if (isLoading) {
@@ -123,16 +127,12 @@ export function CourseList() {
           ))}
         </div>
       </div>
-      {/* TODO: Implement CourseDetailsModal or navigate to a dedicated course detail page */}
-      {/* <CourseDetailsModal
+      <CourseDetailsResponsiveDialog
         courseId={selectedCourseId}
         isOpen={selectedCourseId !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            handleCloseDetails();
-          }
-        }}
-      /> */}
+        onOpenChange={handleCloseDetails}
+        courseData={selectedCourse}
+      />
     </>
   );
 }

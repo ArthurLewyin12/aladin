@@ -1,3 +1,4 @@
+import { AuditFields } from "@/constants/audit.types";
 import { Chapitre } from "./chapitre.types";
 
 export interface QuestionReponse {
@@ -46,7 +47,10 @@ export type GenerateCoursResponse =
 export type Course = {
   id: number;
   chapitre: Chapitre;
-};
+  text_preview: string;
+  questions_count: number;
+  time: number;
+} & AuditFields;
 
 export type Courses = {
   courses: Course[];

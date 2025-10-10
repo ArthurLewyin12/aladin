@@ -58,13 +58,13 @@ export default function StudentHomePage() {
       id: "course",
       title: "Je révise un cours",
       icon: BookOpen,
-      handler: () => router.push("/student/revision"),
+      handler: () => router.push("/student/revision/generated"),
     },
     {
       id: "quiz",
       title: "Je passe un quiz",
       icon: Brain,
-      handler: () => router.push("/student/quiz"),
+      handler: () => router.push("/student/quiz/generate"),
     },
 
     {

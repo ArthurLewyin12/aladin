@@ -1,4 +1,7 @@
 import { AuditFields } from "@/constants/audit.types";
+import { Chapitre } from "./chapitre.types";
+import { Matiere } from "./matiere.types";
+import { Niveau } from "./niveau.types";
 
 export type QuizDefinition = {
   id: number;
@@ -91,7 +94,7 @@ export type QuizSubmitResponse = {
 };
 
 export type GetQuizResponse = {
-  quiz: QuizDefinition & { matiere: { libelle: string } }; // Assuming matiere is nested
+  quiz: QuizDefinition & { matiere: { libelle: string } };
   questions: QuizQuestion[];
 };
 
@@ -166,3 +169,10 @@ export type SubmitGroupQuizResponse = {
     }[];
   };
 };
+
+export type AllQuizDefinitionsResponse = {
+  id: number;
+  chapitre: Chapitre & { matiere: Matiere; niveau: Niveau };
+  difficulte: string;
+  time: number;
+} & AuditFields;

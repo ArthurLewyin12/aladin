@@ -9,6 +9,7 @@ import {
   QuizStartResponse,
   QuizSubmitResponse,
   QuizNotesResponse,
+  AllQuizDefinitionsResponse,
 } from "./types/common";
 
 /**
@@ -92,6 +93,15 @@ export const getQuiz = async (quizId: number): Promise<UserQuizInstance> => {
 };
 
 /**
+ * Récupère tous les quiz définis dans le système pour l'année en cours pour l'utilisateur.
+ * @returns QUizDefinitionsResponse - Liste de tous les quiz définis dans le système pour l'année en cours pour le user.
+ */
+
+export const getAllUserQuiz = async (): Promise<{ quizzes: AllQuizDefinitionsResponse[] }> => {
+  return request.get<{ quizzes: AllQuizDefinitionsResponse[] }>(QuizEndpoints.QUIZ_GET_ALL);
+};
+
+/**
  * Supprime un quiz spécifique.
  * @param {number} quizId - L'ID du quiz à supprimer.
  * @returns {Promise<void>}
@@ -126,7 +136,9 @@ export const submitQuiz = async (
  * @param {number} quizId - L'ID du quiz.
  * @returns {Promise<QuizNotesResponse>} Les notes et résultats du quiz.
  */
-export const getQuizNotes = async (quizId: number): Promise<QuizNotesResponse> => {
+export const getQuizNotes = async (
+  quizId: number,
+): Promise<QuizNotesResponse> => {
   const endpoint = QuizEndpoints.QUIZ_NOTES.replace(
     "{quiz_id}",
     quizId.toString(),
@@ -159,4 +171,3 @@ export const reactivateQuiz = async (quizId: number): Promise<void> => {
   );
   return request.post<void>(endpoint);
 };
-

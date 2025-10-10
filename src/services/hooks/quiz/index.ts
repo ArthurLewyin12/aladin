@@ -11,13 +11,14 @@ import {
   generateQuiz,
   deactivateQuiz,
   reactivateQuiz,
+  getAllUserQuiz,
 } from "@/services/controllers/quiz.controller";
 import {
   QuizSubmitPayload,
   QuizGeneratePayload,
 } from "@/services/controllers/types/common";
 import { createQueryKey } from "@/lib/request";
-
+import { AllQuizDefinitionsResponse } from "@/services/controllers/types/common";
 /**
  * Hook de requête pour récupérer l'historique des quiz de l'utilisateur.
  */
@@ -76,6 +77,18 @@ export const useQuiz = (quizId: number) => {
 };
 
 /**
+ *
+ * @returns tout les quiz du user pour l'année en cours
+ */
+
+export const useGetAllQuiz = () => {
+  return useQuery<{ quizzes: AllQuizDefinitionsResponse[] }>({
+    queryKey: createQueryKey("allQuiz"),
+    queryFn: () => getAllUserQuiz(),
+  });
+};
+
+/**
  * Hook de mutation pour supprimer un quiz.
  */
 export const useDeleteQuiz = () => {
@@ -124,7 +137,7 @@ export const useDeactivateQuiz = () => {
     },
     onError: (error) => {
       toast.error(error.message || "Une erreur est survenue.");
-    }
+    },
   });
 };
 
@@ -141,6 +154,6 @@ export const useReactivateQuiz = () => {
     },
     onError: (error) => {
       toast.error(error.message || "Une erreur est survenue.");
-    }
+    },
   });
 };

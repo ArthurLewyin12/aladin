@@ -75,6 +75,7 @@ export enum QuizEndpoints {
   QUIZ_NOTES = "/api/quizzes/{quiz_id}/notes",
   DESACTIVATE_QUIZ = "/api/quizzes/{quizId}/deactivate",
   REACTIVATE_QUIZ = "/api/quizzes/{quizId}/reactivate",
+  QUIZ_GET_ALL = "/api/quizzes/my-generated",
 }
 
 /**
@@ -113,11 +114,23 @@ export enum NotificationEndpoints {
   GET_NOTIFICATIONS = "/api/notifications",
 }
 
+/**
+ * route pour la gestion des niveaux
+ */
 export enum NiveauEndpoints {
   GET_ALL = "/api/niveaux",
   GET_ONE = "/api/niveaux/{niveauId}",
 }
 
+/**
+ * route pour la gestion des contacts sur la page settings
+ */
 export enum ConctactAdminEndpoints {
   CONTACT = "/api/settings/contact-admin",
+}
+
+export enum DashboardEndpoints {
+  STATS = "/api/eleve/stats/{eleveId}",
+  DASHBOARD = "/api/eleve/{eleveId}?period={period}",
+  CLASSES = "/api/eleve/classes/{eleveId}",
 }

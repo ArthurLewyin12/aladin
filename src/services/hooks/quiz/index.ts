@@ -175,3 +175,6 @@ export const useReactivateQuiz = () => {
     },
   });
 };
+
+// Export du hook pour les quiz de groupe
+export { useGroupQuizzes } from "./useGroupQuizzes";

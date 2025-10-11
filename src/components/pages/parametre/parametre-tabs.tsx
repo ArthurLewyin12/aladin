@@ -1,66 +1,65 @@
-import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react";
+"use client";
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import { Settings, CreditCard, GraduationCap } from "lucide-react";
+import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import SettingsGeneralPage from "./general";
 
 export default function ParametreTabs() {
+  const [activeTab, setActiveTab] = useState("Général");
+
+  const tabs = [
+    {
+      label: "Général",
+      icon: <Settings className="w-4 h-4" aria-hidden="true" />,
+    },
+    {
+      label: "Abonnements",
+      icon: <CreditCard className="w-4 h-4" aria-hidden="true" />,
+    },
+    {
+      label: "Mes Classes",
+      icon: <GraduationCap className="w-4 h-4" aria-hidden="true" />,
+    },
+  ];
+
   return (
-    <Tabs defaultValue="tab-1">
-      <ScrollArea>
-        <TabsList className="mb-3 gap-1 bg-transparent px-1.5 md:ml-30">
-          <TabsTrigger
-            value="tab-1"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none"
-          >
-            {/*<HouseIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />*/}
-            <span className="text-[1.3rem] ">Général</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-2"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none"
-          >
-            {/*<PanelsTopLeftIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />*/}
-            <span className="text-[1.3rem]">Mes Abonnements</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-3"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full data-[state=active]:shadow-none"
-          >
-            {/*<BoxIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />*/}
-            <span className="text-[1.3rem]">Mes Classes</span>
-          </TabsTrigger>
-        </TabsList>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
-      <TabsContent value="tab-1">
-        {/*<p className="text-muted-foreground p-4 pt-1 text-center text-xs">
-          Content for Tab 1
-        </p>*/}
-        <SettingsGeneralPage />
-      </TabsContent>
-      <TabsContent value="tab-2">
-        <p className="text-muted-foreground p-4 pt-1 text-center text-xs">
-          Contenu pour le tab2
+    <div className="max-w-5xl mx-auto space-y-6 px-2 sm:px-0">
+      {/* Header avec titre */}
+      <div className="backdrop-blur-sm rounded-2xl p-4 sm:p-5 shadow-sm bg-white/50">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          Paramètres
+        </h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          Gère tes informations et préférences
         </p>
-      </TabsContent>
-      <TabsContent value="tab-3">
-        <p className="text-muted-foreground p-4 pt-1 text-center text-xs">
-          Contenu pour le tab3
-        </p>
-      </TabsContent>
-    </Tabs>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex justify-center mb-6">
+        <AnimatedTabs tabs={tabs} onTabChange={setActiveTab} />
+      </div>
+
+      {/* Contenu basé sur l'onglet actif */}
+      <div className="mt-6">
+        {activeTab === "Général" && <SettingsGeneralPage />}
+        {activeTab === "Abonnements" && (
+          <div className="rounded-2xl bg-[#F5E6D3] p-6 text-center shadow-sm">
+            <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+            <p className="text-gray-700 text-base font-medium">
+              Contenu des abonnements à venir
+            </p>
+          </div>
+        )}
+        {activeTab === "Mes Classes" && (
+          <div className="rounded-2xl bg-[#D4EBE8] p-6 text-center shadow-sm">
+            <GraduationCap className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+            <p className="text-gray-700 text-base font-medium">
+              Contenu des classes à venir
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

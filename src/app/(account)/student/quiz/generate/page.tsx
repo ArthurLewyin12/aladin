@@ -17,6 +17,8 @@ import {
 } from "@/services/controllers/types/common";
 import { toast } from "@/lib/toast";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
+import { useTimeTracking } from "@/stores/useTimeTracking";
+import { calculateQuizScore } from "@/lib/quiz-score";
 
 const quizLoadingMessages = [
   "Génération du quiz en cours...",
@@ -53,6 +55,7 @@ export default function GenerateQuizPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useSession();
+  const { startTracking, stopTracking } = useTimeTracking();
 
   useEffect(() => {
     const matiereId = searchParams.get("matiereId");
@@ -66,6 +69,22 @@ export default function GenerateQuizPage() {
       setStep("config");
     }
   }, [searchParams]);
+
+  // Démarrer le tracking quand le quiz commence
+  useEffect(() => {
+    if (step === "quiz" && activeQuizId && selectedChapitreId) {
+      startTracking("quiz", activeQuizId, selectedChapitreId, {
+        difficulte: selectedDifficulty,
+      });
+    }
+
+    // Arrêter le tracking au démontage
+    return () => {
+      if (step === "quiz") {
+        stopTracking();
+      }
+    };
+  }, [step, activeQuizId, selectedChapitreId, selectedDifficulty]);
 
   const { data: matieresData, isLoading: isLoadingMatieres } =
     useMatieresByNiveau(user?.niveau?.id || user?.niveau_id || 0);
@@ -142,18 +161,13 @@ export default function GenerateQuizPage() {
 
     const answersToSubmit = answers || userAnswers;
 
-    let score = 0;
-    for (const question of quizQuestions) {
-      const userAnswerId = answersToSubmit[question.id];
-      if (userAnswerId == question.bonne_reponse_id) {
-        score++;
-      }
-    }
+    // Calculer le score avec l'utilitaire centralisé
+    const scoreResult = calculateQuizScore(quizQuestions, answersToSubmit);
 
     try {
       const result = await submitQuizMutation.mutateAsync({
         quizId: activeQuizId,
-        payload: { score },
+        payload: { score: scoreResult.scoreForApi }, // Envoie le nombre de bonnes réponses
       });
       toast({
         variant: "success",

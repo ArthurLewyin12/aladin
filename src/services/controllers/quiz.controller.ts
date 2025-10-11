@@ -14,6 +14,7 @@ import {
   QuizQuestion,
   ApprofondissementQuestion,
 } from "./types/common/quiz.types";
+import { GroupQuizzesResponse } from "./types/common/groupe-quiz.types";
 
 /**
  * Récupère l'historique des quiz passés par l'utilisateur.
@@ -234,4 +235,12 @@ export const singleQuiz = async (
       questions_approfondissement: transformedApprofondissement,
     },
   };
+};
+
+/**
+ * Récupère tous les quiz de groupe de l'utilisateur
+ * @returns {Promise<GroupQuizzesResponse>} La liste des quiz de groupe
+ */
+export const getGroupQuizzes = async (): Promise<GroupQuizzesResponse> => {
+  return request.get<GroupQuizzesResponse>("/api/eleve/group-quizzes");
 };

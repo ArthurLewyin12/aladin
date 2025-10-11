@@ -164,7 +164,7 @@ function OtpFormComponent() {
                   Vérification...
                 </>
               ) : (
-                "Activer mon compte"
+                "Vérifier mon email"
               )}
             </Button>
 

@@ -41,6 +41,9 @@ export const UserCourseCard = ({
 
       {/* Informations du cours */}
       <div className="mb-6 space-y-1">
+        <p className="text-sm text-gray-500">
+          Généré le : {new Date(course.created_at).toLocaleDateString()}
+        </p>
         <p className="text-base text-gray-500">
           Matière : {course.chapitre?.matiere?.libelle || "N/A"}
         </p>
@@ -50,12 +53,9 @@ export const UserCourseCard = ({
         <p className="text-sm text-gray-500 line-clamp-3">
           Aperçu : {course.text_preview || "Pas d'aperçu disponible."}
         </p>
-        <p className="text-sm text-gray-500">
+        {/*<p className="text-sm text-gray-500">
           Questions : {course.questions_count}
-        </p>
-        <p className="text-sm text-gray-500">
-          Généré le : {new Date(course.created_at).toLocaleDateString()}
-        </p>
+        </p>*/}
       </div>
 
       {/* Footer avec bouton "Voir les détails" */}
@@ -65,7 +65,7 @@ export const UserCourseCard = ({
           onClick={() => onDetailsClick && onDetailsClick(course.id)}
           className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
         >
-          Voir les détails
+          Voir le cours complet
         </Button>
       </div>
     </div>

@@ -81,13 +81,6 @@ export default function GenerateQuizPage() {
     matieres.find((m) => m.id === selectedMatiereId)?.libelle || "";
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
-  const handleAnswerSelect = (
-    questionId: string | number,
-    answerId: string | number,
-  ) => {
-    setUserAnswers((prev) => ({ ...prev, [questionId]: answerId }));
-  };
-
   const handleNextQuestion = () => {
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -142,12 +135,16 @@ export default function GenerateQuizPage() {
     }
   };
 
-  const handleSubmitQuiz = async () => {
+  const handleSubmitQuiz = async (
+    answers?: Record<string | number, string | number>,
+  ) => {
     if (!activeQuizId) return;
+
+    const answersToSubmit = answers || userAnswers;
 
     let score = 0;
     for (const question of quizQuestions) {
-      const userAnswerId = userAnswers[question.id];
+      const userAnswerId = answersToSubmit[question.id];
       if (userAnswerId == question.bonne_reponse_id) {
         score++;
       }
@@ -180,7 +177,7 @@ export default function GenerateQuizPage() {
             question: question.question,
             propositions: propositions,
             bonne_reponse_id: question.bonne_reponse,
-            user_answer: userAnswers[question.id],
+            user_answer: answersToSubmit[question.id],
           };
         },
       );
@@ -444,9 +441,19 @@ export default function GenerateQuizPage() {
               <div>
                 <RadioGroup
                   value={userAnswers[currentQuestion.id]?.toString() || ""}
-                  onValueChange={(value) =>
-                    handleAnswerSelect(currentQuestion.id, value)
-                  }
+                  onValueChange={(value) => {
+                    const newAnswers = {
+                      ...userAnswers,
+                      [currentQuestion.id]: value,
+                    };
+                    setUserAnswers(newAnswers);
+
+                    if (currentQuestionIndex === quizQuestions.length - 1) {
+                      setTimeout(() => handleSubmitQuiz(newAnswers), 300);
+                    } else {
+                      setTimeout(() => handleNextQuestion(), 300);
+                    }
+                  }}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {currentQuestion.propositions.map((proposition, index) => {
@@ -472,40 +479,6 @@ export default function GenerateQuizPage() {
                     })}
                   </div>
                 </RadioGroup>
-              </div>
-
-              {/* Navigation buttons */}
-              <div className="flex justify-between items-center pt-6">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousQuestion}
-                  disabled={currentQuestionIndex === 0}
-                  className="px-6 py-2"
-                >
-                  Précédent
-                </Button>
-                {currentQuestionIndex === quizQuestions.length - 1 ? (
-                  <Button
-                    onClick={handleSubmitQuiz}
-                    disabled={
-                      !userAnswers[currentQuestion.id] ||
-                      submitQuizMutation.isPending
-                    }
-                    className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-8 py-3 rounded-lg font-semibold text-lg"
-                  >
-                    {submitQuizMutation.isPending
-                      ? "Soumission..."
-                      : "Soumettre le quiz"}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleNextQuestion}
-                    disabled={!userAnswers[currentQuestion.id]}
-                    className="px-6 py-2"
-                  >
-                    Suivant
-                  </Button>
-                )}
               </div>
             </div>
           </div>

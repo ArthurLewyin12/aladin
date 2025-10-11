@@ -140,7 +140,7 @@ export function AccountHeader() {
               className="cursor-pointer"
             >
               <Settings className="mr-2 h-4 w-4" />
-              <span>Paramètres</span>
+              <span>Mes Paramètres</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

@@ -43,18 +43,18 @@ export const UserQuizCard = ({
 
       {/* Informations du quiz */}
       <div className="mb-6 space-y-1">
+        <p className="text-sm text-gray-500">
+          Généré le : {new Date(quiz.created_at).toLocaleDateString()}
+        </p>
+        <p className="text-base text-gray-500">
+          Niveau : {quiz.chapitre?.niveau?.libelle || "N/A"}
+        </p>
         <p className="text-sm text-gray-500">Difficulté : {quiz.difficulte}</p>
         <p className="text-base font-bold text-gray-900">
           Durée estimée : {quiz.time} min
         </p>
         <p className="text-base text-gray-500">
           Matière : {quiz.chapitre?.matiere?.libelle || "N/A"}
-        </p>
-        <p className="text-base text-gray-500">
-          Niveau : {quiz.chapitre?.niveau?.libelle || "N/A"}
-        </p>
-        <p className="text-sm text-gray-500">
-          Généré le : {new Date(quiz.created_at).toLocaleDateString()}
         </p>
       </div>
 

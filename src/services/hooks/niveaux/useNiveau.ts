@@ -17,7 +17,7 @@ import { createQueryKey } from "@/lib/request";
  */
 export const useNiveau = () => {
   return useQuery({
-    queryKey: createQueryKey("matieres"),
+    queryKey: createQueryKey("niveaux"),
     queryFn: async () => getLevels(),
   });
 };

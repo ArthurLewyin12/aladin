@@ -18,11 +18,6 @@ interface CorrectionQCM {
   bonne_reponse: string;
 }
 
-interface Corrections {
-  qcm: CorrectionQCM[];
-  questions_approfondissement: any[];
-}
-
 // Composant Card pour une question QCM
 const CARD_COLORS = [
   "bg-[#F5E6D3]", // Beige/Pêche
@@ -94,7 +89,7 @@ export default function GroupQuizResultPage() {
   const router = useRouter();
   const params = useParams();
   const { groupId, quizId } = params;
-  const [corrections, setCorrections] = useState<Corrections | null>(null);
+  const [corrections, setCorrections] = useState<CorrectionQCM[] | null>(null);
   const [score, setScore] = useState<number | null>(null);
 
   useEffect(() => {
@@ -140,7 +135,7 @@ export default function GroupQuizResultPage() {
     );
   }
 
-  const totalQuestions = corrections.qcm.length;
+  const totalQuestions = corrections.length;
   const hasScore = score !== null;
 
   return (
@@ -232,7 +227,7 @@ export default function GroupQuizResultPage() {
             Correction Détaillée
           </h2>
           <div className="grid grid-cols-1 gap-4">
-            {corrections.qcm.map((qcmItem: CorrectionQCM, index: number) => (
+            {corrections.map((qcmItem: CorrectionQCM, index: number) => (
               <QuestionCard key={index} qcmItem={qcmItem} index={index} />
             ))}
           </div>

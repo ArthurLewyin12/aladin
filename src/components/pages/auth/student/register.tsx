@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,13 +35,14 @@ import {
 import { useRegister } from "@/services/hooks/users/useUser";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
+import { useNiveau } from "@/services/hooks/niveaux/useNiveau";
 
 const formSchema = z
   .object({
     nom: z.string().min(1, "Nom requis"),
     prenom: z.string().min(1, "Prénom requis"),
     status: z.string().min(1, "Statut requis"),
-    level: z.string().min(1, "Niveau requis"),
+    niveau_id: z.string().min(1, "Niveau requis"),
     phone: z.string().optional(),
     email: z.string().email("Email invalide").min(1, "Email requis"),
     parentEmail: z
@@ -68,13 +69,19 @@ export default function AladinStudentInscriptionForm() {
   const { mutate: register, isPending } = useRegister();
   const router = useRouter();
 
+  const { data: niveauxData, isLoading: isLoadingNiveaux } = useNiveau();
+
+  const niveaux = useMemo(() => {
+    return niveauxData || [];
+  }, [niveauxData]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       nom: "",
       prenom: "",
       status: "",
-      level: "",
+      niveau_id: "",
       phone: "",
       email: "",
       parentEmail: "",
@@ -92,7 +99,7 @@ export default function AladinStudentInscriptionForm() {
       nom: values.nom,
       prenom: values.prenom,
       statut: values.status as any,
-      niveau_id: 2, // Temporarily hardcoded as per user request
+      niveau_id: Number(values.niveau_id), // Dynamically set from form values
       numero: values.phone || "",
       parent_numero: values.parentPhone || "",
       parent_mail: values.parentEmail || "",
@@ -235,12 +242,13 @@ export default function AladinStudentInscriptionForm() {
           {/* Niveau */}
           <FormField
             control={form.control}
-            name="level"
+            name="niveau_id"
             render={({ field }) => (
               <FormItem>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isLoadingNiveaux}
                 >
                   <FormControl>
                     <SelectTrigger className="text-base w-full h-12 bg-gray-50 border-gray-200 rounded-lg">
@@ -248,13 +256,20 @@ export default function AladinStudentInscriptionForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="6eme">6ème</SelectItem>
-                    <SelectItem value="5eme">5ème</SelectItem>
-                    <SelectItem value="4eme">4ème</SelectItem>
-                    <SelectItem value="3eme">3ème</SelectItem>
-                    <SelectItem value="2nde">2nde</SelectItem>
-                    <SelectItem value="1ere">1ère</SelectItem>
-                    <SelectItem value="terminale">Terminale</SelectItem>
+                    {isLoadingNiveaux ? (
+                      <SelectItem value="loading" disabled>
+                        Chargement des niveaux...
+                      </SelectItem>
+                    ) : (
+                      niveaux.map((niveau: any) => (
+                        <SelectItem
+                          key={niveau.id}
+                          value={niveau.id.toString()}
+                        >
+                          {niveau.libelle}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />

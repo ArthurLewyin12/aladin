@@ -73,7 +73,7 @@ export function QuizList() {
 
             <Button
               size="lg"
-              onClick={() => router.push("/account/student/quiz/generate")}
+              onClick={() => router.push("/student/quiz/generate")}
               className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />

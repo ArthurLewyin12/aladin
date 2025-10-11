@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "@/lib/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,17 +12,54 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff } from "lucide-react";
+import {
+  User as UserIcon,
+  Lock,
+  MessageSquare,
+  GraduationCap,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useUpdateUserInfo } from "@/services/hooks/auth/useUpdateUserInfo";
 import { useUpdateUserPassword } from "@/services/hooks/auth/useUpdateUserPassword";
 import { UpdateUserInfoPayload } from "@/services/controllers/types/common/user.type";
 import { useSession } from "@/services/hooks/auth/useSession";
-import { User } from "@/services/controllers/types/auth.types";
 import { useContactAdmin } from "@/services/hooks/contact/useContactAdmin";
+import { useNiveau } from "@/services/hooks/niveaux/useNiveau";
+import { useUpdateNiveau } from "@/services/hooks/niveaux/useUpdateNiveau";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
 
 // Schema pour les informations du profil
 const profileSchema = z.object({
@@ -47,11 +84,56 @@ const contactSchema = z.object({
     .min(10, "Le message doit contenir au moins 10 caractères"),
 });
 
-export default function SettingsGeneralPage() {
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const { user } = useSession();
+const CARD_COLORS = [
+  "bg-[#F5E6D3]", // Beige/Pêche
+  "bg-[#D4EBE8]", // Bleu clair
+  "bg-[#E5DFF7]", // Violet clair
+  "bg-[#FFE8D6]", // Orange clair
+];
 
-  console.log("User from useSession:", user);
+export default function SettingsGeneralPage() {
+  const { user } = useSession();
+  const { data: niveaux, isLoading: isLoadingNiveaux } = useNiveau();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // Calculer si l'utilisateur peut changer de niveau
+  const canChangeNiveau = useMemo(() => {
+    if (!user) return { allowed: false, reason: "" };
+
+    // Vérifier si l'utilisateur a déjà modifié son niveau
+    if (
+      user.nombre_modification_niveau &&
+      user.nombre_modification_niveau > 0
+    ) {
+      return {
+        allowed: false,
+        reason: "Tu as déjà modifié ton niveau cette année scolaire.",
+      };
+    }
+
+    // Vérifier si l'utilisateur est dans les 48h après inscription
+    const createdAt = new Date(user.created_at);
+    const now = new Date();
+    const hoursSinceCreation =
+      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+    if (hoursSinceCreation <= 48) {
+      return {
+        allowed: true,
+        reason: `Tu peux encore modifier ton niveau pendant ${Math.ceil(48 - hoursSinceCreation)} heure(s).`,
+      };
+    }
+
+    // Sinon, l'utilisateur peut modifier son niveau une seule fois par an
+    return {
+      allowed: true,
+      reason:
+        "Tu peux modifier ton niveau une seule fois durant l'année scolaire.",
+    };
+  }, [user]);
 
   // Form pour le profil
   const profileForm = useForm<z.infer<typeof profileSchema>>({
@@ -64,8 +146,6 @@ export default function SettingsGeneralPage() {
     },
   });
 
-  console.log("Profile form default values:", profileForm.getValues());
-
   useEffect(() => {
     if (user) {
       profileForm.reset({
@@ -74,6 +154,7 @@ export default function SettingsGeneralPage() {
         phone: user.numero || "",
         email: user.mail || "",
       });
+      setSelectedNiveau(user.niveau_id?.toString() || "");
     }
   }, [user, profileForm]);
 
@@ -100,6 +181,8 @@ export default function SettingsGeneralPage() {
     useUpdateUserPassword();
   const { mutate: contactAdmin, isPending: isContactingAdmin } =
     useContactAdmin();
+  const { mutate: updateNiveau, isPending: isUpdatingNiveau } =
+    useUpdateNiveau();
 
   function onSubmitProfile(values: z.infer<typeof profileSchema>) {
     const payload: Partial<UpdateUserInfoPayload> = {
@@ -110,7 +193,11 @@ export default function SettingsGeneralPage() {
     };
     updateUserInfo(payload, {
       onSuccess: () => {
-        toast({ variant: "success", message: "Modifications enregistrées!" });
+        toast({
+          variant: "success",
+          title: "Succès",
+          message: "Modifications enregistrées!",
+        });
       },
       onError: (error) => {
         toast({
@@ -131,7 +218,11 @@ export default function SettingsGeneralPage() {
       },
       {
         onSuccess: () => {
-          toast({ variant: "success", message: "Mot de passe changé!" });
+          toast({
+            variant: "success",
+            title: "Succès",
+            message: "Mot de passe changé!",
+          });
           passwordForm.reset();
         },
         onError: (error) => {
@@ -149,7 +240,11 @@ export default function SettingsGeneralPage() {
   function onSubmitContact(values: z.infer<typeof contactSchema>) {
     contactAdmin(values.message, {
       onSuccess: () => {
-        toast({ variant: "success", message: "Message envoyé!" });
+        toast({
+          variant: "success",
+          title: "Succès",
+          message: "Message envoyé!",
+        });
         contactForm.reset();
       },
       onError: (error) => {
@@ -163,13 +258,148 @@ export default function SettingsGeneralPage() {
     });
   }
 
+  function handleOpenConfirmDialog() {
+    if (!selectedNiveau || selectedNiveau === user?.niveau_id?.toString()) {
+      toast({
+        variant: "error",
+        title: "Erreur",
+        message: "Veuillez sélectionner un niveau différent.",
+      });
+      return;
+    }
+    setShowConfirmDialog(true);
+  }
+
+  function onChangeNiveau() {
+    updateNiveau(parseInt(selectedNiveau), {
+      onSuccess: () => {
+        setShowConfirmDialog(false);
+      },
+    });
+  }
+
+  const selectedNiveauLabel = useMemo(() => {
+    return niveaux?.find((n) => n.id.toString() === selectedNiveau)?.libelle;
+  }, [niveaux, selectedNiveau]);
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-12">
-      {/* Section 1: Modifier les informations du profil */}
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-          Modifier les informations du profil
-        </h2>
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Section 1: Changement de niveau */}
+      <div
+        className={cn(
+          "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+          CARD_COLORS[0],
+        )}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <GraduationCap className="w-6 h-6 text-gray-900" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Changer de niveau
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Modifie ton année scolaire
+            </p>
+          </div>
+        </div>
+
+        {/* Info box */}
+        <div
+          className={cn(
+            "mb-6 p-4 rounded-2xl border-2",
+            canChangeNiveau.allowed
+              ? "bg-green-50 border-green-200"
+              : "bg-red-50 border-red-200",
+          )}
+        >
+          <div className="flex items-start gap-3">
+            {canChangeNiveau.allowed ? (
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            )}
+            <div>
+              <p
+                className={cn(
+                  "text-sm font-medium",
+                  canChangeNiveau.allowed ? "text-green-900" : "text-red-900",
+                )}
+              >
+                {canChangeNiveau.reason}
+              </p>
+              {!canChangeNiveau.allowed && (
+                <p className="text-xs text-red-700 mt-1">
+                  Tu ne pourras plus modifier ton niveau jusqu'à la prochaine
+                  année scolaire.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Current niveau */}
+        <div className="mb-4 p-4 bg-white/60 rounded-2xl">
+          <p className="text-sm text-gray-600 mb-1">Niveau actuel</p>
+          <p className="text-lg font-bold text-gray-900">
+            {user?.niveau?.libelle || "Non défini"}
+          </p>
+        </div>
+
+        {/* Select niveau */}
+        <div className="space-y-4">
+          <Select
+            value={selectedNiveau}
+            onValueChange={setSelectedNiveau}
+            disabled={!canChangeNiveau.allowed || isLoadingNiveaux}
+          >
+            <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
+              <SelectValue placeholder="Sélectionne un nouveau niveau" />
+            </SelectTrigger>
+            <SelectContent>
+              {niveaux?.map((niveau) => (
+                <SelectItem key={niveau.id} value={niveau.id.toString()}>
+                  {niveau.libelle}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button
+            onClick={handleOpenConfirmDialog}
+            disabled={
+              !canChangeNiveau.allowed ||
+              !selectedNiveau ||
+              selectedNiveau === user?.niveau_id?.toString()
+            }
+            className="w-full h-12 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl shadow-md transition-all hover:shadow-lg"
+          >
+            Changer de niveau
+          </Button>
+        </div>
+      </div>
+
+      {/* Section 2: Modifier les informations du profil */}
+      <div
+        className={cn(
+          "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+          CARD_COLORS[1],
+        )}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <UserIcon className="w-6 h-6 text-gray-900" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Informations du profil
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Modifie tes informations personnelles
+            </p>
+          </div>
+        </div>
 
         <Form {...profileForm}>
           <form
@@ -177,16 +407,19 @@ export default function SettingsGeneralPage() {
             className="space-y-4"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Nom */}
+              {/* Prénom */}
               <FormField
                 control={profileForm.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel className="text-gray-900 font-medium">
+                      Prénom
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Nom"
-                        className="h-12 bg-white border-gray-300 rounded-lg"
+                        placeholder="Prénom"
+                        className="h-12 bg-white border-2 border-gray-300 rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -195,16 +428,19 @@ export default function SettingsGeneralPage() {
                 )}
               />
 
-              {/* Prénom */}
+              {/* Nom */}
               <FormField
                 control={profileForm.control}
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel className="text-gray-900 font-medium">
+                      Nom
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Prénom"
-                        className="h-12 bg-white border-gray-300 rounded-lg"
+                        placeholder="Nom"
+                        className="h-12 bg-white border-2 border-gray-300 rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -219,10 +455,13 @@ export default function SettingsGeneralPage() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel className="text-gray-900 font-medium">
+                      Téléphone
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Téléphone"
-                        className="h-12 bg-white border-gray-300 rounded-lg"
+                        className="h-12 bg-white border-2 border-gray-300 rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -237,11 +476,14 @@ export default function SettingsGeneralPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel className="text-gray-900 font-medium">
+                      Email
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Email"
                         type="email"
-                        className="h-12 bg-white border-gray-300 rounded-lg"
+                        className="h-12 bg-white border-2 border-gray-300 rounded-xl"
                         {...field}
                       />
                     </FormControl>
@@ -254,7 +496,7 @@ export default function SettingsGeneralPage() {
             {/* Bouton Enregistrer */}
             <Button
               type="submit"
-              className="h-12 px-8 bg-[#111D4A] hover:bg-[#1a2a5e] text-white font-medium rounded-lg"
+              className="h-12 w-full sm:w-auto px-8 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl shadow-md transition-all hover:shadow-lg"
               disabled={isUpdatingUserInfo}
             >
               {isUpdatingUserInfo
@@ -265,11 +507,26 @@ export default function SettingsGeneralPage() {
         </Form>
       </div>
 
-      {/* Section 2: Changer le mot de passe */}
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-          Changer le mot de passe
-        </h2>
+      {/* Section 3: Changer le mot de passe */}
+      <div
+        className={cn(
+          "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+          CARD_COLORS[2],
+        )}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <Lock className="w-6 h-6 text-gray-900" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Changer le mot de passe
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Assure-toi que ton compte reste sécurisé
+            </p>
+          </div>
+        </div>
 
         <Form {...passwordForm}>
           <form
@@ -282,15 +539,16 @@ export default function SettingsGeneralPage() {
               name="oldPassword"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className="text-gray-900 font-medium">
+                    Ancien mot de passe
+                  </FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <PasswordInput
-                        type={showOldPassword ? "text" : "password"}
-                        placeholder="Ancien Mot de passe :"
-                        className="h-12 bg-white border-gray-300 rounded-lg pr-10"
-                        {...field}
-                      />
-                    </div>
+                    <PasswordInput
+                      type="password"
+                      placeholder="Ancien mot de passe"
+                      className="h-12 bg-white border-2 border-gray-300 rounded-xl"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -299,8 +557,11 @@ export default function SettingsGeneralPage() {
 
             {/* Lien mot de passe oublié */}
             <div>
-              <a href="#" className="text-blue-600 hover:underline text-sm">
-                Mot de pass oublié ?
+              <a
+                href="/forgot-password"
+                className="text-blue-600 hover:underline text-sm font-medium"
+              >
+                Mot de passe oublié ?
               </a>
             </div>
 
@@ -310,11 +571,14 @@ export default function SettingsGeneralPage() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className="text-gray-900 font-medium">
+                    Nouveau mot de passe
+                  </FormLabel>
                   <FormControl>
                     <PasswordInput
                       type="password"
-                      placeholder="Nouveau  Mot de passe :"
-                      className="h-12 bg-white border-gray-300 rounded-lg"
+                      placeholder="Nouveau mot de passe"
+                      className="h-12 bg-white border-2 border-gray-300 rounded-xl"
                       {...field}
                     />
                   </FormControl>
@@ -326,7 +590,7 @@ export default function SettingsGeneralPage() {
             {/* Bouton Changer */}
             <Button
               type="submit"
-              className="h-12 px-8 bg-[#111D4A] hover:bg-[#1a2a5e] text-white font-medium rounded-lg"
+              className="h-12 w-full sm:w-auto px-8 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl shadow-md transition-all hover:shadow-lg"
               disabled={isUpdatingUserPassword}
             >
               {isUpdatingUserPassword
@@ -337,15 +601,26 @@ export default function SettingsGeneralPage() {
         </Form>
       </div>
 
-      {/* Section 3: Contacter l'administrateur */}
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          Contacter l'administrateur
-        </h2>
-        <p className="text-gray-600 text-sm mb-6">
-          Besoin d'aide ? Explique brièvement ton problème et un administrateur
-          te contactera après traitement de ta demande.
-        </p>
+      {/* Section 4: Contacter l'administrateur */}
+      <div
+        className={cn(
+          "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+          CARD_COLORS[3],
+        )}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <MessageSquare className="w-6 h-6 text-gray-900" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Contacter l'administrateur
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Besoin d'aide ? On est là pour toi
+            </p>
+          </div>
+        </div>
 
         <Form {...contactForm}>
           <form
@@ -358,10 +633,13 @@ export default function SettingsGeneralPage() {
               name="message"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className="text-gray-900 font-medium">
+                    Ton message
+                  </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Décris ton problème"
-                      className="min-h-[150px] bg-gray-100 border-gray-300 rounded-lg resize-none"
+                      placeholder="Décris ton problème ou ta question..."
+                      className="min-h-[150px] bg-white border-2 border-gray-300 rounded-xl resize-none"
                       {...field}
                       maxLength={500}
                     />
@@ -374,7 +652,7 @@ export default function SettingsGeneralPage() {
             {/* Bouton Envoyer */}
             <Button
               type="submit"
-              className="h-12 px-8 bg-[#111D4A] hover:bg-[#1a2a5e] text-white font-medium rounded-lg"
+              className="h-12 w-full sm:w-auto px-8 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl shadow-md transition-all hover:shadow-lg"
               disabled={isContactingAdmin}
             >
               {isContactingAdmin ? "Envoi..." : "Envoyer"}
@@ -382,6 +660,98 @@ export default function SettingsGeneralPage() {
           </form>
         </Form>
       </div>
+
+      {/* AlertDialog pour desktop */}
+      {isDesktop ? (
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent className="rounded-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-xl">
+                <AlertCircle className="w-6 h-6 text-orange-500" />
+                Confirmer le changement de niveau
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-base pt-2">
+                Tu es sur le point de changer ton niveau de{" "}
+                <span className="font-semibold text-gray-900">
+                  {user?.niveau?.libelle}
+                </span>{" "}
+                vers{" "}
+                <span className="font-semibold text-gray-900">
+                  {selectedNiveauLabel}
+                </span>
+                .
+                <br />
+                <br />
+                <span className="text-orange-600 font-medium">
+                  ⚠️ Cette action est irréversible pour cette année scolaire.
+                </span>
+                {" "}Tu ne pourras plus modifier ton niveau une fois la
+                confirmation effectuée.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-xl">
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={onChangeNiveau}
+                disabled={isUpdatingNiveau}
+                className="bg-[#2C3E50] hover:bg-[#1a252f] rounded-xl"
+              >
+                {isUpdatingNiveau ? "Modification..." : "Confirmer"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : (
+        /* Drawer pour mobile */
+        <Drawer open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DrawerContent className="rounded-t-3xl">
+            <DrawerHeader className="text-left">
+              <DrawerTitle className="flex items-center gap-2 text-xl">
+                <AlertCircle className="w-6 h-6 text-orange-500" />
+                Confirmer le changement
+              </DrawerTitle>
+              <DrawerDescription className="text-base pt-2">
+                Tu es sur le point de changer ton niveau de{" "}
+                <span className="font-semibold text-gray-900">
+                  {user?.niveau?.libelle}
+                </span>{" "}
+                vers{" "}
+                <span className="font-semibold text-gray-900">
+                  {selectedNiveauLabel}
+                </span>
+                .
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="px-4 pb-4">
+              <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-2xl">
+                <p className="text-sm text-orange-900 font-medium">
+                  ⚠️ Cette action est irréversible pour cette année scolaire.
+                </p>
+                <p className="text-sm text-orange-700 mt-2">
+                  Tu ne pourras plus modifier ton niveau une fois la
+                  confirmation effectuée.
+                </p>
+              </div>
+            </div>
+            <DrawerFooter>
+              <Button
+                onClick={onChangeNiveau}
+                disabled={isUpdatingNiveau}
+                className="h-12 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl"
+              >
+                {isUpdatingNiveau ? "Modification..." : "Confirmer"}
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="outline" className="h-12 rounded-xl">
+                  Annuler
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
     </div>
   );
 }

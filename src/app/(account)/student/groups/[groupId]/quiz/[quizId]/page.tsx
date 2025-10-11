@@ -12,6 +12,8 @@ import {
 } from "@/services/controllers/types/common";
 // import { toast } from "sonner";
 import { toast } from "@/lib/toast";
+import { useTimeTracking } from "@/stores/useTimeTracking";
+import { calculateQuizScore } from "@/lib/quiz-score";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -29,6 +31,7 @@ export default function GroupQuizTakingPage() {
   const { groupId, quizId } = params;
 
   const submitQuizMutation = useSubmitGroupQuiz();
+  const { startTracking, stopTracking } = useTimeTracking();
 
   useEffect(() => {
     try {
@@ -66,6 +69,25 @@ export default function GroupQuizTakingPage() {
     }
   }, [groupId, router]);
 
+  // Démarrer le tracking quand le quiz est chargé
+  useEffect(() => {
+    if (!isLoading && quizDefinition && quizId) {
+      const chapitreId = quizDefinition?.chapitre_id;
+      const difficulte = quizDefinition?.difficulte;
+
+      if (chapitreId) {
+        startTracking("quiz", Number(quizId), chapitreId, {
+          difficulte,
+        });
+      }
+    }
+
+    // Arrêter le tracking au démontage
+    return () => {
+      stopTracking();
+    };
+  }, [isLoading, quizDefinition, quizId]);
+
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
   const handleNextQuestion = () => {
@@ -77,10 +99,10 @@ export default function GroupQuizTakingPage() {
   const handleSubmitQuiz = async () => {
     if (!quizId) return;
 
-    // Note: Score calculation is illustrative. The backend doesn't use it, but we send it as per the spec.
-    const score = Object.keys(userAnswers).length;
+    // Calculer le score avec l'utilitaire centralisé
+    const scoreResult = calculateQuizScore(quizQuestions, userAnswers);
 
-    const payload: QuizSubmitPayload = { score };
+    const payload: QuizSubmitPayload = { score: scoreResult.scoreForApi };
 
     try {
       const result = await submitQuizMutation.mutateAsync({

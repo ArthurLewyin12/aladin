@@ -122,6 +122,7 @@ export enum NotificationEndpoints {
 export enum NiveauEndpoints {
   GET_ALL = "/api/niveaux",
   GET_ONE = "/api/niveaux/{niveauId}",
+  UPDATE = "api/profile/update_niveau",
 }
 
 /**
@@ -135,4 +136,11 @@ export enum DashboardEndpoints {
   STATS = "/api/eleves/{eleveId}/stats",
   DASHBOARD = "/api/eleves/{eleveId}/dashboard?period={period}",
   CLASSES = "/api/eleves/{eleveId}/classes",
+}
+
+/**
+ * Endpoints relatifs au tracking du temps d'étude.
+ */
+export enum TrackingEndpoints {
+  SAVE_TIME = "/api/tracking/time",
 }

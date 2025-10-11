@@ -1,15 +1,21 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { QuizList } from "@/components/pages/user-quizzes/quiz-list";
+import { GroupQuizList } from "@/components/pages/user-quizzes/group-quiz-list";
+import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { ArrowLeft } from "lucide-react";
 
 export default function QuizPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("Mes Quiz");
 
   const handleBack = () => {
     router.push("/student/home");
   };
+
+  const tabs = [{ label: "Mes Quiz" }, { label: "Quiz de Groupe" }];
 
   return (
     <div
@@ -40,7 +46,7 @@ export default function QuizPage() {
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-2xl sm:text-3xl">📚</span>
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
-              Tes quiz personnalisés !
+              Tes quiz !
             </h1>
           </div>
         </div>
@@ -54,8 +60,13 @@ export default function QuizPage() {
           </p>
         </div>
 
-        {/* Contenu principal */}
-        <QuizList />
+        {/* Tabs */}
+        <div className="flex justify-center mb-8">
+          <AnimatedTabs tabs={tabs} onTabChange={setActiveTab} />
+        </div>
+
+        {/* Contenu principal basé sur l'onglet actif */}
+        {activeTab === "Mes Quiz" ? <QuizList /> : <GroupQuizList />}
       </div>
     </div>
   );

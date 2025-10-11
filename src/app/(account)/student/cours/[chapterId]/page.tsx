@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCourse } from "@/services/hooks/cours/useCourses";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { ArrowLeft, BrainCircuit, HelpCircle } from "lucide-react";
 import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
 import { MathText } from "@/components/ui/MathText";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
+import { useTimeTracking } from "@/stores/useTimeTracking";
 
 const courseLoadingMessages = [
   "Génération de votre cours personnalisé...",
@@ -23,6 +24,20 @@ export default function CoursePage() {
   const chapterId = params.chapterId as string;
 
   const { data, isLoading, isError, error } = useCourse(chapterId);
+  const { startTracking, stopTracking } = useTimeTracking();
+
+  // Démarrer le tracking quand le cours est chargé
+  useEffect(() => {
+    if (!isLoading && data && "cours_id" in data) {
+      const courseData = data as GenerateCoursSuccessResponse;
+      startTracking("revision", courseData.cours_id, Number(chapterId));
+    }
+
+    // Arrêter le tracking au démontage
+    return () => {
+      stopTracking();
+    };
+  }, [isLoading, data, chapterId]);
 
   const parsedContent = useMemo(() => {
     if (!data || !("text" in data)) return [];

@@ -72,7 +72,7 @@ export function QuizDetailsModal({
 
   const title = quizData?.chapitre?.libelle || "Détails du Quiz";
   const description = quizData ? (
-    <>
+    <div className="flex flex-wrap gap-2 mt-2">
       <Badge variant="secondary" className="bg-slate-200 text-slate-700">
         <BookOpen className="w-3 h-3 mr-1.5" />
         {quizData.chapitre?.matiere?.libelle || "N/A"}{" "}
@@ -85,7 +85,7 @@ export function QuizDetailsModal({
         <Clock className="w-3 h-3 mr-1.5" />
         {quizData.time} min
       </Badge>
-    </>
+    </div>
   ) : (
     "Chargement des informations du quiz..."
   );
@@ -207,24 +207,24 @@ export function QuizDetailsModal({
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-2xl bg-slate-50 p-0 rounded-2xl">
-          <DialogHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
-            <DialogTitle className="text-2xl font-bold text-slate-900">
-              {title}
-            </DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
-          {renderBodyContent()}
+        <DialogContent className="sm:max-w-2xl bg-slate-50 p-0 rounded-2xl" showCloseButton={false}>
           <DialogClose asChild>
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+              className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </Button>
           </DialogClose>
+          <DialogHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
+            <DialogTitle className="text-2xl font-bold text-slate-900 pr-8">
+              {title}
+            </DialogTitle>
+            {description}
+          </DialogHeader>
+          {renderBodyContent()}
         </DialogContent>
       </Dialog>
     );
@@ -237,17 +237,7 @@ export function QuizDetailsModal({
           <DrawerTitle className="text-2xl font-bold text-slate-900">
             {title}
           </DrawerTitle>
-          <DrawerDescription>{description}</DrawerDescription>
-          <DrawerClose asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </Button>
-          </DrawerClose>
+          {description}
         </DrawerHeader>
         <div className="mx-auto w-full max-w-2xl">{renderBodyContent()}</div>
       </DrawerContent>

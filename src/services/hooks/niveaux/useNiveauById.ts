@@ -11,7 +11,7 @@ import { getLevelById } from "@/services/controllers/niveau.controller";
  */
 export const useNiveauById = (niveauId: number) => {
   return useQuery({
-    queryKey: createQueryKey("matieres", niveauId),
+    queryKey: createQueryKey("niveaux", niveauId),
     queryFn: () => getLevelById(niveauId),
     enabled: !!niveauId, // La requête ne s'exécute que si niveauId est fourni.
   });

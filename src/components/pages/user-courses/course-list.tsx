@@ -7,26 +7,36 @@ import { Plus, BookOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCourseCard } from "./user-course-card";
 import { Course } from "@/services/controllers/types/common/cours.type";
-import { CourseDetailsDialog } from "./course-details-dialog"; // Import the responsive dialog
+import { getOneCourse } from "@/services/controllers/cours.controller";
+import { toast } from "@/lib/toast";
 
 export function CourseList() {
   const router = useRouter();
   const { data, isLoading, isError, error } = useGetAllCourses();
   const courses: Course[] = (data?.courses as Course[]) || [];
-  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<Course | undefined>(
-    undefined,
-  );
+  const [loadingCourseId, setLoadingCourseId] = useState<number | null>(null);
 
-  const handleOpenDetails = (courseId: number) => {
-    const course = courses.find((c) => c.id === courseId);
-    setSelectedCourse(course);
-    setSelectedCourseId(courseId);
-  };
+  const handleOpenDetails = async (course: Course) => {
+    setLoadingCourseId(course.id);
 
-  const handleCloseDetails = () => {
-    setSelectedCourseId(null);
-    setSelectedCourse(undefined);
+    try {
+      // Tenter de charger le cours pour vérifier s'il est disponible
+      await getOneCourse(course.id);
+
+      // Si succès, rediriger vers la page du cours
+      router.push(`/student/cours/saved/${course.id}`);
+    } catch (err: any) {
+      // Si erreur (404 ou autre), afficher un toast informatif
+      toast({
+        title: "Cours en cours de préparation",
+        message:
+          "Ce cours sera bientôt disponible. Merci de réessayer dans quelques instants.",
+        variant: "warning",
+        duration: 4000,
+      });
+    } finally {
+      setLoadingCourseId(null);
+    }
   };
 
   if (isLoading) {
@@ -122,17 +132,12 @@ export function CourseList() {
               key={course.id}
               course={course}
               index={index}
-              onDetailsClick={() => handleOpenDetails(course.id)}
+              onDetailsClick={() => handleOpenDetails(course)}
+              isLoading={loadingCourseId === course.id}
             />
           ))}
         </div>
       </div>
-      <CourseDetailsDialog
-        courseId={selectedCourseId}
-        isOpen={selectedCourseId !== null}
-        onOpenChange={handleCloseDetails}
-        courseData={selectedCourse}
-      />
     </>
   );
 }

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useGetAllQuiz } from "@/services/hooks/quiz";
 import { UserQuizCard } from "./user-quiz-card";
 import { Spinner } from "@/components/ui/spinner";
-import { AllQuizDefinitionsResponse } from "@/services/controllers/types/common/quiz.types";
+import { Quiz } from "@/services/controllers/types/common/quiz.types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileQuestion } from "lucide-react";
@@ -13,7 +13,7 @@ import { QuizDetailsModal } from "./quiz-details-modal";
 export function QuizList() {
   const router = useRouter();
   const { data, isLoading, isError } = useGetAllQuiz();
-  const quizzes = (data?.quizzes as AllQuizDefinitionsResponse[]) || [];
+  const quizzes = (data?.quizzes as Quiz[]) || [];
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
 
   const handleOpenDetails = (quizId: number) => {

@@ -9,7 +9,7 @@ interface QuizCardProps {
   title: string;
   subject: string;
   numberOfQuestions: number;
-  duration: number; // en minutes
+  duration: number; // en secondes
   quizId: string;
   isActive: boolean;
   index: number;
@@ -28,6 +28,20 @@ const CARD_COLORS = [
   "bg-[#E5DFF7]", // Violet clair
   "bg-[#FFE8D6]", // Orange clair
 ];
+
+// Fonction pour formater la durée en secondes
+const formatDuration = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (minutes === 0) {
+    return `${remainingSeconds} sec`;
+  } else if (remainingSeconds === 0) {
+    return `${minutes} min`;
+  } else {
+    return `${minutes} min ${remainingSeconds} sec`;
+  }
+};
 
 export const QuizCard = ({
   title,
@@ -85,7 +99,7 @@ export const QuizCard = ({
           Nombre de question : {numberOfQuestions}
         </p>
         <p className="text-base font-bold text-gray-900">
-          Durée du quiz : {duration}min
+          Durée du quiz : {formatDuration(duration)}
         </p>
       </div>
 

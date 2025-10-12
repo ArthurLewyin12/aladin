@@ -97,10 +97,17 @@ export default function GroupQuizResultPage() {
       const storedCorrections = sessionStorage.getItem("groupQuizCorrections");
       const storedScore = sessionStorage.getItem("groupQuizScore");
 
+      console.log("=== DEBUG GROUP QUIZ RESULTS PAGE ===");
+      console.log("groupQuizCorrections depuis sessionStorage:", storedCorrections);
+      console.log("groupQuizScore depuis sessionStorage:", storedScore);
+
       if (storedCorrections) {
         const parsedCorrections = JSON.parse(storedCorrections);
+        console.log("Corrections parsées:", parsedCorrections);
+        console.log("Nombre de questions:", parsedCorrections?.length);
         setCorrections(parsedCorrections);
       } else {
+        console.warn("⚠️ Pas de corrections dans sessionStorage!");
         toast({
           variant: "error",
           message: "Impossible de récupérer les résultats du quiz.",
@@ -109,9 +116,14 @@ export default function GroupQuizResultPage() {
       }
 
       if (storedScore) {
-        setScore(parseFloat(storedScore));
+        const parsedScore = parseFloat(storedScore);
+        console.log("Score parsé:", parsedScore);
+        setScore(parsedScore);
+      } else {
+        console.warn("⚠️ Pas de score dans sessionStorage!");
       }
     } catch (error) {
+      console.error("❌ Erreur lors du chargement des résultats:", error);
       toast({
         variant: "error",
         message: "Erreur lors du chargement des résultats.",

@@ -13,6 +13,7 @@ import {
   SingleQuizResponse,
   QuizQuestion,
   ApprofondissementQuestion,
+  Quiz,
 } from "./types/common/quiz.types";
 import { GroupQuizzesResponse } from "./types/common/groupe-quiz.types";
 
@@ -98,13 +99,13 @@ export const getQuiz = async (quizId: number): Promise<UserQuizInstance> => {
 
 /**
  * Récupère tous les quiz définis dans le système pour l'année en cours pour l'utilisateur.
- * @returns QUizDefinitionsResponse - Liste de tous les quiz définis dans le système pour l'année en cours pour le user.
+ * @returns Liste de tous les quiz définis dans le système pour l'année en cours pour le user.
  */
 
 export const getAllUserQuiz = async (): Promise<{
-  quizzes: AllQuizDefinitionsResponse[];
+  quizzes: Quiz[];
 }> => {
-  return request.get<{ quizzes: AllQuizDefinitionsResponse[] }>(
+  return request.get<{ quizzes: Quiz[] }>(
     QuizEndpoints.QUIZ_GET_ALL,
   );
 };
@@ -233,6 +234,7 @@ export const singleQuiz = async (
       ...rawResponse.quiz,
       questions: transformedQuestions,
       questions_approfondissement: transformedApprofondissement,
+      notes: rawResponse.quiz.notes || [],
     },
   };
 };

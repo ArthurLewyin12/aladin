@@ -233,15 +233,18 @@ export default function QuizResultPage() {
                     {correction.propositions.map((proposition) => {
                       const isCorrect =
                         proposition.id === correction.bonne_reponse_id;
-                      const isUserChoice =
-                        proposition.id === (correction as any).user_answer;
+                      const userAnswer = (correction as any).user_answer;
+                      const isUserChoice = proposition.id === userAnswer;
+                      const isCorrectUserChoice = isUserChoice && isCorrect;
                       const isIncorrectUserChoice = isUserChoice && !isCorrect;
+
                       let stateClass = "bg-gray-50 border-gray-200";
                       if (isCorrect) {
                         stateClass = "bg-green-50 border-green-200";
                       } else if (isIncorrectUserChoice) {
                         stateClass = "bg-red-50 border-red-200";
                       }
+
                       return (
                         <li
                           key={proposition.id}
@@ -253,7 +256,15 @@ export default function QuizResultPage() {
                             </span>
                             {proposition.text}
                           </span>
-                          {isCorrect && (
+                          {isCorrectUserChoice && (
+                            <div className="flex items-center text-green-600 px-3 py-2 bg-green-100 rounded-lg">
+                              <CheckCircle className="w-6 h-6 mr-2" />
+                              <span className="font-semibold">
+                                Bonne réponse ✓ Votre choix
+                              </span>
+                            </div>
+                          )}
+                          {isCorrect && !isUserChoice && (
                             <div className="flex items-center text-green-600 px-3 py-2 bg-green-100 rounded-lg">
                               <CheckCircle className="w-6 h-6 mr-2" />
                               <span className="font-semibold">

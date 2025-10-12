@@ -11,7 +11,7 @@ export default function AccountLayout({
       <div className="flex flex-col w-full h-screen bg-[#F5F4F1]">
         <AccountHeader />
 
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1">{children}</main>
       </div>
     </AuthGuard>
   );

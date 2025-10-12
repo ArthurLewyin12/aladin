@@ -177,6 +177,12 @@ export default function GenerateQuizPage() {
           `Votre score: ${result.score}/${quizQuestions.length}`,
       });
 
+      // Debug: voir les IDs des questions et les réponses
+      console.log("=== DEBUG QUIZ SUBMISSION ===");
+      console.log("Questions originales:", quizQuestions.map(q => ({ id: q.id, question: q.question })));
+      console.log("Réponses de l'utilisateur:", answersToSubmit);
+      console.log("Corrections du backend:", result.corrections);
+
       const transformedCorrections = result.corrections.map(
         (question: any, index: number) => {
           const propositions = Object.entries(question.propositions).map(
@@ -186,12 +192,24 @@ export default function GenerateQuizPage() {
             }),
           );
 
+          // Essayer de trouver la question originale correspondante
+          const originalQuestion = quizQuestions[index];
+          const questionId = originalQuestion?.id || question.id || `q_${index}`;
+
+          console.log(`Question ${index}:`, {
+            questionId,
+            originalId: originalQuestion?.id,
+            backendId: question.id,
+            userAnswer: answersToSubmit[questionId],
+            alternativeAnswer: answersToSubmit[originalQuestion?.id],
+          });
+
           return {
-            id: `q_${index}`,
+            id: questionId,
             question: question.question,
             propositions: propositions,
             bonne_reponse_id: question.bonne_reponse,
-            user_answer: answersToSubmit[question.id],
+            user_answer: answersToSubmit[questionId] || answersToSubmit[originalQuestion?.id],
           };
         },
       );
@@ -226,10 +244,10 @@ export default function GenerateQuizPage() {
   // --- RENDER ---
   return (
     <div
-      className="min-h-screen w-full"
+      className="min-h-screen w-full bg-[#F5F4F1]"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "80px 80px",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.2'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
+        backgroundSize: "100px 100px",
       }}
     >
       <GenerationLoadingOverlay

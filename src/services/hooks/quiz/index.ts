@@ -17,6 +17,7 @@ import {
 import {
   QuizSubmitPayload,
   QuizGeneratePayload,
+  Quiz,
 } from "@/services/controllers/types/common";
 import { createQueryKey } from "@/lib/request";
 import { AllQuizDefinitionsResponse } from "@/services/controllers/types/common";
@@ -83,7 +84,7 @@ export const useQuiz = (quizId: number) => {
  */
 
 export const useGetAllQuiz = () => {
-  return useQuery<{ quizzes: AllQuizDefinitionsResponse[] }>({
+  return useQuery<{ quizzes: Quiz[] }>({
     queryKey: createQueryKey("allQuiz"),
     queryFn: () => getAllUserQuiz(),
   });

@@ -19,6 +19,20 @@ const CARD_COLORS = [
   "bg-[#FFE8D6]", // Orange clair
 ];
 
+// Fonction pour formater la durée en secondes
+const formatDuration = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (minutes === 0) {
+    return `${remainingSeconds} sec`;
+  } else if (remainingSeconds === 0) {
+    return `${minutes} min`;
+  } else {
+    return `${minutes} min ${remainingSeconds} sec`;
+  }
+};
+
 export const GroupQuizCard = ({
   quizItem,
   index,
@@ -84,7 +98,7 @@ export const GroupQuizCard = ({
         </p>
         <p className="text-sm text-gray-500">Difficulté : {quiz.difficulte}</p>
         <p className="text-base font-bold text-gray-900">
-          Durée estimée : {quiz.temps} sec
+          Durée estimée : {formatDuration(quiz.temps)}
         </p>
         <p className="text-sm text-gray-500">
           {quiz.nombre_questions} questions
@@ -96,13 +110,9 @@ export const GroupQuizCard = ({
         <Button
           variant="outline"
           onClick={onDetailsClick}
-          disabled={is_completed}
-          className={cn(
-            "bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full",
-            is_completed && "opacity-50 cursor-not-allowed",
-          )}
+          className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
         >
-          {is_completed ? "Déjà complété" : "Voir les détails"}
+          Voir les notes
         </Button>
       </div>
     </div>

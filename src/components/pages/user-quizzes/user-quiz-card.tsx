@@ -2,10 +2,10 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { AllQuizDefinitionsResponse } from "@/services/controllers/types/common/quiz.types";
+import { Quiz } from "@/services/controllers/types/common/quiz.types";
 
 interface UserQuizCardProps {
-  quiz: AllQuizDefinitionsResponse;
+  quiz: Quiz;
   index: number;
   className?: string;
   onDetailsClick?: () => void;

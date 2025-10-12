@@ -99,6 +99,11 @@ export default function SettingsGeneralPage() {
   const [selectedNiveau, setSelectedNiveau] = useState<string>("");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  const filteredNiveaux = useMemo(() => {
+    if (!niveaux || !user) return [];
+    return niveaux.filter((niveau) => niveau.id !== user.niveau_id);
+  }, [niveaux, user]);
+
   // Calculer si l'utilisateur peut changer de niveau
   const canChangeNiveau = useMemo(() => {
     if (!user) return { allowed: false, reason: "" };
@@ -358,7 +363,7 @@ export default function SettingsGeneralPage() {
               <SelectValue placeholder="Sélectionne un nouveau niveau" />
             </SelectTrigger>
             <SelectContent>
-              {niveaux?.map((niveau) => (
+              {filteredNiveaux?.map((niveau) => (
                 <SelectItem key={niveau.id} value={niveau.id.toString()}>
                   {niveau.libelle}
                 </SelectItem>

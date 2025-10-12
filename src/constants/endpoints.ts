@@ -76,7 +76,7 @@ export enum QuizEndpoints {
   DESACTIVATE_QUIZ = "/api/quizzes/{quizId}/deactivate",
   REACTIVATE_QUIZ = "/api/quizzes/{quizId}/reactivate",
   QUIZ_GET_ALL = "/api/quizzes/my-generated",
-  GET_ONE_QUIZ = "api/quizzes/eleves/my-generated/{quizId}",
+  GET_ONE_QUIZ = "/api/quizzes/eleves/my-generated/{quizId}",
 }
 
 /**
@@ -85,6 +85,7 @@ export enum QuizEndpoints {
 export enum CourseEndpoints {
   COURSES_BY_CHAPITRE = "/api/cours/expliquer",
   ALL_QUIZ_GENERATED = "/api/cours/my-generated",
+  GET_ONE_COURSE = "/api/cours/{courseId}",
 }
 
 /**

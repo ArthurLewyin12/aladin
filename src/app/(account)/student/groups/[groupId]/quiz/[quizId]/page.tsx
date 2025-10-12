@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -19,12 +19,14 @@ export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [timeLimit, setTimeLimit] = useState<number>(0);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<
     Record<string | number, string | number>
   >({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
   const params = useParams();
@@ -38,6 +40,11 @@ export default function GroupQuizTakingPage() {
       const storedQuiz = sessionStorage.getItem("groupQuizData");
       if (storedQuiz) {
         const { quiz, data, time } = JSON.parse(storedQuiz);
+
+        console.log("=== DEBUG CHARGEMENT QUIZ ===");
+        console.log("Données brutes depuis sessionStorage:", { quiz, data, time });
+        console.log("Première question brute:", data[0]);
+
         setQuizDefinition(quiz);
         // The question format from the API is different, we need to adapt it
         const formattedQuestions = data.map((q: any, index: number) => ({
@@ -47,10 +54,14 @@ export default function GroupQuizTakingPage() {
             id: key,
             text: value as string,
           })),
-          bonne_reponse_id: q.bonne_reponse_id || "",
+          bonne_reponse_id: q.bonne_reponse_id || q.bonne_reponse || "",
         }));
+
+        console.log("Questions formatées:", formattedQuestions.slice(0, 2));
+
         setQuizQuestions(formattedQuestions);
         setTimeLimit(time);
+        setRemainingTime(time);
       } else {
         toast({
           variant: "error",
@@ -96,11 +107,26 @@ export default function GroupQuizTakingPage() {
     }
   };
 
-  const handleSubmitQuiz = async () => {
-    if (!quizId) return;
+  const handleSubmitQuiz = useCallback(async () => {
+    if (!quizId || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    console.log("=== DEBUG GROUP QUIZ SUBMISSION ===");
+    console.log("Questions totales:", quizQuestions.length);
+    console.log("Questions avec leurs bonnes réponses:", quizQuestions.map(q => ({
+      id: q.id,
+      question: q.question,
+      bonne_reponse_id: q.bonne_reponse_id,
+      propositions: q.propositions
+    })));
+    console.log("Réponses utilisateur:", userAnswers);
 
     // Calculer le score avec l'utilitaire centralisé
     const scoreResult = calculateQuizScore(quizQuestions, userAnswers);
+
+    console.log("Score calculé:", scoreResult);
+    console.log("Score envoyé au backend (scoreForApi):", scoreResult.scoreForApi);
 
     const payload: QuizSubmitPayload = { score: scoreResult.scoreForApi };
 
@@ -109,15 +135,35 @@ export default function GroupQuizTakingPage() {
         quizId: Number(quizId),
         payload,
       });
+
+      console.log("=== RÉPONSE DU BACKEND ===");
+      console.log("Résultat complet:", result);
+      console.log("result.corrections:", result.corrections);
+      console.log("result.corrections.qcm:", result.corrections?.qcm);
+      console.log("result.note:", result.note);
+      console.log("result.note.note:", result.note?.note);
+
       toast({
         variant: "success",
         message: result.message || "Quiz terminé avec succès!",
       });
 
+      // Sauvegarder les corrections QCM
       sessionStorage.setItem(
         "groupQuizCorrections",
-        JSON.stringify(result.corrections),
+        JSON.stringify(result.corrections.qcm),
       );
+
+      // Sauvegarder le score retourné par le backend (déjà sur 20)
+      if (result.note && result.note.note !== undefined) {
+        sessionStorage.setItem(
+          "groupQuizScore",
+          result.note.note.toString(),
+        );
+        console.log("Score sauvegardé dans sessionStorage:", result.note.note);
+      } else {
+        console.warn("⚠️ Pas de score dans result.note.note!");
+      }
 
       // Cleanup the quiz data from session storage
       sessionStorage.removeItem("groupQuizData");
@@ -129,7 +175,34 @@ export default function GroupQuizTakingPage() {
         variant: "error",
         message: "Impossible de soumettre le quiz. Veuillez réessayer.",
       });
+      setIsSubmitting(false);
     }
+  }, [quizId, isSubmitting, quizQuestions, userAnswers, submitQuizMutation, router, groupId]);
+
+  // Timer countdown - APRÈS handleSubmitQuiz
+  useEffect(() => {
+    if (isLoading || isSubmitting || remainingTime <= 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Auto-submit quand le temps est écoulé
+          handleSubmitQuiz();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isLoading, isSubmitting, remainingTime, handleSubmitQuiz]);
+
+  // Fonction pour formater le temps restant
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const handleBackToGroup = () => router.push(`/student/groups/${groupId}`);
@@ -174,11 +247,14 @@ export default function GroupQuizTakingPage() {
         {currentQuestion && (
           <div className="max-w-4xl mx-auto mt-24">
             <div className="space-y-8">
-              {/* Progress bar */}
+              {/* Timer et Progress bar */}
               <div>
                 <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
                   <span>
                     Question {currentQuestionIndex + 1}/{quizQuestions.length}
+                  </span>
+                  <span className={`text-lg font-bold ${remainingTime <= 10 ? "text-red-600 animate-pulse" : "text-orange-600"}`}>
+                    ⏱️ {formatTime(remainingTime)}
                   </span>
                   <span>{quizDefinition?.matiere?.libelle || ""}</span>
                 </div>

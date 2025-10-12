@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useGroupQuizzes } from "@/services/hooks/quiz";
 import { GroupQuizCard } from "./group-quiz-card";
 import { Spinner } from "@/components/ui/spinner";
@@ -9,14 +9,10 @@ import { Users, BookOpen, FileQuestion } from "lucide-react";
 export function GroupQuizList() {
   const { data, isLoading, isError } = useGroupQuizzes();
   const quizzes = data?.quizzes || [];
-  const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
+  const router = useRouter();
 
-  const handleOpenDetails = (quizId: number) => {
-    setSelectedQuizId(quizId);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedQuizId(null);
+  const handleOpenDetails = (groupId: number, quizId: number) => {
+    router.push(`/student/groups/${groupId}/quiz/${quizId}/notes`);
   };
 
   if (isLoading) {
@@ -91,7 +87,7 @@ export function GroupQuizList() {
             key={quizItem.quiz.id}
             quizItem={quizItem}
             index={index}
-            onDetailsClick={() => handleOpenDetails(quizItem.quiz.id)}
+            onDetailsClick={() => handleOpenDetails(quizItem.groupe.id, quizItem.quiz.id)}
           />
         ))}
       </div>

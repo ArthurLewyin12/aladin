@@ -185,18 +185,49 @@ export function QuizDetailsModal({
 
           <TabsContent value="approfondissement" className="mt-4">
             <ScrollArea className="h-[400px] pr-4">
-              <div className="text-center text-gray-500 p-8 bg-slate-50 rounded-lg">
-                <HelpCircle className="w-8 h-8 mx-auto mb-2" />
-                Aucune question d'approfondissement pour ce quiz.
-              </div>
+              {quizData.questions_approfondissement.length > 0 ? (
+                <div className="space-y-4">
+                  {quizData.questions_approfondissement.map((qa, index) => (
+                    <div key={index} className="p-4 bg-white rounded-lg border border-slate-200">
+                      <h4 className="font-semibold text-slate-900 mb-2">{qa.question}</h4>
+                      <p className="text-slate-700 whitespace-pre-line">{qa.reponse}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 p-8 bg-slate-50 rounded-lg">
+                  <HelpCircle className="w-8 h-8 mx-auto mb-2" />
+                  Aucune question d'approfondissement pour ce quiz.
+                </div>
+              )}
             </ScrollArea>
           </TabsContent>
           <TabsContent value="notes" className="mt-4">
             <ScrollArea className="h-[400px] pr-4">
-              <div className="text-center text-gray-500 p-8 bg-slate-50 rounded-lg">
-                <List className="w-8 h-8 mx-auto mb-2" />
-                Historique des notes non disponible.
-              </div>
+              {quizData.notes.length > 0 ? (
+                <div className="space-y-3">
+                  {quizData.notes.map((note: any, index: number) => (
+                    <div key={index} className="p-4 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold text-slate-900">{note.user?.nom} {note.user?.prenom}</p>
+                        <p className="text-sm text-slate-600">{note.user?.mail}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {new Date(note.created_at).toLocaleString('fr-FR')}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-slate-900">{note.note}</div>
+                        <div className="text-sm text-slate-500">/ 20</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 p-8 bg-slate-50 rounded-lg">
+                  <List className="w-8 h-8 mx-auto mb-2" />
+                  Historique des notes non disponible.
+                </div>
+              )}
             </ScrollArea>
           </TabsContent>
         </Tabs>

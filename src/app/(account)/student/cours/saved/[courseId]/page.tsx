@@ -1,51 +1,50 @@
 "use client";
 import { useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useCourse } from "@/services/hooks/cours/useCourses";
+import { useGetOneCourse } from "@/services/hooks/cours/useGetOneCourse";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { ArrowLeft, BookOpen, Lightbulb, MessageCircleQuestion } from "lucide-react";
-import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
+import {
+  ArrowLeft,
+  BookOpen,
+  Lightbulb,
+  MessageCircleQuestion,
+} from "lucide-react";
 import { MathText } from "@/components/ui/MathText";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 
 const courseLoadingMessages = [
-  "Génération de votre cours personnalisé...",
-  "Analyse des concepts clés du chapitre...",
-  "Synthèse des informations importantes...",
-  "Préparation des exemples et illustrations...",
-  "Finalisation du cours...",
+  "Chargement de votre cours...",
+  "Préparation du contenu...",
+  "Récupération des informations...",
 ];
 
-export default function CoursePage() {
+export default function SavedCoursePage() {
   const router = useRouter();
   const params = useParams();
-  const chapterId = params.chapterId as string;
+  const courseId = parseInt(params.courseId as string);
 
-  const { data, isLoading, isError, error } = useCourse(chapterId);
+  const { data, isLoading, isError, error } = useGetOneCourse(courseId);
   const { startTracking, stopTracking } = useTimeTracking();
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
-    if (!isLoading && data && "cours_id" in data) {
-      const courseData = data as GenerateCoursSuccessResponse;
-      startTracking("revision", courseData.cours_id, Number(chapterId));
+    if (!isLoading && data) {
+      startTracking("revision", data.id, data.chapitre_id);
     }
 
     // Arrêter le tracking au démontage
     return () => {
       stopTracking();
     };
-  }, [isLoading, data, chapterId]);
+  }, [isLoading, data]);
 
   const parsedContent = useMemo(() => {
-    if (!data || !("text" in data)) return [];
+    if (!data || !data.data?.text) return [];
 
-    const courseData = data as GenerateCoursSuccessResponse;
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
 
-    return courseData.text.split("\n").map((line, index) => {
+    return data.data.text.split("\n").map((line, index) => {
       const isTitle =
         romanNumeralRegex.test(line) ||
         (line.toUpperCase() === line && line.length > 0 && line.length < 100);
@@ -59,11 +58,10 @@ export default function CoursePage() {
 
   // Memoized summary generation
   const summary = useMemo(() => {
-    if (!data || !("text" in data)) return "";
-    const courseData = data as GenerateCoursSuccessResponse;
-    const conclusionIndex = courseData.text.indexOf("CONCLUSION");
+    if (!data || !data.data?.text) return "";
+    const conclusionIndex = data.data.text.indexOf("CONCLUSION");
     if (conclusionIndex !== -1) {
-      return courseData.text
+      return data.data.text
         .substring(conclusionIndex + "CONCLUSION".length)
         .trim();
     }
@@ -77,7 +75,7 @@ export default function CoursePage() {
 
   const handleBack = () => router.back();
 
-  if (isError || (data && !("text" in data))) {
+  if (isError) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center">
@@ -117,8 +115,6 @@ export default function CoursePage() {
     );
   }
 
-  const courseData = data as GenerateCoursSuccessResponse;
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <GenerationLoadingOverlay
@@ -142,7 +138,7 @@ export default function CoursePage() {
 
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Cours personnalisé</span>
+              <span className="hidden sm:inline">Cours sauvegardé</span>
             </div>
           </div>
         </div>
@@ -174,23 +170,25 @@ export default function CoursePage() {
           </article>
 
           {/* Key Takeaways Section */}
-          <section className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 mb-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-amber-500 rounded-xl">
-                <Lightbulb className="w-6 h-6 text-white" />
+          {summary && (
+            <section className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 mb-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-amber-500 rounded-xl">
+                  <Lightbulb className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-amber-900">
+                  Points clés à retenir
+                </h2>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-amber-900">
-                Points clés à retenir
-              </h2>
-            </div>
-            <MathText
-              text={summary}
-              className="text-base sm:text-lg text-amber-900 leading-relaxed"
-            />
-          </section>
+              <MathText
+                text={summary}
+                className="text-base sm:text-lg text-amber-900 leading-relaxed"
+              />
+            </section>
+          )}
 
           {/* FAQ Section */}
-          {courseData.questions && courseData.questions.length > 0 && (
+          {data.data?.questions && data.data.questions.length > 0 && (
             <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-indigo-500 rounded-xl">
@@ -201,7 +199,7 @@ export default function CoursePage() {
                 </h2>
               </div>
               <div className="space-y-4">
-                {courseData.questions.map((qa, index) => (
+                {data.data.questions.map((qa, index) => (
                   <details
                     key={index}
                     className="group bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-gray-200 p-5 rounded-2xl hover:border-indigo-300 transition-all duration-200 open:bg-white open:border-indigo-400 open:shadow-md"

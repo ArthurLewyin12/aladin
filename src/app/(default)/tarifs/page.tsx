@@ -1,8 +1,15 @@
 "use client";
 
+import { LandingPageGuard } from "@/components/guards/landing-page-guard";
 import { Pricing } from "@/components/pages/landing/pricing/pricing";
 
+const isTrial = true;
+
 export default function TarifsPage() {
+  return <main>{isTrial ? <LandingPageGuard /> : <Tarif />}</main>;
+}
+
+const Tarif = () => {
   return (
     <section
       className="w-full border-t relative bg-center py-16 md:py-24"
@@ -17,4 +24,4 @@ export default function TarifsPage() {
       </div>
     </section>
   );
-}
+};

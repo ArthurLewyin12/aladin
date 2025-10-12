@@ -133,12 +133,11 @@ export default function AladinLoginForm() {
       </Form>
 
       {/* Liens de navigation */}
-      <div className="mt-6 text-center">
+      {/*<div className="mt-6 text-center">
         <p className="text-[1rem] text-gray-600 mb-4">
-          Vous n'avez pas encore de compte ?
-          {/*ou Votre
+          Vous n'avez pas encore de compte ? ou Votre
           <br className="" />
-          compte n'est pas encore activé ?*/}
+          compte n'est pas encore activé ?
         </p>
 
         <div className="flex flex-col md:flex-row gap-3 justify-center">
@@ -150,14 +149,14 @@ export default function AladinLoginForm() {
             Inscrivez vous
           </Button>
 
-          {/*<Button
+          <Button
             variant="outline"
             className="cursor-pointer flex-1 h-11 border-y-2 md:border  border-black text-black text-[1rem] hover:bg-blue-100 hover:border-blue-300  rounded-lg"
           >
             Activez votre compte
-          </Button>*/}
+          </Button>
         </div>
-      </div>
+      </div>*/}
     </div>
   );
 }

@@ -70,3 +70,30 @@ export interface GroupQuizzesResponse {
   quizzes: GroupQuizItem[];
   total: number;
 }
+
+export interface GenerateGroupQuizPayload {
+  group_id: number;
+  chapter_id: number;
+  difficulty: "Facile" | "Moyen" | "Difficile";
+  title: string;
+  nombre_questions: number; // 5-10
+  temps: number; // en minutes
+  document_file?: File; // Optionnel: fichier pour génération basée sur document
+}
+
+export interface GenerateGroupQuizResponse {
+  quiz: {
+    id: number;
+    groupe_id: number;
+    is_active: boolean;
+    data: string; // JSON stringified
+  };
+  questions: {
+    question: string;
+    propositions: Record<string, string>;
+    bonne_reponse: string;
+  }[];
+  questions_approfondissement: ApprofondissementQuestion[];
+  document: boolean; // Indique si la génération est basée sur un document
+  message: string;
+}

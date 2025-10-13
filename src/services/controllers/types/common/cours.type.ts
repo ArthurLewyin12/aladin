@@ -21,11 +21,17 @@ export interface UserCours {
   updated_at: string;
 }
 
+export interface GenerateCoursPayload {
+  chapter_id: number;
+  document_file?: File; // Optionnel: fichier pour génération basée sur document
+}
+
 export interface GenerateCoursSuccessResponse {
   cours_id: number;
   text: string;
   questions: QuestionReponse[];
   served: "existing" | "generated";
+  document: boolean; // Indique si la génération est basée sur un document
   message?: string;
 }
 

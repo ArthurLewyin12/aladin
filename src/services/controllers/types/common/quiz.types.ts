@@ -37,7 +37,8 @@ export type QuizHistory = UserQuizInstance[];
 
 export type QuizGeneratePayload = {
   chapter_id: number;
-  difficulty: string;
+  difficulty: "Facile" | "Moyen" | "Difficile";
+  document_file?: File; // Optionnel: fichier pour génération basée sur document
 };
 
 export type QuizSubmitPayload = {
@@ -59,8 +60,10 @@ export type QuizQuestion = {
 export type QuizGenerateResponse = {
   quiz_id: number;
   questions: QuizQuestion[];
+  questions_approfondissement?: ApprofondissementQuestion[];
   time: number;
   served: "generated" | "existing";
+  document: boolean; // Indique si la génération est basée sur un document
 };
 
 export type QuizStartResponse = {

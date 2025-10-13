@@ -9,6 +9,9 @@ import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { Matiere, Chapitre } from "@/services/controllers/types/common";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileUpload } from "@/components/ui/file-upload";
+import { useDocumentUpload } from "@/stores/useDocumentUpload";
 
 export default function RevisionPage() {
   const [step, setStep] = useState<"subject" | "chapter">("subject");
@@ -18,8 +21,12 @@ export default function RevisionPage() {
   const [selectedChapitreId, setSelectedChapitreId] = useState<number | null>(
     null,
   );
+  const [useDocument, setUseDocument] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const router = useRouter();
   const { user } = useSession();
+  const { setPendingDocument } = useDocumentUpload();
 
   // Fetching data with hooks
   const { data: matieresData, isLoading: isLoadingMatieres } =
@@ -54,6 +61,8 @@ export default function RevisionPage() {
 
   const handleStart = () => {
     if (selectedChapitreId) {
+      // Stocker le document dans le store Zustand si présent
+      setPendingDocument(selectedFile);
       router.push(`/student/cours/${selectedChapitreId}`);
     }
   };
@@ -207,6 +216,52 @@ export default function RevisionPage() {
                   </p>
                 </div>
               )}
+
+              {/* Checkbox et FileUpload pour document optionnel */}
+              {chapitres.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-300">
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-start space-x-3 mb-4">
+                      <Checkbox
+                        id="useDocument"
+                        checked={useDocument}
+                        onCheckedChange={(checked) => {
+                          setUseDocument(checked as boolean);
+                          if (!checked) {
+                            setSelectedFile(null);
+                          }
+                        }}
+                        disabled={!selectedChapitreId}
+                        className="mt-0.5 border-2 border-gray-800 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <div className="grid gap-1.5 leading-none flex-1">
+                        <label
+                          htmlFor="useDocument"
+                          className="text-sm font-semibold text-gray-800 cursor-pointer"
+                        >
+                          Générer depuis un document (optionnel)
+                        </label>
+                        <p className="text-xs text-gray-600">
+                          PDF, DOC, DOCX, TXT - Maximum 10 MB
+                        </p>
+                      </div>
+                    </div>
+
+                    {useDocument && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <FileUpload
+                          onChange={setSelectedFile}
+                          selectedFile={selectedFile}
+                          maxSize={10 * 1024 * 1024}
+                          acceptedTypes={[".pdf", ".doc", ".docx", ".txt"]}
+                          compact
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="text-center mt-8">
                 <Button
                   onClick={handleStart}

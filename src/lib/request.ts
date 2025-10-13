@@ -132,16 +132,18 @@ export const request = {
    * @param {string} url L'URL de l'endpoint.
    * @param {Record<string, any>} data Un objet contenant les paires clé-valeur à envoyer.
    * @param {File} file Le fichier à uploader.
+   * @param {string} [fileFieldName="photo"] Le nom du champ pour le fichier (par défaut "photo").
    * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
    */
   postWithFile: async <T>(
     url: string,
     data: Record<string, any>,
     file: File,
+    fileFieldName: string = "photo",
   ): Promise<T> => {
     const formData = new FormData();
 
-    formData.append("photo", file);
+    formData.append(fileFieldName, file);
 
     for (const key in data) {
       if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -150,6 +152,47 @@ export const request = {
           formData.append(key, JSON.stringify(value));
         } else {
           formData.append(key, value);
+        }
+      }
+    }
+
+    const response = await api.post<T>(url, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  },
+
+  /**
+   * Exécute une requête POST avec FormData (agnostique et flexible).
+   * Permet d'envoyer des données multipart/form-data avec ou sans fichier.
+   * @template T Le type de données attendu dans la réponse.
+   * @param {string} url L'URL de l'endpoint.
+   * @param {Record<string, any>} data Un objet contenant les données à envoyer (peut inclure des File).
+   * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
+   */
+  postFormData: async <T>(
+    url: string,
+    data: Record<string, any>,
+  ): Promise<T> => {
+    const formData = new FormData();
+
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        const value = data[key];
+        if (value === undefined || value === null) {
+          continue; // Skip undefined/null values
+        }
+        if (value instanceof File || value instanceof Blob) {
+          formData.append(key, value);
+        } else if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (typeof value === "object") {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
         }
       }
     }

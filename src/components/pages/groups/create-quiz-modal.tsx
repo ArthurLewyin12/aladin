@@ -40,6 +40,10 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { createQueryKey } from "@/lib/request";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileUpload } from "@/components/ui/file-upload";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface CreateQuizModalProps {
   isOpen: boolean;
@@ -79,6 +83,8 @@ export const CreateQuizModal = ({
   matieres,
 }: CreateQuizModalProps) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [useDocument, setUseDocument] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -111,15 +117,18 @@ export const CreateQuizModal = ({
       {
         group_id: groupId,
         title: data.title,
-        difficulty: data.difficulty,
+        difficulty: data.difficulty as "Facile" | "Moyen" | "Difficile",
         nombre_questions: Number(data.nombre_questions),
         temps: Number(data.temps),
         chapter_id: Number(data.chapter_id),
+        document_file: selectedFile || undefined,
       },
       {
         onSuccess: () => {
           onClose();
           form.reset();
+          setUseDocument(false);
+          setSelectedFile(null);
           queryClient.invalidateQueries({
             queryKey: createQueryKey("detailedGroupe", groupId),
           });
@@ -136,7 +145,9 @@ export const CreateQuizModal = ({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm text-gray-600">Titre du quiz</FormLabel>
+              <FormLabel className="text-sm text-gray-600">
+                Titre du quiz
+              </FormLabel>
               <FormControl>
                 <Input {...field} className="mt-1 bg-gray-50 border-gray-200" />
               </FormControl>
@@ -208,12 +219,55 @@ export const CreateQuizModal = ({
           )}
         />
 
+        {/* Checkbox pour activer l'upload de document */}
+        <div className="flex items-start space-x-2 pt-2">
+          <Checkbox
+            id="useDocument"
+            checked={useDocument}
+            onCheckedChange={(checked) => {
+              setUseDocument(checked as boolean);
+              if (!checked) {
+                setSelectedFile(null);
+              }
+            }}
+            disabled={!form.watch("chapter_id")}
+            className="border-gray-400 data-[state=checked]:bg-[#2C3E50] data-[state=checked]:border-[#2C3E50]"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="useDocument"
+              className="text-sm font-medium text-gray-700 cursor-pointer"
+            >
+              Générer depuis un document (optionnel)
+            </label>
+            <p className="text-xs text-gray-500">
+              PDF, DOC, DOCX, TXT - Maximum 10 MB
+            </p>
+          </div>
+        </div>
+
+        {/* Zone d'upload conditionnelle */}
+        {useDocument && (
+          <div className="space-y-2">
+            <FileUpload
+              onChange={setSelectedFile}
+              selectedFile={selectedFile}
+              disabled={isPending}
+              maxSize={10 * 1024 * 1024}
+              acceptedTypes={[".pdf", ".doc", ".docx", ".txt"]}
+              compact
+            />
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="difficulty"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm text-gray-600">Difficulté</FormLabel>
+              <FormLabel className="text-sm text-gray-600">
+                Difficulté
+              </FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
@@ -236,9 +290,15 @@ export const CreateQuizModal = ({
           name="nombre_questions"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm text-gray-600">Nombre de questions</FormLabel>
+              <FormLabel className="text-sm text-gray-600">
+                Nombre de questions
+              </FormLabel>
               <FormControl>
-                <Input type="number" {...field} className="mt-1 bg-gray-50 border-gray-200" />
+                <Input
+                  type="number"
+                  {...field}
+                  className="mt-1 bg-gray-50 border-gray-200"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -250,9 +310,15 @@ export const CreateQuizModal = ({
           name="temps"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm text-gray-600">Temps (en secondes)</FormLabel>
+              <FormLabel className="text-sm text-gray-600">
+                Temps (en secondes)
+              </FormLabel>
               <FormControl>
-                <Input type="number" {...field} className="mt-1 bg-gray-50 border-gray-200" />
+                <Input
+                  type="number"
+                  {...field}
+                  className="mt-1 bg-gray-50 border-gray-200"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -265,27 +331,41 @@ export const CreateQuizModal = ({
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="bg-white max-h-[90vh]">
-          <GenerationLoadingOverlay isLoading={isPending} messages={quizLoadingMessages} />
-          <DrawerHeader className="text-left">
-            <DrawerTitle className="text-2xl font-bold text-[#2C3E50]">Créer un Quiz</DrawerTitle>
+        <DrawerContent
+          className="bg-white flex flex-col"
+          style={{ maxHeight: useDocument ? "90vh" : "auto" }}
+        >
+          <GenerationLoadingOverlay
+            isLoading={isPending}
+            messages={quizLoadingMessages}
+          />
+          <DrawerHeader className="text-left flex-shrink-0">
+            <DrawerTitle className="text-2xl font-bold text-[#2C3E50]">
+              Créer un Quiz
+            </DrawerTitle>
             <DrawerClose className="absolute right-4 top-4">
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </DrawerClose>
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </DrawerClose>
           </DrawerHeader>
-          <div className="px-4 pb-4 overflow-y-auto">{FormContent}</div>
-          <DrawerFooter className="flex-row gap-3 justify-end">
-             <Button variant="ghost" onClick={onClose} className="flex-1">
-                Annuler
-              </Button>
-              <Button
-                onClick={form.handleSubmit(onSubmit)}
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
-                disabled={isPending}
-              >
-                Créer
-              </Button>
+          {useDocument ? (
+            <ScrollArea className="flex-1 overflow-y-auto">
+              <div className="px-4 pb-4">{FormContent}</div>
+            </ScrollArea>
+          ) : (
+            <div className="px-4 pb-4">{FormContent}</div>
+          )}
+          <DrawerFooter className="flex-row gap-3 justify-end flex-shrink-0 border-t">
+            <Button variant="ghost" onClick={onClose} className="flex-1">
+              Annuler
+            </Button>
+            <Button
+              onClick={form.handleSubmit(onSubmit)}
+              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
+              disabled={isPending}
+            >
+              Créer
+            </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -294,13 +374,29 @@ export const CreateQuizModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white">
-        <GenerationLoadingOverlay isLoading={isPending} messages={quizLoadingMessages} />
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#2C3E50]">Créer un Quiz</DialogTitle>
+      <DialogContent
+        className={cn(
+          "sm:max-w-[500px] bg-white flex flex-col",
+          useDocument ? "max-h-[90vh]" : "",
+        )}
+      >
+        <GenerationLoadingOverlay
+          isLoading={isPending}
+          messages={quizLoadingMessages}
+        />
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-2xl font-bold text-[#2C3E50]">
+            Créer un Quiz
+          </DialogTitle>
         </DialogHeader>
-        <div className="mt-4">{FormContent}</div>
-        <div className="flex gap-3 mt-6 justify-end">
+        {useDocument ? (
+          <ScrollArea className="flex-1 overflow-y-auto pr-4 -mr-4">
+            <div className="mt-4 pb-4">{FormContent}</div>
+          </ScrollArea>
+        ) : (
+          <div className="mt-4">{FormContent}</div>
+        )}
+        <div className="flex gap-3 mt-6 justify-end flex-shrink-0 border-t pt-4">
           <Button variant="ghost" onClick={onClose} className="px-6">
             Annuler
           </Button>

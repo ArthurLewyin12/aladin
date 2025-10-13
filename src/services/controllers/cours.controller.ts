@@ -1,20 +1,40 @@
 import { CourseEndpoints } from "@/constants/endpoints";
-import { Courses, GenerateCoursResponse, UserCours } from "./types/common/cours.type";
+import {
+  Courses,
+  GenerateCoursResponse,
+  UserCours,
+  GenerateCoursPayload,
+} from "./types/common/cours.type";
 import { request } from "@/lib/request";
 
 /**
  * Génère une explication de cours pour un chapitre donné.
- * @param {string} chapter_id - L'ID du chapitre pour lequel générer le cours.
+ * Supporte deux modes:
+ * - Sans document: envoi JSON classique
+ * - Avec document: envoi multipart/form-data
+ * @param {GenerateCoursPayload} payload - L'ID du chapitre et le fichier optionnel.
  * @returns {Promise<GenerateCoursResponse>} La réponse de l'API contenant le contenu du cours.
  */
 export const expliquerCours = async (
-  chapter_id: string,
+  payload: GenerateCoursPayload,
 ): Promise<GenerateCoursResponse> => {
-  return request.post(
-    CourseEndpoints.COURSES_BY_CHAPITRE,
-    { chapter_id },
-    { timeout: 60000 }, // 60 seconds timeout
-  );
+  // Si un fichier est présent, utiliser FormData
+  if (payload.document_file) {
+    return request.postFormData<GenerateCoursResponse>(
+      CourseEndpoints.COURSES_BY_CHAPITRE,
+      {
+        chapter_id: payload.chapter_id,
+        document_file: payload.document_file,
+      },
+    );
+  } else {
+    // Sinon, envoi JSON classique
+    return request.post<GenerateCoursResponse>(
+      CourseEndpoints.COURSES_BY_CHAPITRE,
+      { chapter_id: payload.chapter_id },
+      { timeout: 60000 }, // 60 seconds timeout
+    );
+  }
 };
 
 /**

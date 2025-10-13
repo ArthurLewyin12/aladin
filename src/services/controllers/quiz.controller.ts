@@ -27,16 +27,31 @@ export const getQuizHistory = async (): Promise<QuizHistory> => {
 
 /**
  * Génère un nouveau quiz basé sur les paramètres fournis.
- * @param {QuizGeneratePayload} payload - Les options de génération du quiz (matière, chapitres, etc.).
+ * Supporte deux modes:
+ * - Sans document: envoi JSON classique
+ * - Avec document: envoi multipart/form-data
+ * @param {QuizGeneratePayload} payload - Les options de génération du quiz (chapter_id, difficulty, document_file optionnel).
  * @returns {Promise<QuizGenerateResponse>} La réponse de l'API contenant les informations du quiz généré.
  */
 export const generateQuiz = async (
   payload: QuizGeneratePayload,
 ): Promise<QuizGenerateResponse> => {
-  const response = await request.post<any>(
-    QuizEndpoints.QUIZ_GENERATE,
-    payload,
-  );
+  let response: any;
+
+  // Si un fichier est présent, utiliser FormData
+  if (payload.document_file) {
+    response = await request.postFormData<any>(QuizEndpoints.QUIZ_GENERATE, {
+      chapter_id: payload.chapter_id,
+      difficulty: payload.difficulty,
+      document_file: payload.document_file,
+    });
+  } else {
+    // Sinon, envoi JSON classique
+    response = await request.post<any>(QuizEndpoints.QUIZ_GENERATE, {
+      chapter_id: payload.chapter_id,
+      difficulty: payload.difficulty,
+    });
+  }
 
   // Manually transform the data to fit the frontend types
   const transformedQuestions = response.questions.map(
@@ -105,9 +120,7 @@ export const getQuiz = async (quizId: number): Promise<UserQuizInstance> => {
 export const getAllUserQuiz = async (): Promise<{
   quizzes: Quiz[];
 }> => {
-  return request.get<{ quizzes: Quiz[] }>(
-    QuizEndpoints.QUIZ_GET_ALL,
-  );
+  return request.get<{ quizzes: Quiz[] }>(QuizEndpoints.QUIZ_GET_ALL);
 };
 
 /**

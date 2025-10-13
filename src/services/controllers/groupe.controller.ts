@@ -14,14 +14,16 @@ import {
   DeclineInvitationResponse,
   GetDetailedGroupeResponse,
   GetNotificationsResponse,
-  CreateGroupQuizPayload,
-  CreateGroupQuizResponse,
   StartGroupQuizResponse,
   SubmitGroupQuizResponse,
   QuizSubmitPayload,
   InvitationDetails,
   GetAllQuizNotesSuccessResponse,
 } from "./types/common";
+import {
+  GenerateGroupQuizPayload,
+  GenerateGroupQuizResponse,
+} from "./types/common/groupe-quiz.types";
 import { NotificationEndpoints } from "@/constants/endpoints";
 
 /**
@@ -163,17 +165,44 @@ export const getNotifications = async (): Promise<GetNotificationsResponse> => {
 };
 
 /**
- * Crée un nouveau quiz pour un groupe.
- * @param {CreateGroupQuizPayload} payload - Les données pour la création du quiz.
- * @returns {Promise<CreateGroupQuizResponse>} Une promesse résolue avec les informations du quiz créé.
+ * Crée/Génère un nouveau quiz pour un groupe (réservé au chef du groupe).
+ * Supporte deux modes:
+ * - Sans document: envoi JSON classique, génération basée sur le chapitre
+ * - Avec document: envoi multipart/form-data, génération basée sur le fichier uploadé
+ * @param {GenerateGroupQuizPayload} payload - Les données pour la création du quiz (avec document_file optionnel).
+ * @returns {Promise<GenerateGroupQuizResponse>} Une promesse résolue avec les informations du quiz créé.
  */
 export const createGroupQuiz = async (
-  payload: CreateGroupQuizPayload,
-): Promise<CreateGroupQuizResponse> => {
-  return request.post<CreateGroupQuizResponse>(
-    GroupeEndpoints.CREATE_QUIZ,
-    payload,
-  );
+  payload: GenerateGroupQuizPayload,
+): Promise<GenerateGroupQuizResponse> => {
+  // Si un fichier est présent, utiliser FormData
+  if (payload.document_file) {
+    return request.postFormData<GenerateGroupQuizResponse>(
+      GroupeEndpoints.CREATE_QUIZ,
+      {
+        group_id: payload.group_id,
+        chapter_id: payload.chapter_id,
+        difficulty: payload.difficulty,
+        title: payload.title,
+        nombre_questions: payload.nombre_questions,
+        temps: payload.temps,
+        document_file: payload.document_file,
+      },
+    );
+  } else {
+    // Sinon, envoi JSON classique
+    return request.post<GenerateGroupQuizResponse>(
+      GroupeEndpoints.CREATE_QUIZ,
+      {
+        group_id: payload.group_id,
+        chapter_id: payload.chapter_id,
+        difficulty: payload.difficulty,
+        title: payload.title,
+        nombre_questions: payload.nombre_questions,
+        temps: payload.temps,
+      },
+    );
+  }
 };
 
 /**

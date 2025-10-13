@@ -19,6 +19,8 @@ import { toast } from "@/lib/toast";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { calculateQuizScore } from "@/lib/quiz-score";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileUpload } from "@/components/ui/file-upload";
 
 const quizLoadingMessages = [
   "Génération du quiz en cours...",
@@ -43,7 +45,11 @@ export default function GenerateQuizPage() {
   const [selectedChapitreId, setSelectedChapitreId] = useState<number | null>(
     null,
   );
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<
+    "Facile" | "Moyen" | "Difficile" | ""
+  >("");
+  const [useDocument, setUseDocument] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
@@ -65,7 +71,7 @@ export default function GenerateQuizPage() {
     if (matiereId && chapitreId && difficulty) {
       setSelectedMatiereId(Number(matiereId));
       setSelectedChapitreId(Number(chapitreId));
-      setSelectedDifficulty(difficulty);
+      setSelectedDifficulty(difficulty as "Facile" | "Moyen" | "Difficile");
       setStep("config");
     }
   }, [searchParams]);
@@ -123,7 +129,8 @@ export default function GenerateQuizPage() {
 
     const payload: QuizGeneratePayload = {
       chapter_id: selectedChapitreId,
-      difficulty: selectedDifficulty,
+      difficulty: selectedDifficulty as "Facile" | "Moyen" | "Difficile",
+      document_file: selectedFile || undefined,
     };
 
     try {
@@ -140,6 +147,8 @@ export default function GenerateQuizPage() {
       setQuizQuestions(result.questions);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
+      setUseDocument(false);
+      setSelectedFile(null);
       setStep("quiz");
     } catch (error: any) {
       console.error("Erreur lors de la génération du quiz", error);
@@ -179,7 +188,10 @@ export default function GenerateQuizPage() {
 
       // Debug: voir les IDs des questions et les réponses
       console.log("=== DEBUG QUIZ SUBMISSION ===");
-      console.log("Questions originales:", quizQuestions.map(q => ({ id: q.id, question: q.question })));
+      console.log(
+        "Questions originales:",
+        quizQuestions.map((q) => ({ id: q.id, question: q.question })),
+      );
       console.log("Réponses de l'utilisateur:", answersToSubmit);
       console.log("Corrections du backend:", result.corrections);
 
@@ -194,7 +206,8 @@ export default function GenerateQuizPage() {
 
           // Essayer de trouver la question originale correspondante
           const originalQuestion = quizQuestions[index];
-          const questionId = originalQuestion?.id || question.id || `q_${index}`;
+          const questionId =
+            originalQuestion?.id || question.id || `q_${index}`;
 
           console.log(`Question ${index}:`, {
             questionId,
@@ -209,7 +222,9 @@ export default function GenerateQuizPage() {
             question: question.question,
             propositions: propositions,
             bonne_reponse_id: question.bonne_reponse,
-            user_answer: answersToSubmit[questionId] || answersToSubmit[originalQuestion?.id],
+            user_answer:
+              answersToSubmit[questionId] ||
+              answersToSubmit[originalQuestion?.id],
           };
         },
       );
@@ -398,7 +413,11 @@ export default function GenerateQuizPage() {
               </h3>
               <RadioGroup
                 value={selectedDifficulty}
-                onValueChange={setSelectedDifficulty}
+                onValueChange={(value) =>
+                  setSelectedDifficulty(
+                    value as "Facile" | "Moyen" | "Difficile",
+                  )
+                }
                 className="grid grid-cols-3 gap-4 px-4"
               >
                 {difficulties.map((difficulty) => (
@@ -421,6 +440,53 @@ export default function GenerateQuizPage() {
                 ))}
               </RadioGroup>
             </div>
+
+            {/* Checkbox et FileUpload pour document optionnel */}
+            {chapitres.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-300">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-start space-x-3 mb-4">
+                    <Checkbox
+                      id="useDocument"
+                      checked={useDocument}
+                      onCheckedChange={(checked) => {
+                        setUseDocument(checked as boolean);
+                        if (!checked) {
+                          setSelectedFile(null);
+                        }
+                      }}
+                      disabled={!selectedChapitreId || !selectedDifficulty}
+                      className="mt-0.5 border-2 border-gray-800 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                    />
+                    <div className="grid gap-1.5 leading-none flex-1">
+                      <label
+                        htmlFor="useDocument"
+                        className="text-sm font-semibold text-gray-800 cursor-pointer"
+                      >
+                        Générer depuis un document (optionnel)
+                      </label>
+                      <p className="text-xs text-gray-600">
+                        PDF, DOC, DOCX, TXT - Maximum 10 MB
+                      </p>
+                    </div>
+                  </div>
+
+                  {useDocument && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <FileUpload
+                        onChange={setSelectedFile}
+                        selectedFile={selectedFile}
+                        disabled={generateQuizMutation.isPending}
+                        maxSize={10 * 1024 * 1024}
+                        acceptedTypes={[".pdf", ".doc", ".docx", ".txt"]}
+                        compact
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="text-center pt-4">
               <Button
                 onClick={handleGenerateQuiz}

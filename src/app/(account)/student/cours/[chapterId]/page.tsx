@@ -9,6 +9,7 @@ import { GenerateCoursSuccessResponse } from "@/services/controllers/types/commo
 import { MathText } from "@/components/ui/MathText";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { useTimeTracking } from "@/stores/useTimeTracking";
+import { useDocumentUpload } from "@/stores/useDocumentUpload";
 
 const courseLoadingMessages = [
   "Génération de votre cours personnalisé...",
@@ -23,8 +24,18 @@ export default function CoursePage() {
   const params = useParams();
   const chapterId = params.chapterId as string;
 
-  const { data, isLoading, isError, error } = useCourse(chapterId);
+  // Récupérer le document depuis le store Zustand
+  const { pendingDocument, clearPendingDocument } = useDocumentUpload();
+
+  const { data, isLoading, isError, error } = useCourse(chapterId, pendingDocument || undefined);
   const { startTracking, stopTracking } = useTimeTracking();
+
+  // Nettoyer le document après avoir chargé le cours
+  useEffect(() => {
+    if (!isLoading && data) {
+      clearPendingDocument();
+    }
+  }, [isLoading, data, clearPendingDocument]);
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {

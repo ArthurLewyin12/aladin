@@ -30,6 +30,7 @@ import { useGetOneQuiz } from "@/services/hooks/quiz";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
 import { SingleQuizResponse } from "@/services/controllers/types/common/quiz.types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { convertScoreToNote } from "@/lib/quiz-score";
 import {
   AlertCircle,
   BookOpen,
@@ -206,21 +207,29 @@ export function QuizDetailsModal({
             <ScrollArea className="h-[400px] pr-4">
               {quizData.notes.length > 0 ? (
                 <div className="space-y-3">
-                  {quizData.notes.map((note: any, index: number) => (
-                    <div key={index} className="p-4 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold text-slate-900">{note.user?.nom} {note.user?.prenom}</p>
-                        <p className="text-sm text-slate-600">{note.user?.mail}</p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {new Date(note.created_at).toLocaleString('fr-FR')}
-                        </p>
+                  {quizData.notes.map((note: any, index: number) => {
+                    const totalQuestions = quizData.questions.length;
+                    const noteSur20 = convertScoreToNote(note.note, totalQuestions);
+
+                    return (
+                      <div key={index} className="p-4 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold text-slate-900">{note.user?.nom} {note.user?.prenom}</p>
+                          <p className="text-sm text-slate-600">{note.user?.mail}</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {new Date(note.created_at).toLocaleString('fr-FR')}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-slate-900">{noteSur20}</div>
+                          <div className="text-sm text-slate-500">/ 20</div>
+                          <div className="text-xs text-slate-400 mt-1">
+                            ({note.note}/{totalQuestions})
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-slate-900">{note.note}</div>
-                        <div className="text-sm text-slate-500">/ 20</div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center text-gray-500 p-8 bg-slate-50 rounded-lg">

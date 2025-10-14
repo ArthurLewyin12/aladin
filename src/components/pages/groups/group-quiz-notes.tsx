@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useGroupQuizNotes } from "@/services/hooks/groupes/useGroupQuizNotes";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { convertScoreToNote } from "@/lib/quiz-score";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -31,11 +32,13 @@ interface UserNoteCardProps {
     };
   };
   index: number;
+  totalQuestions: number;
 }
 
-const UserNoteCard = ({ note, index }: UserNoteCardProps) => {
+const UserNoteCard = ({ note, index, totalQuestions }: UserNoteCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
-  const isSuccess = note.note >= 10;
+  const noteSur20 = convertScoreToNote(note.note, totalQuestions);
+  const isSuccess = noteSur20 >= 10;
 
   return (
     <div
@@ -57,7 +60,8 @@ const UserNoteCard = ({ note, index }: UserNoteCardProps) => {
       <div className="flex items-center justify-between mt-4">
         <div>
           <p className="text-xs text-gray-600 mb-1">Note obtenue</p>
-          <p className="text-2xl font-bold text-gray-900">{note.note}/20</p>
+          <p className="text-2xl font-bold text-gray-900">{noteSur20}/20</p>
+          <p className="text-xs text-gray-500 mt-1">({note.note}/{totalQuestions} bonnes réponses)</p>
         </div>
 
         {isSuccess ? (
@@ -93,20 +97,19 @@ export const GroupQuizNotes = () => {
   };
 
   // Calculer les statistiques
-  const getStats = () => {
+  const getStats = (totalQuestions: number) => {
     if (!notesData?.notes.length) return null;
 
-    const notes = notesData.notes.map((n) => n.note);
-    const moyenne = (notes.reduce((a, b) => a + b, 0) / notes.length).toFixed(
-      2,
-    );
-    const meilleureNote = Math.max(...notes);
+    // Convertir tous les scores bruts en notes sur 20
+    const notesSur20 = notesData.notes.map((n) => convertScoreToNote(n.note, totalQuestions));
+    const moyenne = (notesSur20.reduce((a, b) => a + b, 0) / notesSur20.length).toFixed(2);
+    const meilleureNote = Math.max(...notesSur20);
     const tauxReussite = (
-      (notes.filter((n) => n >= 10).length / notes.length) *
+      (notesSur20.filter((n) => n >= 10).length / notesSur20.length) *
       100
     ).toFixed(0);
 
-    return { moyenne, meilleureNote, tauxReussite, total: notes.length };
+    return { moyenne, meilleureNote, tauxReussite, total: notesSur20.length };
   };
 
   if (isLoading) {
@@ -128,7 +131,8 @@ export const GroupQuizNotes = () => {
   }
 
   const { notes, corrections, questions_approfondissement } = notesData;
-  const stats = getStats();
+  const totalQuestions = corrections?.length || 0;
+  const stats = getStats(totalQuestions);
 
   return (
     <div
@@ -235,7 +239,7 @@ export const GroupQuizNotes = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note, index) => (
-                <UserNoteCard key={note.id} note={note} index={index} />
+                <UserNoteCard key={note.id} note={note} index={index} totalQuestions={totalQuestions} />
               ))}
             </div>
           )}

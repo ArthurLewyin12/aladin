@@ -148,6 +148,26 @@ export function StudyTimeChart({
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#666", fontSize: 12 }}
+            tickFormatter={(value) => {
+              // Mapping des jours en anglais vers le français
+              const dayMapping: Record<string, string> = {
+                "Mon": "Lun",
+                "Tue": "Mar",
+                "Wed": "Mer",
+                "Thu": "Jeu",
+                "Fri": "Ven",
+                "Sat": "Sam",
+                "Sun": "Dim",
+                "Monday": "Lundi",
+                "Tuesday": "Mardi",
+                "Wednesday": "Mercredi",
+                "Thursday": "Jeudi",
+                "Friday": "Vendredi",
+                "Saturday": "Samedi",
+                "Sunday": "Dimanche"
+              };
+              return dayMapping[value] || value;
+            }}
           />
           <YAxis
             axisLine={false}

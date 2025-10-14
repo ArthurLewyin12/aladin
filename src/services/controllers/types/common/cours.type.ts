@@ -13,9 +13,9 @@ export interface CoursData {
 
 export interface UserCours {
   id: number;
-  user_id: number;
-  chapitre_id: number;
-  data: CoursData;
+  chapitre: Chapitre; // L'API renvoie l'objet chapitre complet, pas juste l'ID
+  text: string; // Le texte du cours directement (pas dans data)
+  questions: QuestionReponse[]; // Les questions directement (pas dans data)
   time: number;
   created_at: string;
   updated_at: string;

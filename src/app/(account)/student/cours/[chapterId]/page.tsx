@@ -131,7 +131,7 @@ export default function CoursePage() {
   const courseData = data as GenerateCoursSuccessResponse;
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       <GenerationLoadingOverlay
         isLoading={isLoading}
         messages={courseLoadingMessages}
@@ -164,20 +164,27 @@ export default function CoursePage() {
         <main className="w-full mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Course Content Card */}
           <article className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-10 lg:p-14 mb-6">
-            <div className="prose prose-lg max-w-none">
+            <div className={`
+              prose prose-base sm:prose-base md:prose-lg lg:prose-lg max-w-none
+              prose-headings:scroll-mt-28 prose-headings:font-semibold prose-headings:text-orange-600
+              prose-p:my-3 prose-p:leading-7 prose-p:text-gray-800
+              prose-strong:text-orange-700 prose-strong:font-semibold
+              prose-ul:my-4 prose-li:my-1
+              prose-ol:my-4 prose-ol:list-decimal
+            `}>
               {parsedContent.map((line) => (
                 <div key={line.id}>
                   {line.type === "title" ? (
-                    <h2 className="text-2xl sm:text-3xl font-bold text-indigo-600 mt-8 first:mt-0 mb-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mt-8 first:mt-0 mb-4">
                       {line.content}
                     </h2>
                   ) : line.content.trim() ? (
                     <MathText
                       text={line.content}
-                      className="text-base sm:text-lg text-gray-800 leading-relaxed mb-4"
+                      className="block my-3 leading-7"
                     />
                   ) : (
-                    <div className="h-4" />
+                    <div className="h-3" />
                   )}
                 </div>
               ))}
@@ -204,7 +211,7 @@ export default function CoursePage() {
           {courseData.questions && courseData.questions.length > 0 && (
             <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-indigo-500 rounded-xl">
+                <div className="p-2 bg-orange-500 rounded-xl">
                   <MessageCircleQuestion className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -215,10 +222,10 @@ export default function CoursePage() {
                 {courseData.questions.map((qa, index) => (
                   <details
                     key={index}
-                    className="group bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-gray-200 p-5 rounded-2xl hover:border-indigo-300 transition-all duration-200 open:bg-white open:border-indigo-400 open:shadow-md"
+                    className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
                   >
                     <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
                         {index + 1}
                       </span>
                       <MathText text={qa.question} className="flex-1" />

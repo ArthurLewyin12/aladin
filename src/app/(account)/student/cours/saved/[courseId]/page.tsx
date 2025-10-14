@@ -10,14 +10,8 @@ import {
   MessageCircleQuestion,
 } from "lucide-react";
 import { MathText } from "@/components/ui/MathText";
-import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { useTimeTracking } from "@/stores/useTimeTracking";
-
-const courseLoadingMessages = [
-  "Chargement de votre cours...",
-  "Préparation du contenu...",
-  "Récupération des informations...",
-];
+import { Spinner } from "@/components/ui/spinner";
 
 export default function SavedCoursePage() {
   const router = useRouter();
@@ -30,21 +24,21 @@ export default function SavedCoursePage() {
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
     if (!isLoading && data) {
-      startTracking("revision", data.id, data.chapitre_id);
+      startTracking("revision", data.id, data.chapitre.id);
     }
 
     // Arrêter le tracking au démontage
     return () => {
       stopTracking();
     };
-  }, [isLoading, data]);
+  }, [isLoading, data, startTracking, stopTracking]);
 
   const parsedContent = useMemo(() => {
-    if (!data || !data.data?.text) return [];
+    if (!data || !data.text) return [];
 
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
 
-    return data.data.text.split("\n").map((line, index) => {
+    return data.text.split("\n").map((line, index) => {
       const isTitle =
         romanNumeralRegex.test(line) ||
         (line.toUpperCase() === line && line.length > 0 && line.length < 100);
@@ -58,10 +52,10 @@ export default function SavedCoursePage() {
 
   // Memoized summary generation
   const summary = useMemo(() => {
-    if (!data || !data.data?.text) return "";
-    const conclusionIndex = data.data.text.indexOf("CONCLUSION");
+    if (!data || !data.text) return "";
+    const conclusionIndex = data.text.indexOf("CONCLUSION");
     if (conclusionIndex !== -1) {
-      return data.data.text
+      return data.text
         .substring(conclusionIndex + "CONCLUSION".length)
         .trim();
     }
@@ -115,13 +109,25 @@ export default function SavedCoursePage() {
     );
   }
 
-  return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <GenerationLoadingOverlay
-        isLoading={isLoading}
-        messages={courseLoadingMessages}
-      />
+  // Loader simple pour récupération depuis BD
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center px-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+        <div className="text-center space-y-4">
+          <Spinner size="lg" />
+          <p className="text-lg font-medium text-gray-700">
+            Chargement de votre cours...
+          </p>
+          <p className="text-sm text-gray-500">
+            Récupération du contenu sauvegardé
+          </p>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Header Sticky */}
       <div className="sticky top-0 z-20 backdrop-blur-md bg-white/80 border-b border-gray-200">
         <div className="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
@@ -149,20 +155,27 @@ export default function SavedCoursePage() {
         <main className="w-full mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Course Content Card */}
           <article className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-10 lg:p-14 mb-6">
-            <div className="prose prose-lg max-w-none">
+            <div className={`
+              prose prose-base sm:prose-base md:prose-lg lg:prose-lg max-w-none
+              prose-headings:scroll-mt-28 prose-headings:font-semibold prose-headings:text-orange-600
+              prose-p:my-3 prose-p:leading-7 prose-p:text-gray-800
+              prose-strong:text-orange-700 prose-strong:font-semibold
+              prose-ul:my-4 prose-li:my-1
+              prose-ol:my-4 prose-ol:list-decimal
+            `}>
               {parsedContent.map((line) => (
                 <div key={line.id}>
                   {line.type === "title" ? (
-                    <h2 className="text-2xl sm:text-3xl font-bold text-indigo-600 mt-8 first:mt-0 mb-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mt-8 first:mt-0 mb-4">
                       {line.content}
                     </h2>
                   ) : line.content.trim() ? (
                     <MathText
                       text={line.content}
-                      className="text-base sm:text-lg text-gray-800 leading-relaxed mb-4"
+                      className="block my-3 leading-7"
                     />
                   ) : (
-                    <div className="h-4" />
+                    <div className="h-3" />
                   )}
                 </div>
               ))}
@@ -188,10 +201,10 @@ export default function SavedCoursePage() {
           )}
 
           {/* FAQ Section */}
-          {data.data?.questions && data.data.questions.length > 0 && (
+          {data.questions && data.questions.length > 0 && (
             <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-indigo-500 rounded-xl">
+                <div className="p-2 bg-orange-500 rounded-xl">
                   <MessageCircleQuestion className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -199,13 +212,13 @@ export default function SavedCoursePage() {
                 </h2>
               </div>
               <div className="space-y-4">
-                {data.data.questions.map((qa, index) => (
+                {data.questions.map((qa, index) => (
                   <details
                     key={index}
-                    className="group bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-gray-200 p-5 rounded-2xl hover:border-indigo-300 transition-all duration-200 open:bg-white open:border-indigo-400 open:shadow-md"
+                    className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
                   >
                     <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
                         {index + 1}
                       </span>
                       <MathText text={qa.question} className="flex-1" />

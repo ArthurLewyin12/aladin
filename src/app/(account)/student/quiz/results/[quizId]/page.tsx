@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { QuizQuestion } from "@/services/controllers/types/common";
 import { toast } from "@/lib/toast";
 import { QuizExplanations } from "@/components/pages/quizzes/quiz-explanations";
+import { convertScoreToNote } from "@/lib/quiz-score";
 
 export default function QuizResultPage() {
   const router = useRouter();
@@ -90,9 +91,12 @@ export default function QuizResultPage() {
     );
   }
 
-  const score = notesData?.notes[0]?.note || 0;
+  const score = notesData?.notes[0]?.note || 0; // Nombre de bonnes réponses
   const totalQuestions = corrections.length || 0;
   const explanations = notesData?.questions_approfondissement || [];
+
+  // Convertir le score en note sur 20
+  const noteSur20 = convertScoreToNote(score, totalQuestions);
 
   // Calculer le pourcentage
   const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
@@ -204,10 +208,10 @@ export default function QuizResultPage() {
                   : "text-red-500 bg-gradient-to-r from-red-400 to-red-600"
             } bg-clip-text text-transparent`}
           >
-            Score : {score}/{totalQuestions}
+            Note : {noteSur20}/20
           </div>
           <div className="text-lg text-gray-600 mt-2">
-            {percentage.toFixed(0)}% de réussite
+            {score}/{totalQuestions} bonnes réponses ({percentage.toFixed(0)}%)
           </div>
         </div>
 

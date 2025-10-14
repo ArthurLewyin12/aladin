@@ -372,44 +372,52 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dashboardData.all_notes.slice(0, 10).map((note, index) => (
-                    <TableRow
-                      key={index}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <TableCell className="font-medium">
-                        {note.matiere || "Non défini"}
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
-                        {note.chapitre || "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`${getDifficultyColor(note.niveau || "")} border-0`}
-                        >
-                          {note.niveau || "N/A"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-600 text-sm">
-                        {new Date(note.date).toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${getNoteBadgeColor(note.note)}`}
-                          />
-                          <span className="font-bold text-lg">
-                            {note.note}
-                            <span className="text-sm text-gray-500">/20</span>
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {dashboardData.all_notes
+                    .filter((note) =>
+                      note.matiere !== null &&
+                      note.matiere !== "Non défini" &&
+                      note.matiere !== "Indéfini" &&
+                      note.matiere.trim() !== ""
+                    )
+                    .slice(0, 10)
+                    .map((note, index) => (
+                      <TableRow
+                        key={index}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <TableCell className="font-medium">
+                          {note.matiere}
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate">
+                          {note.chapitre || "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`${getDifficultyColor(note.niveau || "")} border-0`}
+                          >
+                            {note.niveau || "N/A"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-600 text-sm">
+                          {new Date(note.date).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div
+                              className={`w-2 h-2 rounded-full ${getNoteBadgeColor(note.note)}`}
+                            />
+                            <span className="font-bold text-lg">
+                              {note.note}
+                              <span className="text-sm text-gray-500">/20</span>
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </div>

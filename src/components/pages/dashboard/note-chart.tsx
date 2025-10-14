@@ -28,14 +28,20 @@ import { useSession } from "@/services/hooks/auth/useSession";
 
 export const description = "Graphique d'évolution des notes par matière";
 
-// Palette de couleurs pour les différentes matières
-const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+// Palette de couleurs pour les différentes matières - alignée avec score-donut.tsx
+const SUBJECT_COLORS = [
+  "#ec4899", // Rose
+  "#10b981", // Vert
+  "#f59e0b", // Orange
+  "#8b5cf6", // Violet
+  "#3b82f6", // Bleu
 ];
+
+// Fonction pour obtenir une couleur stable basée sur le nom de la matière
+const getSubjectColor = (subjectName: string, subjects: string[]) => {
+  const index = subjects.indexOf(subjectName);
+  return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+};
 
 export function NotesEvolutionChart() {
   const [timeRange, setTimeRange] = React.useState<
@@ -93,10 +99,10 @@ export function NotesEvolutionChart() {
       },
     };
 
-    subjects.forEach((subject, index) => {
+    subjects.forEach((subject) => {
       config[subject] = {
         label: subject,
-        color: COLORS[index % COLORS.length],
+        color: getSubjectColor(subject, subjects),
       };
     });
 
@@ -224,27 +230,30 @@ export function NotesEvolutionChart() {
         >
           <AreaChart data={chartData}>
             <defs>
-              {subjects.map((subject, index) => (
-                <linearGradient
-                  key={subject}
-                  id={`fill${subject.replace(/\s+/g, "")}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor={COLORS[index % COLORS.length]}
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor={COLORS[index % COLORS.length]}
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              ))}
+              {subjects.map((subject) => {
+                const color = getSubjectColor(subject, subjects);
+                return (
+                  <linearGradient
+                    key={subject}
+                    id={`fill${subject.replace(/\s+/g, "")}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={color}
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={color}
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                );
+              })}
             </defs>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -289,13 +298,13 @@ export function NotesEvolutionChart() {
                 />
               }
             />
-            {subjects.map((subject, index) => (
+            {subjects.map((subject) => (
               <Area
                 key={subject}
                 dataKey={subject}
                 type="monotone"
                 fill={`url(#fill${subject.replace(/\s+/g, "")})`}
-                stroke={COLORS[index % COLORS.length]}
+                stroke={getSubjectColor(subject, subjects)}
                 strokeWidth={2}
                 stackId={undefined}
               />

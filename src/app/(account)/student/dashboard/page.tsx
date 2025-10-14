@@ -167,13 +167,7 @@ export default function DashboardPage() {
   const performanceBadge = getPerformanceBadge(stats?.averageNote || 0);
 
   return (
-    <div
-      className="min-h-screen bg-[#F5F4F1] relative overflow-hidden"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.2'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "100px 100px",
-      }}
-    >
+    <div className="min-h-screen relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Header avec bouton retour et titre */}
         <div

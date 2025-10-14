@@ -110,13 +110,7 @@ export default function StudentHomePage() {
   ];
 
   return (
-    <div
-      className="min-h-screen w-full bg-[#F5F4F1] relative overflow-hidden"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.2'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "100px 100px",
-      }}
-    >
+    <div className="min-h-screen w-full relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Message de bienvenue avec animation */}
         <div className="mb-8 sm:mb-12">
@@ -134,8 +128,8 @@ export default function StudentHomePage() {
 
         {/* Section principale avec illustration et actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Colonne gauche - Illustration */}
-          <div className="flex justify-center lg:justify-start order-2 lg:order-1">
+          {/* Colonne gauche - Illustration - hidden on mobile */}
+          <div className="hidden lg:flex justify-center lg:justify-start order-2 lg:order-1">
             <Image
               src="/student-illustration-img.png"
               alt="Illustration étudiant"

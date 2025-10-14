@@ -217,13 +217,7 @@ export default function GroupQuizTakingPage() {
 
   // --- RENDER ---
   return (
-    <div
-      className="min-h-screen w-full"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "80px 80px",
-      }}
-    >
+    <div className="min-h-screen w-full">
       {/* Header */}
       <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4">
         <div className="flex items-center space-x-4">

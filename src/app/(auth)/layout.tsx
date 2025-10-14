@@ -6,8 +6,28 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full min-h-screen  bg-[#F5F4F1]">
-      <div className="hidden md:flex flex-1  items-center justify-center p-8 ">
+    <div className="flex w-full min-h-screen bg-[#F5F4F1] relative">
+      {/* Images décoratives en background - fixed position - hidden on mobile */}
+      <div className="hidden md:block fixed bottom-0 left-0 pointer-events-none opacity-95 z-0">
+        <Image
+          src="/left-svg.png"
+          alt=""
+          width={500}
+          height={350}
+          className="object-contain"
+        />
+      </div>
+      <div className="hidden md:block fixed bottom-0 right-0 pointer-events-none opacity-95 z-0">
+        <Image
+          src="/rigth-svg.png"
+          alt=""
+          width={500}
+          height={350}
+          className="object-contain"
+        />
+      </div>
+
+      <div className="hidden md:flex flex-1 items-center justify-center p-8 relative z-10">
         <div className="max-w-md text-center ">
           <Image
             src="/login-img.png"
@@ -19,7 +39,7 @@ export default function AuthLayout({
         </div>
       </div>
 
-      <div className="flex-1  flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 relative z-10">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Image

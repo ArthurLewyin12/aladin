@@ -9,7 +9,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Rectangle,
 } from "recharts";
+import type { RectangleProps } from "recharts";
 import {
   Select,
   SelectContent,
@@ -43,21 +45,21 @@ const periodLabels: Record<PeriodType, string> = {
   year: "Cette année",
 };
 
-// Fonction pour générer une couleur basée sur l'index
+// Palette de couleurs pastel douces et harmonieuses (comme la maquette)
 const generateColor = (index: number): string => {
   const colors = [
-    "#B4A5D9",
-    "#E897C5",
-    "#A8D5A8",
-    "#F5A57A",
-    "#7EC8E3",
-    "#F5C27A",
-    "#F5B7C5",
-    "#A8C5E3",
-    "#D9C5A8",
-    "#C5A8D9",
-    "#A8D9C5",
-    "#E3A8C5",
+    "#C5B9D6", // Lavande clair (violet doux)
+    "#F5A6A0", // Rose saumon doux
+    "#B8E6D5", // Vert menthe pastel
+    "#FFD7A8", // Pêche/orange pastel
+    "#D4A5D9", // Violet/mauve pastel
+    "#F5B8D4", // Rose pastel
+    "#A8D8EA", // Bleu ciel pastel
+    "#FFE5B4", // Jaune pastel
+    "#D5C4E8", // Lavande moyen
+    "#B5E7A0", // Vert clair pastel
+    "#FAD5C0", // Beige rosé
+    "#C9E4DE", // Vert d'eau pastel
   ];
   return colors[index % colors.length];
 };
@@ -73,6 +75,69 @@ const extractSubjectsFromData = (data: StudyData[]): string[] => {
     });
   });
   return Array.from(subjectsSet);
+};
+
+// Composant custom pour les barres avec bordures alternées pair/impair
+const RoundedBar = (props: any) => {
+  const { fill, x, y, width, height, index, isLast } = props;
+
+  if (!height || height <= 0) return null;
+
+  const curveDepth = 10; // Profondeur de la courbe
+  const midX = x + width / 2;
+  const cornerRadius = 8;
+
+  const isPair = index % 2 === 0; // Position paire (0, 2, 4...)
+
+  let path = "";
+
+  if (isPair) {
+    // POSITION PAIRE : bas normal, haut arrondi TRÈS BOMBÉ vers l'extérieur
+    if (index === 0) {
+      // Toute première : bas plat, haut très arrondi
+      path = `
+        M ${x},${y}
+        L ${x},${y + height}
+        Q ${midX},${y + height + curveDepth} ${x + width},${y + height}
+        L ${x + width},${y}
+        Z
+      `;
+    } else {
+      // Autres paires : bas creusé pour épouser l'impaire d'en dessous, haut très bombé
+      path = `
+        M ${x},${y}
+        Q ${midX},${y - curveDepth} ${x + width},${y}
+        L ${x + width},${y + height}
+        Q ${midX},${y + height + curveDepth} ${x},${y + height}
+        Z
+      `;
+    }
+  } else {
+    // POSITION IMPAIRE : bas creusé vers l'intérieur, haut très arrondi
+    if (isLast) {
+      // Dernière : bas creusé, haut avec coins très arrondis (demi-cercle)
+      const topRadius = width / 2;
+      path = `
+        M ${x},${y}
+        Q ${midX},${y - curveDepth} ${x + width},${y}
+        L ${x + width},${y + height - topRadius}
+        Q ${x + width},${y + height} ${midX},${y + height}
+        Q ${x},${y + height} ${x},${y + height - topRadius}
+        Z
+      `;
+    } else {
+      // Autres impaires : bas creusé, haut très bombé
+      path = `
+        M ${x},${y}
+        Q ${midX},${y - curveDepth} ${x + width},${y}
+        L ${x + width},${y + height}
+        Q ${midX},${y + height + curveDepth} ${x},${y + height}
+        Z
+      `;
+    }
+  }
+
+  return <path d={path} fill={fill} stroke="none" />;
 };
 
 export function StudyTimeChart({
@@ -141,7 +206,8 @@ export function StudyTimeChart({
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
-            stroke="#f0f0f0"
+            stroke="#e5e7eb"
+            strokeOpacity={0.5}
           />
           <XAxis
             dataKey="day"
@@ -183,11 +249,14 @@ export function StudyTimeChart({
           <Tooltip
             contentStyle={{
               backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "8px",
-              fontSize: "12px",
+              border: "1px solid #e5e7eb",
+              borderRadius: "12px",
+              fontSize: "13px",
+              padding: "12px",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
             }}
-            formatter={(value: number) => [`${value}h`, ""]}
+            formatter={(value: number) => [`${value.toFixed(1)}h`, ""]}
+            labelStyle={{ fontWeight: "600", marginBottom: "8px" }}
           />
           <Legend
             wrapperStyle={{ paddingTop: "20px" }}
@@ -201,16 +270,38 @@ export function StudyTimeChart({
               </span>
             )}
           />
-          {subjectsList.map((subject) => (
-            <Bar
-              key={subject.name}
-              dataKey={subject.name}
-              stackId="a"
-              fill={subject.color}
-              radius={[7, 7, 0, 0]}
-              barSize={40}
-            />
-          ))}
+          {subjectsList.map((subject, index) => {
+            const isPair = index % 2 === 0;
+            const isLast = index === subjectsList.length - 1;
+
+            // Déterminer les radius selon la position
+            let radius: [number, number, number, number] | number = [0, 0, 0, 0];
+
+            if (index === 0) {
+              // Premier : haut arrondi, bas plat
+              radius = [0, 0, 10, 10];
+            } else if (isPair) {
+              // Pair : haut et bas arrondis
+              radius = [10, 10, 10, 10];
+            } else if (isLast) {
+              // Dernier impair : très arrondi en haut
+              radius = [15, 15, 10, 10];
+            } else {
+              // Impair milieu : haut et bas arrondis
+              radius = [10, 10, 10, 10];
+            }
+
+            return (
+              <Bar
+                key={subject.name}
+                dataKey={subject.name}
+                stackId="a"
+                fill={subject.color}
+                radius={radius}
+                barSize={40}
+              />
+            );
+          })}
         </BarChart>
       </ResponsiveContainer>
     </div>

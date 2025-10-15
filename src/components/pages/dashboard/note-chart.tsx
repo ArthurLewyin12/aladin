@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
   Card,
@@ -43,6 +43,24 @@ const getSubjectColor = (subjectName: string, subjects: string[]) => {
   return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
 };
 
+// Mapping des jours en anglais vers le français
+const dayMapping: Record<string, string> = {
+  "Mon": "Lun",
+  "Tue": "Mar",
+  "Wed": "Mer",
+  "Thu": "Jeu",
+  "Fri": "Ven",
+  "Sat": "Sam",
+  "Sun": "Dim",
+  "Monday": "Lundi",
+  "Tuesday": "Mardi",
+  "Wednesday": "Mercredi",
+  "Thursday": "Jeudi",
+  "Friday": "Vendredi",
+  "Saturday": "Samedi",
+  "Sunday": "Dimanche"
+};
+
 export function NotesEvolutionChart() {
   const [timeRange, setTimeRange] = React.useState<
     "week" | "month" | "quarter" | "semester" | "year"
@@ -58,23 +76,64 @@ export function NotesEvolutionChart() {
   const chartData = React.useMemo(() => {
     if (!dashboardData?.notes_evolution) return [];
 
-    // Grouper les notes par date
-    const groupedByDate = dashboardData.notes_evolution.reduce(
-      (acc, note) => {
-        const date = note.date;
-        if (!acc[date]) {
-          acc[date] = { date };
-        }
-        if (note.matiere) {
-          acc[date][note.matiere] = note.note;
-        }
-        return acc;
-      },
-      {} as Record<string, any>,
-    );
+    // Grouper les notes par date et matière (calculer la moyenne si plusieurs notes)
+    const groupedByDateAndSubject: Record<string, Record<string, number[]>> = {};
 
-    return Object.values(groupedByDate);
-  }, [dashboardData]);
+    dashboardData.notes_evolution.forEach((note) => {
+      if (!note.matiere) return; // Ignorer les notes sans matière
+
+      const date = note.date;
+      if (!groupedByDateAndSubject[date]) {
+        groupedByDateAndSubject[date] = {};
+      }
+      if (!groupedByDateAndSubject[date][note.matiere]) {
+        groupedByDateAndSubject[date][note.matiere] = [];
+      }
+      groupedByDateAndSubject[date][note.matiere].push(note.note);
+    });
+
+    // Calculer les moyennes et créer les données du graphique
+    const groupedByDate: Record<string, any> = {};
+    Object.entries(groupedByDateAndSubject).forEach(([date, subjects]) => {
+      groupedByDate[date] = { date };
+      Object.entries(subjects).forEach(([subject, notes]) => {
+        // Calculer la moyenne des notes pour cette matière ce jour-là
+        const average = notes.reduce((sum, n) => sum + n, 0) / notes.length;
+        groupedByDate[date][subject] = Math.round(average * 10) / 10; // Arrondir à 1 décimale
+      });
+    });
+
+    // Générer tous les jours de la période
+    let allDates: string[] = [];
+    if (timeRange === "week") {
+      // Pour la semaine, générer les jours du lundi au dimanche de la semaine actuelle
+      const today = new Date();
+      const currentDay = today.getDay(); // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+
+      // Calculer le lundi de cette semaine
+      const monday = new Date(today);
+      const daysFromMonday = currentDay === 0 ? -6 : -(currentDay - 1); // Si dimanche, remonter de 6 jours, sinon remonter de (jour - 1)
+      monday.setDate(today.getDate() + daysFromMonday);
+
+      // Générer les 7 jours de la semaine (Lundi à Dimanche)
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        allDates.push(dateStr);
+      }
+    } else {
+      // Pour les autres périodes, utiliser les dates existantes
+      allDates = Object.keys(groupedByDate).sort();
+    }
+
+    // Créer le résultat final avec tous les jours
+    const result = allDates.map(date => {
+      return groupedByDate[date] || { date };
+    });
+
+    return result;
+  }, [dashboardData, timeRange]);
 
   // Extraire les matières uniques pour la configuration du graphique
   const subjects = React.useMemo(() => {
@@ -228,41 +287,30 @@ export function NotesEvolutionChart() {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={chartData}>
-            <defs>
-              {subjects.map((subject) => {
-                const color = getSubjectColor(subject, subjects);
-                return (
-                  <linearGradient
-                    key={subject}
-                    id={`fill${subject.replace(/\s+/g, "")}`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor={color}
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={color}
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                );
-              })}
-            </defs>
-            <CartesianGrid vertical={false} />
+          <LineChart data={chartData}>
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              stroke="#e5e7eb"
+              strokeOpacity={0.5}
+            />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
+              tick={{ fill: "#666", fontSize: 12 }}
               tickFormatter={(value) => {
+                // Pour la semaine, afficher les jours (Lun, Mar, etc.)
+                if (timeRange === "week") {
+                  const date = new Date(value);
+                  const dayName = date.toLocaleDateString("en-US", {
+                    weekday: "short",
+                  });
+                  return dayMapping[dayName] || dayName;
+                }
+                // Pour les autres périodes, afficher la date
                 const date = new Date(value);
                 return date.toLocaleDateString("fr-FR", {
                   month: "short",
@@ -274,6 +322,7 @@ export function NotesEvolutionChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              tick={{ fill: "#666", fontSize: 12 }}
               domain={[0, 20]}
               ticks={[0, 5, 10, 15, 20]}
             />
@@ -299,17 +348,28 @@ export function NotesEvolutionChart() {
               }
             />
             {subjects.map((subject) => (
-              <Area
+              <Line
                 key={subject}
                 dataKey={subject}
-                type="monotone"
-                fill={`url(#fill${subject.replace(/\s+/g, "")})`}
+                type="linear"
                 stroke={getSubjectColor(subject, subjects)}
-                strokeWidth={2}
-                stackId={undefined}
+                strokeWidth={2.5}
+                fill="none"
+                dot={{
+                  fill: getSubjectColor(subject, subjects),
+                  strokeWidth: 2,
+                  r: 4,
+                  stroke: "#fff",
+                }}
+                activeDot={{
+                  r: 6,
+                  strokeWidth: 2,
+                  stroke: "#fff",
+                }}
+                connectNulls={false}
               />
             ))}
-          </AreaChart>
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </Card>

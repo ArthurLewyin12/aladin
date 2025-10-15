@@ -181,11 +181,11 @@ export default function DashboardPage() {
             variant="ghost"
             size="icon"
             onClick={handleBack}
-            className="rounded-full bg-white hover:bg-gray-50 w-9 h-9 sm:w-10 sm:h-10 shadow-sm flex-shrink-0"
+            className="rounded-full bg-white hover:bg-gray-50 w-9 h-9 sm:w-12 sm:h-12 shadow-sm flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+          {/*<div className="flex items-center gap-2 sm:gap-3 flex-1">
             <span className="text-2xl sm:text-3xl">📊</span>
             <div className="flex-1">
               <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                 {dashboardData.user.niveau.libelle}
               </p>
             </div>
-          </div>
+          </div>*/}
         </div>
 
         {/* Quick Stats avec animations */}
@@ -285,41 +285,43 @@ export default function DashboardPage() {
         </div>*/}
 
         {/* Stats Cards traditionnelles */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            title="Total des cours"
-            value={dashboardData.counters.cours.toString()}
-            subtitle="Cours"
-            icon={<BookOpen className="h-16 w-16" />}
-            bgColor="bg-[#FFF4E6]"
-            iconColor="text-[#F5C27A]"
-          />
-          <StatCard
-            title="Total des quiz"
-            value={dashboardData.counters.quiz.toString()}
-            subtitle="Quiz"
-            icon={<Brain className="h-16 w-16" />}
-            bgColor="bg-[#F5D7D7]"
-            iconColor="text-[#E89999]"
-          />
-          <StatCard
-            title="Total des groupes"
-            value={dashboardData.counters.groupes.toString()}
-            subtitle="Groupes"
-            icon={<Users className="h-16 w-16" />}
-            bgColor="bg-[#D4EBE8]"
-            iconColor="text-[#7EC8BF]"
-          />
-          <StatCard
-            title="Total de documents"
-            value={dashboardData.counters.documents.toString()}
-            subtitle="Docs"
-            icon={<FileText className="h-16 w-16" />}
-            bgColor="bg-[#D8EDD5]"
-            iconColor="text-[#8FC984]"
-          />
+        <div className="mx-auto bg-white backdrop:blur-2xl p-10 mb-4 rounded-lg shadow-sm">
+          <h1 className="text-[2rem] mb-2 font-bold">Dashboard</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <StatCard
+              title="Total des cours"
+              value={dashboardData.counters.cours.toString()}
+              subtitle="Cours"
+              icon={<BookOpen className="h-16 w-16" />}
+              bgColor="bg-[#FFF4E6]"
+              iconColor="text-[#F5C27A]"
+            />
+            <StatCard
+              title="Total des quiz"
+              value={dashboardData.counters.quiz.toString()}
+              subtitle="Quiz"
+              icon={<Brain className="h-16 w-16" />}
+              bgColor="bg-[#F5D7D7]"
+              iconColor="text-[#E89999]"
+            />
+            <StatCard
+              title="Total des groupes"
+              value={dashboardData.counters.groupes.toString()}
+              subtitle="Groupes"
+              icon={<Users className="h-16 w-16" />}
+              bgColor="bg-[#D4EBE8]"
+              iconColor="text-[#7EC8BF]"
+            />
+            <StatCard
+              title="Total de documents"
+              value={dashboardData.counters.documents.toString()}
+              subtitle="Docs"
+              icon={<FileText className="h-16 w-16" />}
+              bgColor="bg-[#D8EDD5]"
+              iconColor="text-[#8FC984]"
+            />
+          </div>
         </div>
-
         {/* Charts Section avec meilleur style */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -367,11 +369,12 @@ export default function DashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {dashboardData.all_notes
-                    .filter((note) =>
-                      note.matiere !== null &&
-                      note.matiere !== "Non défini" &&
-                      note.matiere !== "Indéfini" &&
-                      note.matiere.trim() !== ""
+                    .filter(
+                      (note) =>
+                        note.matiere !== null &&
+                        note.matiere !== "Non défini" &&
+                        note.matiere !== "Indéfini" &&
+                        note.matiere.trim() !== "",
                     )
                     .slice(0, 10)
                     .map((note, index) => (

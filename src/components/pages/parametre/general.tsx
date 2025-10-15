@@ -101,7 +101,8 @@ export default function SettingsGeneralPage() {
 
   const filteredNiveaux = useMemo(() => {
     if (!niveaux || !user) return [];
-    return niveaux.filter((niveau) => niveau.id !== user.niveau_id);
+    const userNiveauId = user.niveau_id || user.niveau?.id;
+    return niveaux.filter((niveau) => niveau.id !== userNiveauId);
   }, [niveaux, user]);
 
   // Calculer si l'utilisateur peut changer de niveau
@@ -159,7 +160,8 @@ export default function SettingsGeneralPage() {
         phone: user.numero || "",
         email: user.mail || "",
       });
-      setSelectedNiveau(user.niveau_id?.toString() || "");
+      // Ne pas pré-remplir le selectedNiveau avec le niveau actuel
+      // pour éviter d'afficher le niveau actuel dans le Select
     }
   }, [user, profileForm]);
 
@@ -264,7 +266,8 @@ export default function SettingsGeneralPage() {
   }
 
   function handleOpenConfirmDialog() {
-    if (!selectedNiveau || selectedNiveau === user?.niveau_id?.toString()) {
+    const userNiveauId = user?.niveau_id || user?.niveau?.id;
+    if (!selectedNiveau || selectedNiveau === userNiveauId?.toString()) {
       toast({
         variant: "error",
         title: "Erreur",
@@ -363,7 +366,7 @@ export default function SettingsGeneralPage() {
               <SelectValue placeholder="Sélectionne un nouveau niveau" />
             </SelectTrigger>
             <SelectContent>
-              {filteredNiveaux?.map((niveau) => (
+              {filteredNiveaux.map((niveau) => (
                 <SelectItem key={niveau.id} value={niveau.id.toString()}>
                   {niveau.libelle}
                 </SelectItem>
@@ -376,7 +379,7 @@ export default function SettingsGeneralPage() {
             disabled={
               !canChangeNiveau.allowed ||
               !selectedNiveau ||
-              selectedNiveau === user?.niveau_id?.toString()
+              selectedNiveau === (user?.niveau_id || user?.niveau?.id)?.toString()
             }
             className="w-full h-12 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl shadow-md transition-all hover:shadow-lg"
           >
@@ -552,6 +555,7 @@ export default function SettingsGeneralPage() {
                       type="password"
                       placeholder="Ancien mot de passe"
                       className="h-12 bg-white border-2 border-gray-300 rounded-xl"
+                      autoComplete="new-password"
                       {...field}
                     />
                   </FormControl>
@@ -584,6 +588,7 @@ export default function SettingsGeneralPage() {
                       type="password"
                       placeholder="Nouveau mot de passe"
                       className="h-12 bg-white border-2 border-gray-300 rounded-xl"
+                      autoComplete="new-password"
                       {...field}
                     />
                   </FormControl>

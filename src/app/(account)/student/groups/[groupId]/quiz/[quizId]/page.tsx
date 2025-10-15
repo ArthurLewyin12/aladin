@@ -14,6 +14,7 @@ import {
 import { toast } from "@/lib/toast";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { calculateQuizScore } from "@/lib/quiz-score";
+import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -179,6 +180,13 @@ export default function GroupQuizTakingPage() {
     }
   }, [quizId, isSubmitting, quizQuestions, userAnswers, submitQuizMutation, router, groupId]);
 
+  // Hook pour empêcher la navigation pendant le quiz
+  const { ConfirmationDialog, interceptNavigation } = usePreventNavigation({
+    when: !isLoading && !isSubmitting && quizQuestions.length > 0,
+    message: "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
+    onConfirm: handleSubmitQuiz,
+  });
+
   // Timer countdown - APRÈS handleSubmitQuiz
   useEffect(() => {
     if (isLoading || isSubmitting || remainingTime <= 0) return;
@@ -205,7 +213,12 @@ export default function GroupQuizTakingPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleBackToGroup = () => router.push(`/student/groups/${groupId}`);
+  const handleBackToGroup = () => {
+    if (!interceptNavigation(`/student/groups/${groupId}`)) {
+      return; // Navigation interceptée
+    }
+    router.push(`/student/groups/${groupId}`);
+  };
 
   if (isLoading) {
     return (
@@ -217,7 +230,9 @@ export default function GroupQuizTakingPage() {
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen w-full">
+    <>
+      <ConfirmationDialog />
+      <div className="min-h-screen w-full">
       {/* Header */}
       <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4">
         <div className="flex items-center space-x-4">
@@ -316,5 +331,6 @@ export default function GroupQuizTakingPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

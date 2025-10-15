@@ -21,6 +21,7 @@ import { useTimeTracking } from "@/stores/useTimeTracking";
 import { calculateQuizScore } from "@/lib/quiz-score";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileUpload } from "@/components/ui/file-upload";
+import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
 
 const quizLoadingMessages = [
   "Génération du quiz en cours...",
@@ -166,6 +167,7 @@ export default function GenerateQuizPage() {
   const handleSubmitQuiz = async (
     answers?: Record<string | number, string | number>,
   ) => {
+    stopTracking();
     if (!activeQuizId) return;
 
     const answersToSubmit = answers || userAnswers;
@@ -253,12 +255,26 @@ export default function GenerateQuizPage() {
     setSelectedChapitreId(null);
     setSelectedDifficulty("");
   };
+  // Hook pour empêcher la navigation pendant le quiz
+  const { ConfirmationDialog, interceptNavigation } = usePreventNavigation({
+    when: step === "quiz" && quizQuestions.length > 0,
+    message: "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
+    onConfirm: handleSubmitQuiz,
+  });
+
   // Changement ici : retourner vers la liste des quiz
-  const handleBackToQuizList = () => router.push("/student/quiz");
+  const handleBackToQuizList = () => {
+    if (!interceptNavigation("/student/quiz")) {
+      return; // Navigation interceptée
+    }
+    router.push("/student/quiz");
+  };
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen w-full">
+    <>
+      <ConfirmationDialog />
+      <div className="min-h-screen w-full">
       <GenerationLoadingOverlay
         isLoading={generateQuizMutation.isPending}
         messages={quizLoadingMessages}
@@ -276,13 +292,19 @@ export default function GenerateQuizPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={
-              step === "subject"
-                ? handleBackToQuizList // Changement ici
-                : step === "config"
-                  ? handleConfigBack
-                  : () => setStep("config")
-            }
+            onClick={() => {
+              if (step === "subject") {
+                handleBackToQuizList();
+              } else if (step === "config") {
+                handleConfigBack();
+              } else if (step === "quiz") {
+                // Intercepter la navigation pendant le quiz
+                if (!interceptNavigation("/student/quiz")) {
+                  return;
+                }
+                setStep("config");
+              }
+            }}
             className={`flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white ${
               step === "subject" ? "w-12 h-12 justify-center" : "px-4 py-2"
             }`}
@@ -577,5 +599,6 @@ export default function GenerateQuizPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

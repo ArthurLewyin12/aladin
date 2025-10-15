@@ -20,7 +20,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "relative rounded-3xl p-6 shadow-sm transition-all hover:shadow-md",
+        "relative rounded-2xl p-6 shadow-sm transition-all hover:shadow-md",
         bgColor,
       )}
     >

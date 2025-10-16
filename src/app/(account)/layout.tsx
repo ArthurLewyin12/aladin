@@ -1,5 +1,6 @@
 import { AccountHeader } from "@/components/ui/account-header";
 import { AuthGuard } from "@/components/guards/auth-guard";
+import { RoleGuard } from "@/components/guards/RoleGuard";
 import Image from "next/image";
 
 export default function AccountLayout({
@@ -9,7 +10,8 @@ export default function AccountLayout({
 }>) {
   return (
     <AuthGuard>
-      <div className="flex flex-col w-full min-h-screen bg-[#F5F4F1] relative">
+      <RoleGuard>
+        <div className="flex flex-col w-full min-h-screen bg-[#F5F4F1] relative">
         <AccountHeader />
 
         {/* Images décoratives en background - fixed position */}
@@ -34,6 +36,7 @@ export default function AccountLayout({
 
         <main className="flex-1 relative z-10">{children}</main>
       </div>
+      </RoleGuard>
     </AuthGuard>
   );
 }

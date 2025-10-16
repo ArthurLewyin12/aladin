@@ -1,0 +1,152 @@
+import {
+  Home,
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  Users,
+  Settings,
+  UsersRound,
+} from "lucide-react";
+
+export type UserRole = "eleve" | "parent" | "professeur" | "admin";
+
+interface NavigationItem {
+  label: string;
+  path: string;
+  icon: any;
+}
+
+interface RoleNavigation {
+  homePath: string;
+  settingsPath: string;
+  menuItems: NavigationItem[];
+}
+
+/**
+ * Configuration de navigation par rôle
+ * Cette approche modulaire permet d'ajouter facilement de nouveaux rôles
+ */
+export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
+  eleve: {
+    homePath: "/student/home",
+    settingsPath: "/student/settings",
+    menuItems: [
+      {
+        label: "Mon tableau de bord",
+        path: "/student/dashboard",
+        icon: BarChart3,
+      },
+      {
+        label: "Mes cours",
+        path: "/student/revision",
+        icon: ClipboardList,
+      },
+      {
+        label: "Mes quiz",
+        path: "/student/quiz",
+        icon: BookOpen,
+      },
+      {
+        label: "Mes groupes",
+        path: "/student/groups",
+        icon: Users,
+      },
+    ],
+  },
+  parent: {
+    homePath: "/parent/home",
+    settingsPath: "/parent/settings",
+    menuItems: [
+      {
+        label: "Mon tableau de bord",
+        path: "/parent/dashboard",
+        icon: BarChart3,
+      },
+      {
+        label: "Mes cours",
+        path: "/parent/courses",
+        icon: BookOpen,
+      },
+      {
+        label: "Mes classes",
+        path: "/parent/classes",
+        icon: Users,
+      },
+      {
+        label: "Mes groupes",
+        path: "/parent/groups",
+        icon: UsersRound,
+      },
+    ],
+  },
+  professeur: {
+    homePath: "/teacher/home",
+    settingsPath: "/teacher/settings",
+    menuItems: [
+      {
+        label: "Mon tableau de bord",
+        path: "/teacher/dashboard",
+        icon: BarChart3,
+      },
+      {
+        label: "Mes cours",
+        path: "/teacher/courses",
+        icon: BookOpen,
+      },
+      {
+        label: "Mes classes",
+        path: "/teacher/classes",
+        icon: Users,
+      },
+    ],
+  },
+  admin: {
+    homePath: "/admin/home",
+    settingsPath: "/admin/settings",
+    menuItems: [
+      {
+        label: "Tableau de bord",
+        path: "/admin/dashboard",
+        icon: BarChart3,
+      },
+      {
+        label: "Utilisateurs",
+        path: "/admin/users",
+        icon: Users,
+      },
+      {
+        label: "Contenu",
+        path: "/admin/content",
+        icon: BookOpen,
+      },
+    ],
+  },
+};
+
+/**
+ * Récupère la configuration de navigation pour un rôle donné
+ */
+export const getNavigationForRole = (
+  role: UserRole,
+): RoleNavigation | null => {
+  return ROLE_NAVIGATION[role] || null;
+};
+
+/**
+ * Vérifie si un utilisateur a accès à une route spécifique
+ */
+export const hasAccessToRoute = (userRole: UserRole, path: string): boolean => {
+  const navigation = getNavigationForRole(userRole);
+  if (!navigation) return false;
+
+  // Vérifier si le chemin correspond au rôle de l'utilisateur
+  const rolePrefix = `/${userRole === "eleve" ? "student" : userRole}`;
+  return path.startsWith(rolePrefix);
+};
+
+/**
+ * Redirige vers la page d'accueil appropriée selon le rôle
+ */
+export const getHomePathForRole = (role: UserRole): string => {
+  return ROLE_NAVIGATION[role]?.homePath || "/";
+};

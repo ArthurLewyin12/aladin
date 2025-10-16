@@ -1,13 +1,6 @@
 "use client";
 import Image from "next/image";
-import {
-  User,
-  LogOut,
-  Settings,
-  BookOpen,
-  ClipboardList,
-  BarChart3,
-} from "lucide-react";
+import { User, LogOut, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +13,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
 import { NotificationsBell } from "@/components/pages/groups/notification-group";
+import {
+  getNavigationForRole,
+  UserRole,
+} from "@/constants/navigation";
 
 export function AccountHeader() {
   const router = useRouter();
@@ -30,12 +27,15 @@ export function AccountHeader() {
     return `${nom?.[0] || ""}${prenom?.[0] || ""}`.toUpperCase();
   };
 
+  const userRole = user?.statut as UserRole;
+  const navigation = getNavigationForRole(userRole);
+
   const handleProfile = () => {
-    router.push("/student/home");
+    router.push(navigation?.homePath || "/");
   };
 
   const handleSettings = () => {
-    router.push("/student/settings");
+    router.push(navigation?.settingsPath || "/settings");
   };
 
   const handleLogout = () => {
@@ -101,40 +101,19 @@ export function AccountHeader() {
               <User className="mr-2 h-4 w-4" />
               <span>Ma page d'accueil</span>
             </DropdownMenuItem>
-            {user?.statut === "eleve" && (
-              <>
+            {navigation?.menuItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
                 <DropdownMenuItem
-                  onClick={() => router.push("/student/dashboard")}
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
                   className="cursor-pointer"
                 >
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  <span>Mon tableau de bord</span>
+                  <IconComponent className="mr-2 h-4 w-4" />
+                  <span>{item.label}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => router.push("/student/revision")}
-                  className="cursor-pointer"
-                >
-                  <ClipboardList className="mr-2 h-4 w-4" />
-                  <span>Mes cours</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => router.push("/student/quiz")}
-                  className="cursor-pointer"
-                >
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  <span>Mes quiz</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => router.push("/student/groups")}
-                  className="cursor-pointer"
-                >
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  <span>Mes groupes</span>
-                </DropdownMenuItem>
-              </>
-            )}
+              );
+            })}
             <DropdownMenuItem
               onClick={handleSettings}
               className="cursor-pointer"

@@ -64,6 +64,7 @@ export interface DashboardResponse {
     chapitre: string;
     niveau: string;
     note: number;
+    nombre_questions: number;
     date: string; // ISO date
   }>; // Toutes notes historiques, trié par date décroissante
 }

@@ -19,6 +19,12 @@ const UPDATE_INTERVAL = 10000;
 // Seuil pour envoyer les données automatiquement (5 minutes)
 const AUTO_SEND_THRESHOLD = 5 * 60 * 1000;
 
+// Durée maximum par session (24 heures en secondes, limite backend)
+const MAX_DURATION_SECONDS = 86400;
+
+// Nombre maximum de sessions par batch (limite backend)
+const MAX_SESSIONS_PER_BATCH = 100;
+
 export const useTimeTracking = create<TimeTrackingStore>()(
   persist(
     (set, get) => ({
@@ -70,9 +76,15 @@ export const useTimeTracking = create<TimeTrackingStore>()(
           (now - currentSession.lastUpdate) / 1000,
         );
 
+        // Limiter la durée à MAX_DURATION_SECONDS (24h max backend)
+        const newDuration = Math.min(
+          currentSession.duration + timeSinceLastUpdate,
+          MAX_DURATION_SECONDS,
+        );
+
         const updatedSession: TimeTrackingSession = {
           ...currentSession,
-          duration: currentSession.duration + timeSinceLastUpdate,
+          duration: newDuration,
           lastUpdate: now,
         };
 
@@ -102,9 +114,15 @@ export const useTimeTracking = create<TimeTrackingStore>()(
             (now - currentSession.lastUpdate) / 1000,
           );
 
+          // Limiter la durée finale à MAX_DURATION_SECONDS (24h max backend)
+          const finalDuration = Math.min(
+            currentSession.duration + timeSinceLastUpdate,
+            MAX_DURATION_SECONDS,
+          );
+
           const finalSession: TimeTrackingSession = {
             ...currentSession,
-            duration: currentSession.duration + timeSinceLastUpdate,
+            duration: finalDuration,
             endTime: now,
             lastUpdate: now,
           };
@@ -139,12 +157,21 @@ export const useTimeTracking = create<TimeTrackingStore>()(
         }
 
         try {
+          // Limiter à MAX_SESSIONS_PER_BATCH (100 sessions max par requête backend)
+          const sessionsToSend = activeSessions.slice(
+            0,
+            MAX_SESSIONS_PER_BATCH,
+          );
+          const remainingSessions = activeSessions.slice(
+            MAX_SESSIONS_PER_BATCH,
+          );
+
           console.log(
-            `[TimeTracking] Sending ${activeSessions.length} session(s)...`,
+            `[TimeTracking] Sending ${sessionsToSend.length} session(s)... (${remainingSessions.length} remaining)`,
           );
 
           // Préparer les données pour l'API
-          const payload: TimeTrackingPayload[] = activeSessions.map(
+          const payload: TimeTrackingPayload[] = sessionsToSend.map(
             (session) => ({
               type: session.type,
               resource_id: session.resourceId,
@@ -161,10 +188,18 @@ export const useTimeTracking = create<TimeTrackingStore>()(
 
           console.log("[TimeTracking] API Response:", response);
 
-          // Nettoyer les sessions envoyées
-          get().clearSentSessions();
+          // Nettoyer seulement les sessions envoyées avec succès
+          set({ activeSessions: remainingSessions });
 
           console.log("[TimeTracking] Data sent successfully");
+
+          // Si des sessions restent, les envoyer récursivement
+          if (remainingSessions.length > 0) {
+            console.log(
+              `[TimeTracking] Sending remaining ${remainingSessions.length} session(s)...`,
+            );
+            await get().sendData();
+          }
         } catch (error) {
           console.error("[TimeTracking] Failed to send data:", error);
           // En cas d'erreur, garder les sessions pour réessayer plus tard

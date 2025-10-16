@@ -32,6 +32,7 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
+import { convertScoreToNote } from "@/lib/quiz-score";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -405,10 +406,10 @@ export default function DashboardPage() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             <div
-                              className={`w-2 h-2 rounded-full ${getNoteBadgeColor(note.note)}`}
+                              className={`w-2 h-2 rounded-full ${getNoteBadgeColor(convertScoreToNote(note.note, note.nombre_questions))}`}
                             />
                             <span className="font-bold text-lg">
-                              {note.note}
+                              {convertScoreToNote(note.note, note.nombre_questions)}
                               <span className="text-sm text-gray-500">/20</span>
                             </span>
                           </div>

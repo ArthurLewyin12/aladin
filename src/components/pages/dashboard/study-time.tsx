@@ -255,7 +255,15 @@ export function StudyTimeChart({
               padding: "12px",
               boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
             }}
-            formatter={(value: number) => [`${value.toFixed(1)}h`, ""]}
+            formatter={(value: number) => {
+              // Si moins d'1 heure, afficher en minutes
+              if (value < 1) {
+                const minutes = Math.round(value * 60);
+                return [`${minutes} min`, ""];
+              }
+              // Sinon afficher en heures
+              return [`${value.toFixed(1)}h`, ""];
+            }}
             labelStyle={{ fontWeight: "600", marginBottom: "8px" }}
           />
           <Legend

@@ -93,12 +93,29 @@ export default function DashboardPage() {
 
     const { labels, series } = dashboardData.study_time;
 
-    // Créer un mapping jour -> matières -> secondes
+    // Créer un mapping date ISO -> label backend
+    // Le backend envoie les labels dans l'ordre correct, on associe chaque date à son label
+    const dateToLabelMap: Record<string, string> = {};
+
+    // Extraire toutes les dates uniques des series
+    const uniqueDates = Array.from(new Set(series.map((item) => item.bucket))).sort();
+
+    // Mapper chaque date à son label correspondant (ordre chronologique)
+    uniqueDates.forEach((date, index) => {
+      // Le backend envoie les labels dans l'ordre de la semaine
+      // On mappe directement chaque date unique à son label
+      if (index < labels.length) {
+        dateToLabelMap[date] = labels[index];
+      }
+    });
+
+    // Créer un mapping label -> matières -> heures
     const dayMap: Record<string, Record<string, number>> = {};
 
     series.forEach((item) => {
-      const dayLabel =
-        labels[new Date(item.bucket).getDay()] || item.bucket.split("-")[2];
+      const dayLabel = dateToLabelMap[item.bucket];
+      if (!dayLabel) return; // Skip si pas de label trouvé
+
       if (!dayMap[dayLabel]) {
         dayMap[dayLabel] = {};
       }

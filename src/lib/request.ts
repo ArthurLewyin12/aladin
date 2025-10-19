@@ -213,10 +213,21 @@ export const request = {
 
 /**
  * Fonction utilitaire pour créer des clés de requête pour TanStack Query.
- * Convertit toutes les parties en chaînes de caractères.
- * @param {...(string | number)[]} parts Les segments qui composent la clé.
- * @returns {string[]} Un tableau de chaînes de caractères à utiliser comme clé de requête.
+ * Accepte des chaînes, nombres, objets, undefined ou null.
+ * Les valeurs undefined/null sont filtrées automatiquement.
+ * Les objets sont inclus tels quels pour permettre la comparaison par référence de TanStack Query.
+ * @param {...(string | number | object | undefined | null)[]} parts Les segments qui composent la clé.
+ * @returns {(string | object)[]} Un tableau utilisable comme clé de requête TanStack Query.
  */
-export const createQueryKey = (...parts: (string | number)[]): string[] => {
-  return parts.map((part) => String(part));
+export const createQueryKey = (
+  ...parts: (string | number | object | undefined | null)[]
+): (string | object)[] => {
+  return parts
+    .filter((part) => part !== undefined && part !== null)
+    .map((part) => {
+      if (typeof part === "object") {
+        return part; // Garder les objets tels quels pour TanStack Query
+      }
+      return String(part);
+    });
 };

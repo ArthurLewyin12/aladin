@@ -158,3 +158,24 @@ export enum ParentEndpoints {
   RETIRER_ENFANT = "/api/parent/enfants/retirer",
   ASSOCIER_AUTOMATIQUEMENT = "/api/parent/enfants/associer-automatiquement",
 }
+
+/**
+ * Endpoints relatifs à la gestion des notes de classe (élèves).
+ */
+export enum NoteClasseEndpoints {
+  GET_ALL = "/api/notes-classe",
+  CREATE = "/api/notes-classe",
+  GET_ONE = "/api/notes-classe/{id}",
+  UPDATE = "/api/notes-classe/{id}",
+  GET_STATS = "/api/notes-classe/statistiques",
+}
+
+/**
+ * Endpoints relatifs à la consultation des notes par les parents.
+ */
+export enum ParentNoteClasseEndpoints {
+  GET_ALL = "/api/parent/notes-classe",
+  GET_STATS = "/api/parent/notes-classe/statistiques",
+  GET_ENFANTS = "/api/parent/notes-classe/enfants",
+  GET_ENFANT_NOTES = "/api/parent/notes-classe/enfant/{enfantId}",
+}

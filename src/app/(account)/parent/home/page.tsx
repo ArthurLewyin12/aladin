@@ -8,6 +8,7 @@ import {
   Users,
   Share2,
   UsersRound,
+  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -66,6 +67,13 @@ export default function ParentHomePage() {
       description: "Gérez vos différents enfants",
       icon: Users,
       handler: () => router.push("/parent/enfants"),
+    },
+    {
+      id: "notes",
+      title: "Je consulte les notes",
+      description: "Suivez les notes de vos enfants",
+      icon: FileText,
+      handler: () => router.push("/parent/notes"),
     },
     {
       id: "groups",

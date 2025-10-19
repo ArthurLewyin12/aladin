@@ -6,6 +6,7 @@ import {
   Users,
   Settings,
   UsersRound,
+  FileText,
 } from "lucide-react";
 
 export type UserRole = "eleve" | "parent" | "professeur" | "admin";
@@ -47,6 +48,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         icon: BookOpen,
       },
       {
+        label: "Mes notes",
+        path: "/student/notes",
+        icon: FileText,
+      },
+      {
         label: "Mes groupes",
         path: "/student/groups",
         icon: Users,
@@ -71,6 +77,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         label: "Mes enfants",
         path: "/parent/enfants",
         icon: Users,
+      },
+      {
+        label: "Notes des enfants",
+        path: "/parent/notes",
+        icon: FileText,
       },
       {
         label: "Mes groupes",

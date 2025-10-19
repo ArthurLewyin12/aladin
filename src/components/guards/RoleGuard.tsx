@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { hasAccessToRoute, getHomePathForRole, UserRole } from "@/constants/navigation";
+import { Spinner } from "@/components/ui/spinner";
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -18,12 +19,19 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading } = useSession();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) {
+      setIsChecking(true);
+      return;
+    }
 
     // Si pas d'utilisateur, laisser AuthGuard gérer la redirection
-    if (!user) return;
+    if (!user) {
+      setIsChecking(false);
+      return;
+    }
 
     const userRole = user.statut as UserRole;
 
@@ -31,6 +39,7 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
     if (allowedRoles && !allowedRoles.includes(userRole)) {
       const homePath = getHomePathForRole(userRole);
       router.push(homePath);
+      setIsChecking(true); // Garder le loader pendant la redirection
       return;
     }
 
@@ -38,14 +47,19 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
     if (!hasAccessToRoute(userRole, pathname)) {
       const homePath = getHomePathForRole(userRole);
       router.push(homePath);
+      setIsChecking(true); // Garder le loader pendant la redirection
+      return;
     }
+
+    // Tout est OK, on peut afficher le contenu
+    setIsChecking(false);
   }, [user, isLoading, pathname, allowedRoles, router]);
 
-  // Afficher un loader pendant la vérification
-  if (isLoading) {
+  // Afficher un loader pendant la vérification OU pendant la redirection
+  if (isLoading || isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F4F1]">
+        <Spinner size="lg" />
       </div>
     );
   }

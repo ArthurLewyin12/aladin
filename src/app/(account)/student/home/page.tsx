@@ -9,6 +9,7 @@ import {
   Users,
   Share2,
   Sparkles,
+  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -82,6 +83,18 @@ export default function StudentHomePage() {
       hoverBg: "hover:bg-purple-100",
       iconBg: "bg-gradient-to-br from-purple-500 to-purple-600",
       handler: () => router.push("/student/quiz/generate"),
+    },
+    {
+      id: "notes",
+      title: "Je consulte mes notes",
+      description: "Vois tes notes Aladin et de classe",
+      icon: FileText,
+      color: "from-amber-400 to-amber-600",
+      bgColor: "bg-amber-50",
+      borderColor: "border-amber-200",
+      hoverBg: "hover:bg-amber-100",
+      iconBg: "bg-gradient-to-br from-amber-500 to-amber-600",
+      handler: () => router.push("/student/notes"),
     },
     {
       id: "group",

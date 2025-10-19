@@ -23,7 +23,9 @@ export function AladinNotesTab() {
     const notes = dashboardData.all_notes;
 
     // Convertir les scores (nombre de bonnes réponses) en notes sur 20
-    const notesSur20 = notes.map((n) => convertScoreToNote(n.note, n.nombre_questions));
+    const notesSur20 = notes.map((n) =>
+      convertScoreToNote(n.note, n.nombre_questions),
+    );
 
     const averageNote =
       notesSur20.length > 0
@@ -59,6 +61,7 @@ export function AladinNotesTab() {
           size="default"
           theme="light"
           variant="default"
+          className="mx-auto max-w-[50rem]"
         />
       </div>
     );

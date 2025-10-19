@@ -25,7 +25,10 @@ export function ComparisonTab() {
 
   // Préparer les données pour le bar chart (comparaison par matière)
   const comparisonByMatiere = useMemo(() => {
-    if (!aladinData?.all_notes || !classeStatsData?.data?.moyennes_par_matiere) {
+    if (
+      !aladinData?.all_notes ||
+      !classeStatsData?.data?.moyennes_par_matiere
+    ) {
       return [];
     }
 
@@ -118,12 +121,13 @@ export function ComparisonTab() {
 
     // Convertir tous les scores Aladin en notes sur 20
     const aladinNotesSur20 = aladinNotes.map((n) =>
-      convertScoreToNote(n.note, n.nombre_questions)
+      convertScoreToNote(n.note, n.nombre_questions),
     );
 
     const moyenneAladin =
       aladinNotesSur20.length > 0
-        ? aladinNotesSur20.reduce((acc, n) => acc + n, 0) / aladinNotesSur20.length
+        ? aladinNotesSur20.reduce((acc, n) => acc + n, 0) /
+          aladinNotesSur20.length
         : 0;
 
     const moyenneClasse = classeStatsData?.data?.moyenne_generale || 0;
@@ -164,6 +168,7 @@ export function ComparisonTab() {
           size="default"
           theme="light"
           variant="default"
+          className="mx-auto max-w-[50rem]"
         />
       </div>
     );
@@ -215,7 +220,9 @@ export function ComparisonTab() {
                 {globalStats.ecart > 0 ? "+" : ""}
                 {globalStats.ecart}
               </div>
-              <Badge variant={globalStats.ecart >= 0 ? "default" : "destructive"}>
+              <Badge
+                variant={globalStats.ecart >= 0 ? "default" : "destructive"}
+              >
                 {globalStats.meilleurPlateforme}
               </Badge>
             </div>

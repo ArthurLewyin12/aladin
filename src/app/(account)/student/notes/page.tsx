@@ -19,12 +19,12 @@ export default function NotesPage() {
 
   const tabs = [
     {
-      label: "Notes Aladin",
-      icon: <BookOpen className="w-4 h-4" />,
-    },
-    {
       label: "Notes de Classe",
       icon: <FileText className="w-4 h-4" />,
+    },
+    {
+      label: "Notes Aladin",
+      icon: <BookOpen className="w-4 h-4" />,
     },
     {
       label: "Comparaison",
@@ -75,8 +75,9 @@ export default function NotesPage() {
         </div>
 
         {/* Contenu principal basé sur l'onglet actif */}
-        {activeTab === "Notes Aladin" && <AladinNotesTab />}
         {activeTab === "Notes de Classe" && <ClasseNotesTab />}
+        {activeTab === "Notes Aladin" && <AladinNotesTab />}
+
         {activeTab === "Comparaison" && <ComparisonTab />}
       </div>
     </div>

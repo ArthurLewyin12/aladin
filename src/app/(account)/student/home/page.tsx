@@ -87,7 +87,7 @@ export default function StudentHomePage() {
     {
       id: "notes",
       title: "Je consulte mes notes",
-      description: "Vois tes notes Aladin et de classe",
+      description: "Conslute tes notes de classe",
       icon: FileText,
       color: "from-amber-400 to-amber-600",
       bgColor: "bg-amber-50",
@@ -167,7 +167,9 @@ export default function StudentHomePage() {
                   className={`w-full ${action.bgColor} ${action.hoverBg} border-2 ${action.borderColor} rounded-3xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-lg group`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 ${action.iconBg} rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                    <div
+                      className={`w-14 h-14 ${action.iconBg} rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
+                    >
                       <IconComponent className="w-7 h-7 text-white" />
                     </div>
                     <div className="text-left">

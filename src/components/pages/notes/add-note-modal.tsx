@@ -18,6 +18,11 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
 import { useAddNoteClasse } from "@/services/hooks/notes-classe";
 import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
@@ -37,6 +42,11 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const noteSchema = z.object({
   matiere_id: z.number({ message: "La matière est requise" }),
@@ -63,6 +73,7 @@ interface AddNoteModalProps {
 }
 
 export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const { user } = useSession();
   const { mutate: addNote, isPending } = useAddNoteClasse();
@@ -96,6 +107,12 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
     }
   }, [watchedMatiereId, setValue]);
 
+  useEffect(() => {
+    if (date) {
+      setValue("date_evaluation", format(date, "yyyy-MM-dd"));
+    }
+  }, [date, setValue]);
+
   const onSubmit = (data: NoteFormData) => {
     addNote(
       { ...data, chapitres_ids: selectedChapitres },
@@ -103,6 +120,7 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
         onSuccess: () => {
           reset();
           setSelectedChapitres([]);
+          setDate(new Date());
           onOpenChange(false);
         },
       },
@@ -123,13 +141,16 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Matière */}
       <div className="space-y-2">
-        <Label htmlFor="matiere_id">
+        <Label htmlFor="matiere_id" className="text-sm text-gray-600">
           Matière <span className="text-red-500">*</span>
         </Label>
         <Select
           onValueChange={(value) => setValue("matiere_id", parseInt(value))}
         >
-          <SelectTrigger id="matiere_id">
+          <SelectTrigger
+            id="matiere_id"
+            className="bg-gray-50 border-gray-200 w-full"
+          >
             <SelectValue placeholder="Sélectionne une matière" />
           </SelectTrigger>
           <SelectContent>
@@ -147,7 +168,7 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
 
       {/* Note */}
       <div className="space-y-2">
-        <Label htmlFor="note">
+        <Label htmlFor="note" className="text-sm text-gray-600">
           Note /20 <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -157,6 +178,7 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
           min="0"
           max="20"
           placeholder="Ex: 15.5"
+          className="bg-gray-50 border-gray-200"
           {...register("note", { valueAsNumber: true })}
         />
         {errors.note && (
@@ -166,13 +188,16 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
 
       {/* Type d'évaluation */}
       <div className="space-y-2">
-        <Label htmlFor="type_evaluation">
+        <Label htmlFor="type_evaluation" className="text-sm text-gray-600">
           Type d'évaluation <span className="text-red-500">*</span>
         </Label>
         <Select
           onValueChange={(value) => setValue("type_evaluation", value as any)}
         >
-          <SelectTrigger id="type_evaluation">
+          <SelectTrigger
+            id="type_evaluation"
+            className="bg-gray-50 border-gray-200 w-full"
+          >
             <SelectValue placeholder="Sélectionne un type" />
           </SelectTrigger>
           <SelectContent>
@@ -191,17 +216,38 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
         )}
       </div>
 
-      {/* Date */}
+      {/* Date avec Popover */}
       <div className="space-y-2">
-        <Label htmlFor="date_evaluation">
+        <Label htmlFor="date_evaluation" className="text-sm text-gray-600">
           Date de l'évaluation <span className="text-red-500">*</span>
         </Label>
-        <Input
-          id="date_evaluation"
-          type="date"
-          {...register("date_evaluation")}
-          max={new Date().toISOString().split("T")[0]}
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal bg-gray-50 border-gray-200",
+                !date && "text-muted-foreground",
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? (
+                format(date, "PPP", { locale: fr })
+              ) : (
+                <span>Choisir une date</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              captionLayout="dropdown"
+              disabled={(date) => date > new Date()}
+            />
+          </PopoverContent>
+        </Popover>
         {errors.date_evaluation && (
           <p className="text-sm text-red-500">
             {errors.date_evaluation.message}
@@ -212,8 +258,10 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
       {/* Chapitres */}
       {watchedMatiereId && chapitresData && chapitresData.length > 0 && (
         <div className="space-y-2">
-          <Label>Chapitres concernés (optionnel)</Label>
-          <ScrollArea className="h-32 border rounded-md p-3">
+          <Label className="text-sm text-gray-600">
+            Chapitres concernés (optionnel)
+          </Label>
+          <ScrollArea className="h-32 border border-gray-200 rounded-md p-3 bg-gray-50">
             <div className="space-y-2">
               {chapitresData.map((chapitre) => (
                 <div key={chapitre.id} className="flex items-center space-x-2">
@@ -237,10 +285,13 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
 
       {/* Commentaire */}
       <div className="space-y-2">
-        <Label htmlFor="commentaire">Commentaire (optionnel)</Label>
+        <Label htmlFor="commentaire" className="text-sm text-gray-600">
+          Commentaire (optionnel)
+        </Label>
         <Textarea
           id="commentaire"
           placeholder="Ajoute un commentaire..."
+          className="bg-gray-50 border-gray-200"
           {...register("commentaire")}
           maxLength={1000}
         />
@@ -273,14 +324,16 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] bg-white">
           <DialogHeader>
-            <DialogTitle>Ajouter une note de classe</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-2xl font-bold text-[#2C3E50]">
+              Ajouter une note de classe
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
               Enregistre une nouvelle note obtenue en classe.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="max-h-[calc(90vh-120px)]">
+          <ScrollArea className="max-h-[calc(90vh-120px)] pr-4 -mr-4">
             {content}
           </ScrollArea>
         </DialogContent>
@@ -290,10 +343,12 @@ export function AddNoteModal({ isOpen, onOpenChange }: AddNoteModalProps) {
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent>
+      <DrawerContent className="bg-white">
         <DrawerHeader className="text-left">
-          <DrawerTitle>Ajouter une note de classe</DrawerTitle>
-          <DrawerDescription>
+          <DrawerTitle className="text-2xl font-bold text-[#2C3E50]">
+            Ajouter une note de classe
+          </DrawerTitle>
+          <DrawerDescription className="text-gray-600">
             Enregistre une nouvelle note obtenue en classe.
           </DrawerDescription>
         </DrawerHeader>

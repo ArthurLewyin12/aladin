@@ -22,7 +22,11 @@ export function Spinner({
       case "md":
         return { outer: "h-8 w-8", inner: "h-6 w-6", border: "border-2" };
       case "lg":
-        return { outer: "h-14 w-14", inner: "h-11 w-11", border: "border-[3px]" };
+        return {
+          outer: "h-14 w-14",
+          inner: "h-11 w-11",
+          border: "border-[3px]",
+        };
       case "xl":
         return { outer: "h-20 w-20", inner: "h-16 w-16", border: "border-4" };
       default:
@@ -34,7 +38,11 @@ export function Spinner({
 
   return (
     <div className={cn("flex justify-center items-center", containerClassName)}>
-      <div className="relative backdrop-blur-sm" role="status" aria-label="Chargement">
+      <div
+        className="relative backdrop-blur-sm"
+        role="status"
+        aria-label="Chargement"
+      >
         {/* Cercle extérieur - Gris foncé */}
         <div
           className={cn(

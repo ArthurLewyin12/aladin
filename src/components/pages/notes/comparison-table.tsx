@@ -221,7 +221,10 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="bg-gray-50 dark:bg-gray-800/50">
+                <TableRow
+                  key={headerGroup.id}
+                  className="bg-gray-50 dark:bg-gray-800/50"
+                >
                   {headerGroup.headers.map((header) => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder

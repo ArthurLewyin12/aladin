@@ -57,6 +57,7 @@ export function ClasseNotesTab() {
               size="default"
               theme="light"
               variant="default"
+              className="mx-auto max-w-[50rem]"
             />
           </div>
 
@@ -142,10 +143,7 @@ export function ClasseNotesTab() {
       {/* Table des notes */}
       <ClasseNotesTable notes={notes} pagination={pagination} />
 
-      <AddNoteModal
-        isOpen={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-      />
+      <AddNoteModal isOpen={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
     </div>
   );
 }

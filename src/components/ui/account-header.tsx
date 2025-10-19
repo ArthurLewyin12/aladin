@@ -13,10 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
 import { NotificationsBell } from "@/components/pages/groups/notification-group";
-import {
-  getNavigationForRole,
-  UserRole,
-} from "@/constants/navigation";
+import { getNavigationForRole, UserRole } from "@/constants/navigation";
 
 export function AccountHeader() {
   const router = useRouter();

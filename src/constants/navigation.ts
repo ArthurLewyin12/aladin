@@ -62,14 +62,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         path: "/parent/dashboard",
         icon: BarChart3,
       },
+      // {
+      //   label: "Mes cours",
+      //   path: "/parent/courses",
+      //   icon: BookOpen,
+      // },
       {
-        label: "Mes cours",
-        path: "/parent/courses",
-        icon: BookOpen,
-      },
-      {
-        label: "Mes classes",
-        path: "/parent/classes",
+        label: "Mes enfants",
+        path: "/parent/enfants",
         icon: Users,
       },
       {
@@ -126,9 +126,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
 /**
  * Récupère la configuration de navigation pour un rôle donné
  */
-export const getNavigationForRole = (
-  role: UserRole,
-): RoleNavigation | null => {
+export const getNavigationForRole = (role: UserRole): RoleNavigation | null => {
   return ROLE_NAVIGATION[role] || null;
 };
 

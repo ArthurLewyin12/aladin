@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronRight, BarChart3, BookOpen, Users, Share2, UsersRound } from "lucide-react";
+import {
+  ChevronRight,
+  BarChart3,
+  BookOpen,
+  Users,
+  Share2,
+  UsersRound,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 
@@ -46,19 +53,19 @@ export default function ParentHomePage() {
       icon: BarChart3,
       handler: () => router.push("/parent/dashboard"),
     },
+    // {
+    //   id: "courses",
+    //   title: "Je vois mes cours",
+    //   description: "Accédez aux cours et ressources",
+    //   icon: BookOpen,
+    //   handler: () => router.push("/parent/courses"),
+    // },
     {
-      id: "courses",
-      title: "Je vois mes cours",
-      description: "Accédez aux cours et ressources",
-      icon: BookOpen,
-      handler: () => router.push("/parent/courses"),
-    },
-    {
-      id: "classes",
-      title: "Je vois mes classes",
-      description: "Gérez les classes de vos enfants",
+      id: "enfants",
+      title: "Je consulte mes enfants",
+      description: "Gérez vos différents enfants",
       icon: Users,
-      handler: () => router.push("/parent/classes"),
+      handler: () => router.push("/parent/enfants"),
     },
     {
       id: "groups",

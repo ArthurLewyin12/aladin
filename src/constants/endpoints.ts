@@ -145,3 +145,16 @@ export enum DashboardEndpoints {
 export enum TrackingEndpoints {
   SAVE_TIME = "/api/tracking/time",
 }
+
+/**
+ * Endpoints relatifs à la gestion des enfants pour les parents.
+ */
+export enum ParentEndpoints {
+  GET_ENFANTS = "/api/parent/enfants",
+  AJOUTER_ENFANT_MANUEL = "/api/parent/enfants/ajouter-manuel",
+  SELECTIONNER_ENFANT = "/api/parent/enfants/selectionner",
+  GET_ENFANT_ACTIF = "/api/parent/enfant-actif",
+  AJOUTER_ENFANT_UTILISATEUR = "/api/parent/enfants/ajouter",
+  RETIRER_ENFANT = "/api/parent/enfants/retirer",
+  ASSOCIER_AUTOMATIQUEMENT = "/api/parent/enfants/associer-automatiquement",
+}

@@ -29,7 +29,6 @@ import { Spinner } from "@/components/ui/spinner";
 // import { toast } from "sonner";
 import { toast } from "@/lib/toast";
 
-// 🔥 FIX: Sortir FormContent en dehors du composant parent
 interface FormContentProps {
   groupName: string;
   setGroupName: (value: string) => void;

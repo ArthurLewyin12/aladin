@@ -8,8 +8,13 @@ import { useReactivateGroupe } from "@/services/hooks/groupes/useReactivateGroup
 import { GroupCard } from "./group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 // import { toast } from "sonner";
 import { useSession } from "@/services/hooks/auth/useSession";
+import { parseAsInteger, useQueryState } from "nuqs";
+
+const ITEMS_PER_PAGE = 6;
 
 const CARD_COLORS = [
   "bg-[#F5E6D3]", // Beige/Pêche
@@ -33,6 +38,9 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
   const { mutate: deactivateGroupeMutation } = useDeactivateGroupe();
   const { mutate: reactivateGroupeMutation } = useReactivateGroupe();
   const [isMobile, setIsMobile] = useState(false);
+
+  // Pagination avec nuqs
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   // State pour la modale d'invitation
   const [inviteModal, setInviteModal] = useState<{
@@ -103,6 +111,16 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
         };
       });
   }, [groupes, currentUser]);
+
+  // Calculer les groupes paginés
+  const { paginatedGroupes, totalPages } = useMemo(() => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedGroupes: enrichedGroupes.slice(startIndex, endIndex),
+      totalPages: Math.ceil(enrichedGroupes.length / ITEMS_PER_PAGE),
+    };
+  }, [enrichedGroupes, page]);
 
   // Handlers
   const handleDeactivate = useCallback(
@@ -200,6 +218,7 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
               {enrichedGroupes.length} groupe
               {enrichedGroupes.length > 1 ? "s" : ""}{" "}
               {enrichedGroupes.length > 1 ? "disponibles" : "disponible"}
+              {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </p>
           </div>
           <button
@@ -212,9 +231,9 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
           </button>
         </div>
 
-        {/* Grille des groupes */}
+        {/* Grille des groupes paginés */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {enrichedGroupes.map((groupe) => (
+          {paginatedGroupes.map((groupe) => (
             <GroupCard
               key={groupe.id}
               title={groupe.nom}
@@ -234,6 +253,72 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
             />
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="rounded-full"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                const showPage =
+                  pageNum <= 2 ||
+                  pageNum >= totalPages - 1 ||
+                  (pageNum >= page - 1 && pageNum <= page + 1);
+
+                const showEllipsisBefore = pageNum === 3 && page > 4;
+                const showEllipsisAfter =
+                  pageNum === totalPages - 2 && page < totalPages - 3;
+
+                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                  return null;
+                }
+
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <span key={pageNum} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                    className={`rounded-full min-w-[2.5rem] ${
+                      pageNum === page
+                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                        : ""
+                    }`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="rounded-full"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Modale d'invitation */}

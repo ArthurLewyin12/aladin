@@ -1,15 +1,33 @@
 "use client";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useGroupQuizzes } from "@/services/hooks/quiz";
 import { GroupQuizCard } from "./group-quiz-card";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Users, BookOpen, FileQuestion } from "lucide-react";
+import { Users, BookOpen, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { parseAsInteger, useQueryState } from "nuqs";
+
+const ITEMS_PER_PAGE = 6;
 
 export function GroupQuizList() {
   const { data, isLoading, isError } = useGroupQuizzes();
   const quizzes = data?.quizzes || [];
   const router = useRouter();
+
+  // Pagination avec nuqs (utilise un paramètre différent pour éviter les conflits)
+  const [page, setPage] = useQueryState("groupPage", parseAsInteger.withDefault(1));
+
+  // Calculer les quiz paginés
+  const { paginatedQuizzes, totalPages } = useMemo(() => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedQuizzes: quizzes.slice(startIndex, endIndex),
+      totalPages: Math.ceil(quizzes.length / ITEMS_PER_PAGE),
+    };
+  }, [quizzes, page]);
 
   const handleOpenDetails = (groupId: number, quizId: number) => {
     router.push(`/student/groups/${groupId}/quiz/${quizId}/notes`);
@@ -76,21 +94,88 @@ export function GroupQuizList() {
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
             {quizzes.length} quiz{" "}
             {quizzes.length > 1 ? "disponibles" : "disponible"}
+            {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
           </p>
         </div>
       </div>
 
-      {/* Grille des quiz de groupe */}
+      {/* Grille des quiz de groupe paginés */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {quizzes.map((quizItem, index) => (
+        {paginatedQuizzes.map((quizItem, index) => (
           <GroupQuizCard
             key={quizItem.quiz.id}
             quizItem={quizItem}
-            index={index}
+            index={(page - 1) * ITEMS_PER_PAGE + index}
             onDetailsClick={() => handleOpenDetails(quizItem.groupe.id, quizItem.quiz.id)}
           />
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="rounded-full"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+              const showPage =
+                pageNum <= 2 ||
+                pageNum >= totalPages - 1 ||
+                (pageNum >= page - 1 && pageNum <= page + 1);
+
+              const showEllipsisBefore = pageNum === 3 && page > 4;
+              const showEllipsisAfter =
+                pageNum === totalPages - 2 && page < totalPages - 3;
+
+              if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                return null;
+              }
+
+              if (showEllipsisBefore || showEllipsisAfter) {
+                return (
+                  <span key={pageNum} className="px-2 text-gray-400">
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPage(pageNum)}
+                  className={`rounded-full min-w-[2.5rem] ${
+                    pageNum === page
+                      ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                      : ""
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            disabled={page === totalPages}
+            className="rounded-full"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

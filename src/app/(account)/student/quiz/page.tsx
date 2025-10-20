@@ -11,7 +11,7 @@ export default function QuizPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useQueryState(
     "tab",
-    parseAsString.withDefault("Mes Quiz")
+    parseAsString.withDefault("Mes Quiz"),
   );
 
   const handleBack = () => {

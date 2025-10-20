@@ -4,9 +4,19 @@ import { useParams, useRouter } from "next/navigation";
 import { useDetailedGroupe } from "@/services/hooks/groupes/useDetailedGroupe";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ArrowLeft, Mail, GraduationCap, LogOut } from "lucide-react";
+import {
+  PlusIcon,
+  ArrowLeft,
+  Mail,
+  GraduationCap,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { QuizCard } from "@/components/pages/quizzes/quiz-card";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { parseAsInteger, useQueryState } from "nuqs";
+
 import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
 import { CreateQuizModal } from "@/components/pages/groups/create-quiz-modal";
 // import { toast } from "sonner";
@@ -43,6 +53,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+const ITEMS_PER_PAGE = 6;
 
 const MemberDrawer = ({
   isOpen,
@@ -174,6 +186,12 @@ const GroupPage = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  // Pagination avec nuqs
+  const [page, setPage] = useQueryState(
+    "quizPage",
+    parseAsInteger.withDefault(1),
+  );
+
   const { user } = useSession();
   const {
     data: groupDetails,
@@ -227,6 +245,16 @@ const GroupPage = () => {
 
   const { groupe, utilisateurs, quizzes, matieres } = groupDetails;
   const isChief = user?.id === groupe.chief_user;
+
+  // Calculer les quiz paginés
+  const { paginatedQuizzes, totalPages } = useMemo(() => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedQuizzes: quizzes.slice(startIndex, endIndex),
+      totalPages: Math.ceil(quizzes.length / ITEMS_PER_PAGE),
+    };
+  }, [quizzes, page]);
 
   const handleBack = () => {
     router.back();
@@ -346,7 +374,8 @@ const GroupPage = () => {
                 Quiz du groupe
               </h2>
               <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                {quizzes.length} quiz {quizzes.length > 1 ? "disponibles" : "disponible"}
+                {quizzes.length} quiz{" "}
+                {quizzes.length > 1 ? "disponibles" : "disponible"}
               </p>
             </div>
             {isChief && (
@@ -384,40 +413,122 @@ const GroupPage = () => {
             </div>
           </div>
         ) : (
-          /* Grille de quiz cards */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {quizzes.map((quiz, index) => {
-              const subject =
-                matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
+          <div className="space-y-6">
+            {/* Compteur avec pagination */}
+            {quizzes.length > 0 && (
+              <div className="text-sm text-gray-600">
+                {quizzes.length} quiz{quizzes.length > 1 ? "s" : ""}
+                {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
+              </div>
+            )}
 
-              const hasTaken = quiz.submissions.some(
-                (submission: { user_id: number }) =>
-                  submission.user_id === user?.id,
-              );
-              const allMembersTaken =
-                quiz.submissions.length === utilisateurs.length;
+            {/* Grille de quiz cards paginés */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedQuizzes.map((quiz, index) => {
+                const subject =
+                  matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
 
-              return (
-                <QuizCard
-                  key={quiz.id}
-                  title={quiz.titre}
-                  subject={subject}
-                  numberOfQuestions={quiz.nombre_questions}
-                  duration={quiz.temps}
-                  quizId={quiz.id.toString()}
-                  isActive={quiz.is_active}
-                  index={index}
-                  hasTaken={hasTaken}
-                  allMembersTaken={allMembersTaken}
-                  onStart={() => handleStartQuiz(quiz.id)}
-                  onViewGrades={() => {
-                    router.push(
-                      `/student/groups/${groupId}/quiz/${quiz.id}/notes`,
-                    );
-                  }}
-                />
-              );
-            })}
+                const hasTaken = quiz.submissions.some(
+                  (submission: { user_id: number }) =>
+                    submission.user_id === user?.id,
+                );
+                const allMembersTaken =
+                  quiz.submissions.length === utilisateurs.length;
+
+                return (
+                  <QuizCard
+                    key={quiz.id}
+                    title={quiz.titre}
+                    subject={subject}
+                    numberOfQuestions={quiz.nombre_questions}
+                    duration={quiz.temps}
+                    quizId={quiz.id.toString()}
+                    isActive={quiz.is_active}
+                    index={(page - 1) * ITEMS_PER_PAGE + index}
+                    hasTaken={hasTaken}
+                    allMembersTaken={allMembersTaken}
+                    onStart={() => handleStartQuiz(quiz.id)}
+                    onViewGrades={() => {
+                      router.push(
+                        `/student/groups/${groupId}/quiz/${quiz.id}/notes`,
+                      );
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="rounded-full"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNum) => {
+                      const showPage =
+                        pageNum <= 2 ||
+                        pageNum >= totalPages - 1 ||
+                        (pageNum >= page - 1 && pageNum <= page + 1);
+
+                      const showEllipsisBefore = pageNum === 3 && page > 4;
+                      const showEllipsisAfter =
+                        pageNum === totalPages - 2 && page < totalPages - 3;
+
+                      if (
+                        !showPage &&
+                        !showEllipsisBefore &&
+                        !showEllipsisAfter
+                      ) {
+                        return null;
+                      }
+
+                      if (showEllipsisBefore || showEllipsisAfter) {
+                        return (
+                          <span key={pageNum} className="px-2 text-gray-400">
+                            ...
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPage(pageNum)}
+                          className={`rounded-full min-w-[2.5rem] ${
+                            pageNum === page
+                              ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                              : ""
+                          }`}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    },
+                  )}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                  className="rounded-full"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

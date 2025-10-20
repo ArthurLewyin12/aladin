@@ -21,6 +21,8 @@ import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
 import { CreateQuizModal } from "@/components/pages/groups/create-quiz-modal";
 // import { toast } from "sonner";
 import { toast } from "@/lib/toast";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FileQuestion, Users, BookOpen } from "lucide-react";
 import { useDeactivateQuiz, useReactivateQuiz } from "@/services/hooks/quiz";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useStartGroupQuiz } from "@/services/hooks/groupes/useStartGroupQuiz";
@@ -202,6 +204,19 @@ const GroupPage = () => {
   const { mutate: startGroupQuiz } = useStartGroupQuiz();
   const queryClient = useQueryClient();
 
+  // Calculer les quiz paginés (doit être avant les returns conditionnels)
+  const { paginatedQuizzes, totalPages } = useMemo(() => {
+    if (!groupDetails?.quizzes) {
+      return { paginatedQuizzes: [], totalPages: 0 };
+    }
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedQuizzes: groupDetails.quizzes.slice(startIndex, endIndex),
+      totalPages: Math.ceil(groupDetails.quizzes.length / ITEMS_PER_PAGE),
+    };
+  }, [groupDetails?.quizzes, page]);
+
   const handleStartQuiz = (quizId: number) => {
     startGroupQuiz(
       { groupeId: Number(groupId), quizId },
@@ -245,16 +260,6 @@ const GroupPage = () => {
 
   const { groupe, utilisateurs, quizzes, matieres } = groupDetails;
   const isChief = user?.id === groupe.chief_user;
-
-  // Calculer les quiz paginés
-  const { paginatedQuizzes, totalPages } = useMemo(() => {
-    const startIndex = (page - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return {
-      paginatedQuizzes: quizzes.slice(startIndex, endIndex),
-      totalPages: Math.ceil(quizzes.length / ITEMS_PER_PAGE),
-    };
-  }, [quizzes, page]);
 
   const handleBack = () => {
     router.back();
@@ -394,21 +399,47 @@ const GroupPage = () => {
         {/* Contenu principal */}
         {quizzes.length === 0 ? (
           /* État vide - Pas de quiz */
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="text-center max-w-md">
-              <p className="text-gray-600 text-lg mb-8">
-                Aucun quiz pour le moment. Créez votre premier quiz pour
-                commencer à réviser avec votre groupe.
-              </p>
+          <div className="px-4 sm:px-0">
+            <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
+              <div className="relative w-full max-w-2xl">
+                <EmptyState
+                  title={
+                    isChief
+                      ? "Aucun quiz pour le moment"
+                      : "Pas encore de quiz"
+                  }
+                  description={
+                    isChief
+                      ? "Crée ton premier quiz pour commencer à réviser avec ton groupe !"
+                      : "Le chef du groupe n'a pas encore créé de quiz. Patiente un peu, les quiz arriveront bientôt !"
+                  }
+                  icons={[
+                    <FileQuestion key="1" size={20} />,
+                    <Users key="2" size={20} />,
+                    <BookOpen key="3" size={20} />,
+                  ]}
+                  size="default"
+                  theme="light"
+                  variant="default"
+                  className="mx-auto max-w-[50rem]"
+                />
+              </div>
+
               {isChief && (
-                <Button
-                  size="lg"
-                  onClick={() => setCreateQuizModalOpen(true)}
-                  className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
-                >
-                  <PlusIcon className="w-5 h-5 mr-2" />
-                  Créer un Quiz
-                </Button>
+                <div className="text-center px-4">
+                  <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
+                    Clique ci-dessous pour créer ton premier quiz !
+                  </p>
+
+                  <Button
+                    size="lg"
+                    onClick={() => setCreateQuizModalOpen(true)}
+                    className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+                  >
+                    <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Créer un Quiz
+                  </Button>
+                </div>
               )}
             </div>
           </div>

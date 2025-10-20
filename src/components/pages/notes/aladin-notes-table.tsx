@@ -245,35 +245,74 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2">
-        <div className="text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} résultat(s) au total
-        </div>
-        <div className="flex items-center space-x-2">
+      {table.getPageCount() > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            className="rounded-full"
           >
             <ChevronLeft className="h-4 w-4" />
-            Précédent
           </Button>
-          <div className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} sur{" "}
-            {table.getPageCount()}
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map(
+              (pageNum) => {
+                const currentPage = table.getState().pagination.pageIndex + 1;
+                const totalPages = table.getPageCount();
+                const showPage =
+                  pageNum <= 2 ||
+                  pageNum >= totalPages - 1 ||
+                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+
+                const showEllipsisBefore = pageNum === 3 && currentPage > 4;
+                const showEllipsisAfter =
+                  pageNum === totalPages - 2 && currentPage < totalPages - 3;
+
+                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                  return null;
+                }
+
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <span key={pageNum} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => table.setPageIndex(pageNum - 1)}
+                    className={`rounded-full min-w-[2.5rem] ${
+                      pageNum === currentPage
+                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                        : ""
+                    }`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              },
+            )}
           </div>
+
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            className="rounded-full"
           >
-            Suivant
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 }

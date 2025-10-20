@@ -259,34 +259,71 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
       </div>
 
       {/* Pagination */}
-      {pagination && (
-        <div className="flex items-center justify-between px-2">
-          <div className="text-sm text-muted-foreground">
-            {pagination.total} résultat(s) au total
+      {pagination && pagination.last_page && pagination.last_page > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="rounded-full"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map(
+              (pageNum) => {
+                const showPage =
+                  pageNum <= 2 ||
+                  pageNum >= pagination.last_page! - 1 ||
+                  (pageNum >= page - 1 && pageNum <= page + 1);
+
+                const showEllipsisBefore = pageNum === 3 && page > 4;
+                const showEllipsisAfter =
+                  pageNum === pagination.last_page! - 2 &&
+                  page < pagination.last_page! - 3;
+
+                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                  return null;
+                }
+
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <span key={pageNum} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                    className={`rounded-full min-w-[2.5rem] ${
+                      pageNum === page
+                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                        : ""
+                    }`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              },
+            )}
           </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Précédent
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              Page {pagination.current_page} sur {pagination.last_page || 1}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(page + 1)}
-              disabled={page >= (pagination.last_page || 1)}
-            >
-              Suivant
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.min(pagination.last_page || 1, page + 1))}
+            disabled={page === pagination.last_page}
+            className="rounded-full"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
 

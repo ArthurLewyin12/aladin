@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
 import { useGenerateQuiz, useSubmitQuiz } from "@/services/hooks/quiz";
@@ -22,6 +22,7 @@ import { calculateQuizScore } from "@/lib/quiz-score";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileUpload } from "@/components/ui/file-upload";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 
 const quizLoadingMessages = [
   "Génération du quiz en cours...",
@@ -38,50 +39,46 @@ const difficulties = [
 ];
 
 export default function GenerateQuizPage() {
-  // Changement ici : on démarre directement avec "subject"
-  const [step, setStep] = useState<"subject" | "config" | "quiz">("subject");
-  const [selectedMatiereId, setSelectedMatiereId] = useState<number | null>(
-    null,
+  // Migration vers nuqs pour la persistance URL
+  const [step, setStep] = useQueryState(
+    "step",
+    parseAsString.withDefault("subject"),
   );
-  const [selectedChapitreId, setSelectedChapitreId] = useState<number | null>(
-    null,
+  const [selectedMatiereId, setSelectedMatiereId] = useQueryState(
+    "matiereId",
+    parseAsInteger,
   );
-  const [selectedDifficulty, setSelectedDifficulty] = useState<
-    "Facile" | "Moyen" | "Difficile" | ""
-  >("");
+  const [selectedChapitreId, setSelectedChapitreId] = useQueryState(
+    "chapitreId",
+    parseAsInteger,
+  );
+  const [selectedDifficulty, setSelectedDifficulty] = useQueryState(
+    "difficulty",
+    parseAsString,
+  );
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useQueryState(
+    "q",
+    parseAsInteger.withDefault(0),
+  );
+
+  // États locaux (non persistés dans l'URL)
   const [useDocument, setUseDocument] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
   const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<
     Record<string | number, string | number>
   >({});
 
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user } = useSession();
   const { startTracking, stopTracking } = useTimeTracking();
-
-  useEffect(() => {
-    const matiereId = searchParams.get("matiereId");
-    const chapitreId = searchParams.get("chapitreId");
-    const difficulty = searchParams.get("difficulty");
-
-    if (matiereId && chapitreId && difficulty) {
-      setSelectedMatiereId(Number(matiereId));
-      setSelectedChapitreId(Number(chapitreId));
-      setSelectedDifficulty(difficulty as "Facile" | "Moyen" | "Difficile");
-      setStep("config");
-    }
-  }, [searchParams]);
 
   // Démarrer le tracking quand le quiz commence
   useEffect(() => {
     if (step === "quiz" && activeQuizId && selectedChapitreId) {
       startTracking("quiz", activeQuizId, selectedChapitreId, {
-        difficulte: selectedDifficulty,
+        difficulte: selectedDifficulty || undefined,
       });
     }
 
@@ -253,12 +250,13 @@ export default function GenerateQuizPage() {
   const handleConfigBack = () => {
     setStep("subject");
     setSelectedChapitreId(null);
-    setSelectedDifficulty("");
+    setSelectedDifficulty(null);
   };
   // Hook pour empêcher la navigation pendant le quiz
   const { ConfirmationDialog, interceptNavigation } = usePreventNavigation({
     when: step === "quiz" && quizQuestions.length > 0,
-    message: "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
+    message:
+      "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
     onConfirm: handleSubmitQuiz,
   });
 
@@ -275,141 +273,83 @@ export default function GenerateQuizPage() {
     <>
       <ConfirmationDialog />
       <div className="min-h-screen w-full">
-      <GenerationLoadingOverlay
-        isLoading={generateQuizMutation.isPending}
-        messages={quizLoadingMessages}
-      />
+        <GenerationLoadingOverlay
+          isLoading={generateQuizMutation.isPending}
+          messages={quizLoadingMessages}
+        />
 
-      {/* Header */}
-      <div
-        className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
-        style={{
-          backgroundImage: `url("/bg-2.png")`,
-          backgroundSize: "180px 180px",
-        }}
-      >
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              if (step === "subject") {
-                handleBackToQuizList();
-              } else if (step === "config") {
-                handleConfigBack();
-              } else if (step === "quiz") {
-                // Intercepter la navigation pendant le quiz
-                if (!interceptNavigation("/student/quiz")) {
-                  return;
-                }
-                setStep("config");
-              }
-            }}
-            className={`flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white ${
-              step === "subject" ? "w-12 h-12 justify-center" : "px-4 py-2"
-            }`}
-          >
-            {step === "subject" ? (
-              <ArrowLeft className="w-4 h-4" />
-            ) : (
-              <span className="text-sm">Retour</span>
-            )}
-          </Button>
-          <h1 className="text-orange-600 text-4xl md:text-[3rem]">Quiz Time</h1>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="w-full mx-auto max-w-4xl px-4 md:px-8 pt-2 pb-8">
-        {/* Step 1: Subject Selection */}
-        {step === "subject" && (
-          <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm mt-22 ">
-            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center mb-6">
-              Choisis une matière
-            </h2>
-            {isLoadingMatieres ? (
-              <p>Chargement des matières...</p>
-            ) : matieres.length > 0 ? (
-              <RadioGroup
-                value={selectedMatiereId?.toString() || ""}
-                onValueChange={(value) => setSelectedMatiereId(Number(value))}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {matieres.map((matiere) => (
-                    <div
-                      key={matiere.id}
-                      className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
-                    >
-                      <RadioGroupItem
-                        value={matiere.id.toString()}
-                        id={`matiere-${matiere.id}`}
-                        className="border-black border-2"
-                      />
-                      <Label
-                        htmlFor={`matiere-${matiere.id}`}
-                        className="flex-1 text-base font-medium cursor-pointer"
-                      >
-                        {matiere.libelle}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-600 font-medium">
-                  Aucune matière n'est disponible pour votre niveau pour le
-                  moment.
-                </p>
-              </div>
-            )}
-            <div className="text-center mt-8">
-              <Button
-                onClick={handleSubjectNext}
-                disabled={!selectedMatiereId}
-                className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-semibold text-lg"
-              >
-                Suivant
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Configuration */}
-        {step === "config" && (
-          <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm space-y-8 mt-22">
-            <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center">
-              Configure ton quiz
-            </h2>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">
-                Choisis un chapitre
-              </h3>
-              {isLoadingChapitres ? (
-                <p>Chargement des chapitres...</p>
-              ) : chapitres.length > 0 ? (
-                <RadioGroup
-                  value={selectedChapitreId?.toString() || ""}
-                  onValueChange={(value) =>
-                    setSelectedChapitreId(Number(value))
+        {/* Header */}
+        <div
+          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          style={{
+            backgroundImage: `url("/bg-2.png")`,
+            backgroundSize: "180px 180px",
+          }}
+        >
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (step === "subject") {
+                  handleBackToQuizList();
+                } else if (step === "config") {
+                  handleConfigBack();
+                } else if (step === "quiz") {
+                  // Intercepter la navigation pendant le quiz
+                  if (!interceptNavigation("/student/quiz")) {
+                    return;
                   }
+                  setStep("config");
+                }
+              }}
+              className={`flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white ${
+                step === "subject" ? "w-12 h-12 justify-center" : "px-4 py-2"
+              }`}
+            >
+              {step === "subject" ? (
+                <ArrowLeft className="w-4 h-4" />
+              ) : (
+                <span className="text-sm">Retour</span>
+              )}
+            </Button>
+            <h1 className="text-orange-600 text-4xl md:text-[3rem]">
+              Quiz Time
+            </h1>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="w-full mx-auto max-w-4xl px-4 md:px-8 pt-2 pb-8">
+          {/* Step 1: Subject Selection */}
+          {step === "subject" && (
+            <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm mt-22 ">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center mb-6">
+                Choisis une matière
+              </h2>
+              {isLoadingMatieres ? (
+                <p>Chargement des matières...</p>
+              ) : matieres.length > 0 ? (
+                <RadioGroup
+                  value={selectedMatiereId?.toString() || ""}
+                  onValueChange={(value) => setSelectedMatiereId(Number(value))}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-60 overflow-y-auto p-2">
-                    {chapitres.map((chapitre) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {matieres.map((matiere) => (
                       <div
-                        key={chapitre.id}
+                        key={matiere.id}
                         className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
                       >
                         <RadioGroupItem
-                          value={chapitre.id.toString()}
-                          id={`chapter-${chapitre.id}`}
+                          value={matiere.id.toString()}
+                          id={`matiere-${matiere.id}`}
                           className="border-black border-2"
                         />
                         <Label
-                          htmlFor={`chapter-${chapitre.id}`}
+                          htmlFor={`matiere-${matiere.id}`}
                           className="flex-1 text-base font-medium cursor-pointer"
                         >
-                          {chapitre.libelle}
+                          {matiere.libelle}
                         </Label>
                       </div>
                     ))}
@@ -418,187 +358,245 @@ export default function GenerateQuizPage() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600 font-medium">
-                    Aucun chapitre n'est disponible pour cette matière.
+                    Aucune matière n'est disponible pour votre niveau pour le
+                    moment.
                   </p>
                 </div>
               )}
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">
-                Choisis un niveau
-              </h3>
-              <RadioGroup
-                value={selectedDifficulty}
-                onValueChange={(value) =>
-                  setSelectedDifficulty(
-                    value as "Facile" | "Moyen" | "Difficile",
-                  )
-                }
-                className="grid grid-cols-3 gap-4 px-4"
-              >
-                {difficulties.map((difficulty) => (
-                  <div
-                    key={difficulty.id}
-                    className="flex items-center justify-center space-x-2"
-                  >
-                    <RadioGroupItem
-                      value={difficulty.id}
-                      id={`difficulty-${difficulty.id}`}
-                      className="border-black border-2"
-                    />
-                    <Label
-                      htmlFor={`difficulty-${difficulty.id}`}
-                      className="text-base font-medium cursor-pointer"
-                    >
-                      {difficulty.name}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* Checkbox et FileUpload pour document optionnel */}
-            {chapitres.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-gray-300">
-                <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
-                  <div className="flex items-start space-x-3 mb-4">
-                    <Checkbox
-                      id="useDocument"
-                      checked={useDocument}
-                      onCheckedChange={(checked) => {
-                        setUseDocument(checked as boolean);
-                        if (!checked) {
-                          setSelectedFile(null);
-                        }
-                      }}
-                      disabled={!selectedChapitreId || !selectedDifficulty}
-                      className="mt-0.5 border-2 border-red-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
-                    />
-                    <div className="grid gap-1.5 leading-none flex-1">
-                      <label
-                        htmlFor="useDocument"
-                        className="text-sm font-bold text-red-700 cursor-pointer"
-                      >
-                        Générer depuis un document (optionnel)
-                      </label>
-                      <p className="text-xs text-red-600 font-medium">
-                        PDF, DOC, DOCX, TXT - Maximum 10 MB
-                      </p>
-                    </div>
-                  </div>
-
-                  {useDocument && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <FileUpload
-                        onChange={setSelectedFile}
-                        selectedFile={selectedFile}
-                        disabled={generateQuizMutation.isPending}
-                        maxSize={10 * 1024 * 1024}
-                        acceptedTypes={[".pdf", ".doc", ".docx", ".txt"]}
-                        compact
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="text-center pt-4">
-              <Button
-                onClick={handleGenerateQuiz}
-                disabled={
-                  !selectedChapitreId ||
-                  !selectedDifficulty ||
-                  generateQuizMutation.isPending
-                }
-                className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-12 py-3 rounded-lg font-bold text-xl"
-              >
-                Commencer
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Quiz */}
-        {step === "quiz" && currentQuestion && (
-          <div className="max-w-4xl mx-auto mt-24">
-            <div className="space-y-8">
-              {/* Progress bar */}
-              <div>
-                <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
-                  <span>
-                    Question {currentQuestionIndex + 1}/{quizQuestions.length}
-                  </span>
-                  <span>{selectedMatiereName}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-orange-500 h-2.5 rounded-full"
-                    style={{
-                      width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Question Card */}
-              <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center underline decoration-2 underline-offset-4">
-                  Question {currentQuestionIndex + 1}
-                </h2>
-                <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
-                  {currentQuestion.question}
-                </p>
-              </div>
-
-              {/* Answers */}
-              <div>
-                <RadioGroup
-                  value={userAnswers[currentQuestion.id]?.toString() || ""}
-                  onValueChange={(value) => {
-                    const newAnswers = {
-                      ...userAnswers,
-                      [currentQuestion.id]: value,
-                    };
-                    setUserAnswers(newAnswers);
-
-                    if (currentQuestionIndex === quizQuestions.length - 1) {
-                      setTimeout(() => handleSubmitQuiz(newAnswers), 300);
-                    } else {
-                      setTimeout(() => handleNextQuestion(), 300);
-                    }
-                  }}
+              <div className="text-center mt-8">
+                <Button
+                  onClick={handleSubjectNext}
+                  disabled={!selectedMatiereId}
+                  className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-semibold text-lg"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {currentQuestion.propositions.map((proposition, index) => {
-                      const letters = ["a", "b", "c", "d", "e", "f"];
-                      return (
+                  Suivant
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Configuration */}
+          {step === "config" && (
+            <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm space-y-8 mt-22">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 text-center">
+                Configure ton quiz
+              </h2>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">
+                  Choisis un chapitre
+                </h3>
+                {isLoadingChapitres ? (
+                  <p>Chargement des chapitres...</p>
+                ) : chapitres.length > 0 ? (
+                  <RadioGroup
+                    value={selectedChapitreId?.toString() || ""}
+                    onValueChange={(value) =>
+                      setSelectedChapitreId(Number(value))
+                    }
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 max-h-60 overflow-y-auto p-2">
+                      {chapitres.map((chapitre) => (
                         <div
-                          key={proposition.id}
-                          className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
+                          key={chapitre.id}
+                          className="flex items-center space-x-3 bg-white rounded-lg p-4 border hover:bg-gray-50"
                         >
                           <RadioGroupItem
-                            value={proposition.id.toString()}
-                            id={proposition.id.toString()}
-                            className="border-black border-2 flex-shrink-0"
+                            value={chapitre.id.toString()}
+                            id={`chapter-${chapitre.id}`}
+                            className="border-black border-2"
                           />
                           <Label
-                            htmlFor={proposition.id.toString()}
+                            htmlFor={`chapter-${chapitre.id}`}
                             className="flex-1 text-base font-medium cursor-pointer"
                           >
-                            {letters[index]}) {proposition.text}
+                            {chapitre.libelle}
                           </Label>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
+                  </RadioGroup>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 font-medium">
+                      Aucun chapitre n'est disponible pour cette matière.
+                    </p>
                   </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-700 text-center mb-4">
+                  Choisis un niveau
+                </h3>
+                <RadioGroup
+                  value={selectedDifficulty || ""}
+                  onValueChange={(value) => setSelectedDifficulty(value)}
+                  className="grid grid-cols-3 gap-4 px-4"
+                >
+                  {difficulties.map((difficulty) => (
+                    <div
+                      key={difficulty.id}
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <RadioGroupItem
+                        value={difficulty.id}
+                        id={`difficulty-${difficulty.id}`}
+                        className="border-black border-2"
+                      />
+                      <Label
+                        htmlFor={`difficulty-${difficulty.id}`}
+                        className="text-base font-medium cursor-pointer"
+                      >
+                        {difficulty.name}
+                      </Label>
+                    </div>
+                  ))}
                 </RadioGroup>
               </div>
+
+              {/* Checkbox et FileUpload pour document optionnel */}
+              {chapitres.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-300">
+                  <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
+                    <div className="flex items-start space-x-3 mb-4">
+                      <Checkbox
+                        id="useDocument"
+                        checked={useDocument}
+                        onCheckedChange={(checked) => {
+                          setUseDocument(checked as boolean);
+                          if (!checked) {
+                            setSelectedFile(null);
+                          }
+                        }}
+                        disabled={!selectedChapitreId || !selectedDifficulty}
+                        className="mt-0.5 border-2 border-red-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                      />
+                      <div className="grid gap-1.5 leading-none flex-1">
+                        <label
+                          htmlFor="useDocument"
+                          className="text-sm font-bold text-red-700 cursor-pointer"
+                        >
+                          Générer depuis un document (optionnel)
+                        </label>
+                        <p className="text-xs text-red-600 font-medium">
+                          PDF, DOC, DOCX, TXT - Maximum 10 MB
+                        </p>
+                      </div>
+                    </div>
+
+                    {useDocument && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <FileUpload
+                          onChange={setSelectedFile}
+                          selectedFile={selectedFile}
+                          disabled={generateQuizMutation.isPending}
+                          maxSize={10 * 1024 * 1024}
+                          acceptedTypes={[".pdf", ".doc", ".docx", ".txt"]}
+                          compact
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center pt-4">
+                <Button
+                  onClick={handleGenerateQuiz}
+                  disabled={
+                    !selectedChapitreId ||
+                    !selectedDifficulty ||
+                    generateQuizMutation.isPending
+                  }
+                  className="bg-[#111D4A] hover:bg-[#0d1640] text-white px-12 py-3 rounded-lg font-bold text-xl"
+                >
+                  Commencer
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Step 3: Quiz */}
+          {step === "quiz" && currentQuestion && (
+            <div className="max-w-4xl mx-auto mt-24">
+              <div className="space-y-8">
+                {/* Progress bar */}
+                <div>
+                  <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
+                    <span>
+                      Question {currentQuestionIndex + 1}/{quizQuestions.length}
+                    </span>
+                    <span>{selectedMatiereName}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-orange-500 h-2.5 rounded-full"
+                      style={{
+                        width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Question Card */}
+                <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center underline decoration-2 underline-offset-4">
+                    Question {currentQuestionIndex + 1}
+                  </h2>
+                  <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
+                    {currentQuestion.question}
+                  </p>
+                </div>
+
+                {/* Answers */}
+                <div>
+                  <RadioGroup
+                    value={userAnswers[currentQuestion.id]?.toString() || ""}
+                    onValueChange={(value) => {
+                      const newAnswers = {
+                        ...userAnswers,
+                        [currentQuestion.id]: value,
+                      };
+                      setUserAnswers(newAnswers);
+
+                      if (currentQuestionIndex === quizQuestions.length - 1) {
+                        setTimeout(() => handleSubmitQuiz(newAnswers), 300);
+                      } else {
+                        setTimeout(() => handleNextQuestion(), 300);
+                      }
+                    }}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {currentQuestion.propositions.map(
+                        (proposition, index) => {
+                          const letters = ["a", "b", "c", "d", "e", "f"];
+                          return (
+                            <div
+                              key={proposition.id}
+                              className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
+                            >
+                              <RadioGroupItem
+                                value={proposition.id.toString()}
+                                id={proposition.id.toString()}
+                                className="border-black border-2 flex-shrink-0"
+                              />
+                              <Label
+                                htmlFor={proposition.id.toString()}
+                                className="flex-1 text-base font-medium cursor-pointer"
+                              >
+                                {letters[index]}) {proposition.text}
+                              </Label>
+                            </div>
+                          );
+                        },
+                      )}
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

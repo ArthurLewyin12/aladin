@@ -4,7 +4,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useCourse } from "@/services/hooks/cours/useCourses";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { ArrowLeft, BookOpen, Lightbulb, MessageCircleQuestion } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Lightbulb,
+  MessageCircleQuestion,
+} from "lucide-react";
 import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
 import { MathText } from "@/components/ui/MathText";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
@@ -27,7 +32,10 @@ export default function CoursePage() {
   // Récupérer le document depuis le store Zustand
   const { pendingDocument, clearPendingDocument } = useDocumentUpload();
 
-  const { data, isLoading, isError, error } = useCourse(chapterId, pendingDocument || undefined);
+  const { data, isLoading, isError, error } = useCourse(
+    chapterId,
+    pendingDocument || undefined,
+  );
   const { startTracking, stopTracking } = useTimeTracking();
 
   // Nettoyer le document après avoir chargé le cours
@@ -164,14 +172,16 @@ export default function CoursePage() {
         <main className="w-full mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Course Content Card */}
           <article className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-10 lg:p-14 mb-6">
-            <div className={`
+            <div
+              className={`
               prose prose-base sm:prose-base md:prose-lg lg:prose-lg max-w-none
               prose-headings:scroll-mt-28 prose-headings:font-semibold prose-headings:text-orange-600
               prose-p:my-3 prose-p:leading-7 prose-p:text-gray-800
               prose-strong:text-orange-700 prose-strong:font-semibold
               prose-ul:my-4 prose-li:my-1
               prose-ol:my-4 prose-ol:list-decimal
-            `}>
+            `}
+            >
               {parsedContent.map((line) => (
                 <div key={line.id}>
                   {line.type === "title" ? (

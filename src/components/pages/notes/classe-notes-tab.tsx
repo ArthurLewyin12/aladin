@@ -28,12 +28,13 @@ export function ClasseNotesTab() {
     page,
   });
 
-  const { data: statsData } = useNoteClasseStats();
+  const { data: statsData, isLoading: isLoadingStats } = useNoteClasseStats();
 
   const notes = notesData?.data?.data || [];
   const pagination = notesData?.data;
+  const hasFilters = Boolean(matiereId || dateDebut || dateFin);
 
-  if (isLoading) {
+  if (isLoading || isLoadingStats) {
     return (
       <div className="flex justify-center items-center h-64">
         <Spinner size="lg" />
@@ -41,7 +42,7 @@ export function ClasseNotesTab() {
     );
   }
 
-  if (notes.length === 0 && !matiereId && !dateDebut && !dateFin) {
+  if (notes.length === 0 && !hasFilters) {
     return (
       <div className="px-4 sm:px-0">
         <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
@@ -130,13 +131,25 @@ export function ClasseNotesTab() {
       </div>
 
       {/* Bouton d'ajout */}
-      <div className="flex justify-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+            Notes de Classe
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">
+            {statsData?.data?.nombre_total_notes || 0} note
+            {(statsData?.data?.nombre_total_notes || 0) > 1 ? "s" : ""}{" "}
+            enregistrée{(statsData?.data?.nombre_total_notes || 0) > 1 ? "s" : ""}
+          </p>
+        </div>
         <Button
+          size="lg"
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#2C3E50] hover:bg-[#1a252f]"
+          className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter une note
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <span className="hidden sm:inline">Ajouter une note</span>
+          <span className="sm:hidden">Ajouter</span>
         </Button>
       </div>
 

@@ -11,7 +11,7 @@ import { ComparisonTab } from "@/components/pages/notes/comparison-tab";
 
 export default function NotesPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("Notes Aladin");
+  const [activeTab, setActiveTab] = useState("Notes de Classe");
 
   const handleBack = () => {
     router.push("/student/home");

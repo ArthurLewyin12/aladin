@@ -12,15 +12,24 @@ import { Matiere, Chapitre } from "@/services/controllers/types/common";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileUpload } from "@/components/ui/file-upload";
 import { useDocumentUpload } from "@/stores/useDocumentUpload";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 
 export default function RevisionPage() {
-  const [step, setStep] = useState<"subject" | "chapter">("subject");
-  const [selectedMatiereId, setSelectedMatiereId] = useState<number | null>(
-    null,
+  // Migration vers nuqs pour la persistance URL
+  const [step, setStep] = useQueryState(
+    "step",
+    parseAsString.withDefault("subject"),
   );
-  const [selectedChapitreId, setSelectedChapitreId] = useState<number | null>(
-    null,
+  const [selectedMatiereId, setSelectedMatiereId] = useQueryState(
+    "matiereId",
+    parseAsInteger,
   );
+  const [selectedChapitreId, setSelectedChapitreId] = useQueryState(
+    "chapitreId",
+    parseAsInteger,
+  );
+
+  // États locaux (non persistés dans l'URL)
   const [useDocument, setUseDocument] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 

@@ -1,15 +1,18 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { QuizList } from "@/components/pages/user-quizzes/quiz-list";
 import { GroupQuizList } from "@/components/pages/user-quizzes/group-quiz-list";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { ArrowLeft } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 
 export default function QuizPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("Mes Quiz");
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    parseAsString.withDefault("Mes Quiz")
+  );
 
   const handleBack = () => {
     router.push("/student/home");

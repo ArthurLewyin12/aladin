@@ -15,6 +15,7 @@ import { toast } from "@/lib/toast";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { calculateQuizScore } from "@/lib/quiz-score";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
+import { parseAsInteger, useQueryState } from "nuqs";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -22,7 +23,11 @@ export default function GroupQuizTakingPage() {
   const [timeLimit, setTimeLimit] = useState<number>(0);
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  // Migration vers nuqs pour la persistance URL
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useQueryState(
+    "q",
+    parseAsInteger.withDefault(0)
+  );
   const [userAnswers, setUserAnswers] = useState<
     Record<string | number, string | number>
   >({});

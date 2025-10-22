@@ -9,7 +9,7 @@ import {
   FileText,
 } from "lucide-react";
 
-export type UserRole = "eleve" | "parent" | "professeur" | "admin";
+export type UserRole = "eleve" | "parent" | "professeur" | "repetiteur";
 
 interface NavigationItem {
   label: string;
@@ -111,23 +111,19 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
       },
     ],
   },
-  admin: {
-    homePath: "/admin/home",
-    settingsPath: "/admin/settings",
+  repetiteur: {
+    homePath: "/repetiteur/home",
+    settingsPath: "/repetiteur/settings",
     menuItems: [
       {
         label: "Tableau de bord",
-        path: "/admin/dashboard",
+        path: "/repetiteur/dashboard",
         icon: BarChart3,
       },
+
       {
-        label: "Utilisateurs",
-        path: "/admin/users",
-        icon: Users,
-      },
-      {
-        label: "Contenu",
-        path: "/admin/content",
+        label: "Mes élèves",
+        path: "/repetiteur/students",
         icon: BookOpen,
       },
     ],

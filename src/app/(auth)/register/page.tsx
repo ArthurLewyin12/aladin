@@ -1,9 +1,9 @@
-import AladinStudentInscriptionForm from "@/components/pages/auth/student/register";
+import AladinInscriptionForm from "@/components/pages/auth/register";
 
-export default function RegisterStudentPage() {
+export default function RegisterPage() {
   return (
     <>
-      <AladinStudentInscriptionForm />
+      <AladinInscriptionForm />
     </>
   );
 }

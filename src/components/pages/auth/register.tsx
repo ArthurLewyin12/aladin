@@ -61,7 +61,7 @@ const formSchema = z
     path: ["confirmPassword"],
   });
 
-export default function AladinStudentInscriptionForm() {
+export default function AladinInscriptionForm() {
   // const [isDialogOpen, setDialogOpen] = useState(false);
   // const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(
   //   null,

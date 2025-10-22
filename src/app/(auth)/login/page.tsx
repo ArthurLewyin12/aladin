@@ -1,6 +1,6 @@
-import AladinLoginForm from "@/components/pages/auth/student/login";
+import AladinLoginForm from "@/components/pages/auth/login";
 
-export default function LoginStudentPage() {
+export default function LoginPage() {
   return (
     <>
       <AladinLoginForm />

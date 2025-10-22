@@ -59,16 +59,14 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
               onClick={() =>
                 column.toggleSorting(column.getIsSorted() === "asc")
               }
-              className="hover:bg-transparent px-0"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
             >
               Matière
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           );
         },
-        cell: (info) => (
-          <span className="font-medium">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       columnHelper.accessor("chapitre", {
         header: "Chapitre",
@@ -103,7 +101,7 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
               onClick={() =>
                 column.toggleSorting(column.getIsSorted() === "asc")
               }
-              className="hover:bg-transparent px-0"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
             >
               Note
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -139,7 +137,7 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
               onClick={() =>
                 column.toggleSorting(column.getIsSorted() === "asc")
               }
-              className="hover:bg-transparent px-0"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
             >
               Date
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -184,8 +182,11 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
   return (
     <div className="space-y-4">
       {/* Recherche globale */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+      <div
+        className="relative max-w-sm bg-white
+        "
+      >
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 " />
         <Input
           placeholder="Rechercher..."
           value={globalFilter ?? ""}
@@ -195,11 +196,14 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="bg-gray-50 dark:bg-gray-800/50"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -219,6 +223,7 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

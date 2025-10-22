@@ -71,48 +71,72 @@ export function ComparisonTab() {
     }));
   }, [aladinData, classeStatsData]);
 
-  // Préparer les données pour le line chart (évolution temporelle)
+  // Préparer les données pour le line chart (évolution temporelle par matière)
   const evolutionData = useMemo(() => {
-    if (!aladinData?.all_notes || !classeStatsData?.data?.evolution_notes) {
+    if (!aladinData?.all_notes || aladinData.all_notes.length === 0) {
       return [];
     }
 
-    // Créer une map des dates avec les moyennes
-    const dateMap = new Map<string, { aladin: number[]; classe: number[] }>();
+    if (!classeStatsData?.data?.evolution_notes) {
+      return [];
+    }
 
-    // Ajouter les notes Aladin (convertir le score en note sur 20)
-    aladinData.all_notes.forEach((note) => {
-      if (!dateMap.has(note.date)) {
-        dateMap.set(note.date, { aladin: [], classe: [] });
-      }
-      // Convertir le score en note sur 20
+    // Trier les notes Aladin par date
+    const sortedAladinNotes = [...aladinData.all_notes]
+      .filter((note) => note.matiere && note.date)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    if (sortedAladinNotes.length === 0) return [];
+
+    // Construire l'évolution cumulative par matière pour Aladin
+    const aladinMatieresCumulatives = new Map<string, number[]>();
+    const dataPoints: Array<{ date: string; [key: string]: string | number }> = [];
+
+    sortedAladinNotes.forEach((note) => {
       const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
-      dateMap.get(note.date)!.aladin.push(noteSur20);
-    });
 
-    // Ajouter les notes Classe
-    classeStatsData.data.evolution_notes.forEach((point) => {
-      if (!dateMap.has(point.date)) {
-        dateMap.set(point.date, { aladin: [], classe: [] });
+      // Initialiser le tableau pour cette matière si nécessaire
+      if (!aladinMatieresCumulatives.has(note.matiere)) {
+        aladinMatieresCumulatives.set(note.matiere, []);
       }
-      dateMap.get(point.date)!.classe.push(point.moyenne);
+
+      // Ajouter la note à l'historique de cette matière
+      aladinMatieresCumulatives.get(note.matiere)!.push(noteSur20);
+
+      // Créer un point de données avec la moyenne actuelle pour chaque matière
+      const dataPoint: { date: string; [key: string]: string | number } = {
+        date: note.date
+      };
+
+      // Calculer la moyenne cumulative pour chaque matière Aladin
+      aladinMatieresCumulatives.forEach((notes, matiere) => {
+        const moyenne = notes.reduce((a, b) => a + b, 0) / notes.length;
+        dataPoint[`${matiere} (Aladin)`] = Math.round(moyenne * 10) / 10;
+      });
+
+      dataPoints.push(dataPoint);
     });
 
-    // Calculer les moyennes par date
-    return Array.from(dateMap.entries())
-      .map(([date, notes]) => ({
-        date,
-        moyenne_aladin:
-          notes.aladin.length > 0
-            ? notes.aladin.reduce((a, b) => a + b, 0) / notes.aladin.length
-            : 0,
-        moyenne_classe:
-          notes.classe.length > 0
-            ? notes.classe.reduce((a, b) => a + b, 0) / notes.classe.length
-            : 0,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-10); // Garder les 10 derniers points
+    // Ajouter les moyennes de classe par matière (données statiques)
+    const classeMoyennesParMatiere = new Map(
+      classeStatsData.data.moyennes_par_matiere?.map((item) => [
+        item.matiere_libelle,
+        item.moyenne,
+      ]) || []
+    );
+
+    // Ajouter les moyennes de classe à chaque point de données
+    dataPoints.forEach((point) => {
+      aladinMatieresCumulatives.forEach((_, matiere) => {
+        const moyenneClasse = classeMoyennesParMatiere.get(matiere);
+        if (moyenneClasse !== undefined) {
+          point[`${matiere} (Classe)`] = Math.round(moyenneClasse * 10) / 10;
+        }
+      });
+    });
+
+    // Garder les 15 derniers points pour avoir plus de visibilité
+    return dataPoints.slice(-15);
   }, [aladinData, classeStatsData]);
 
   // Stats globales

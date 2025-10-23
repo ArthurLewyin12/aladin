@@ -30,16 +30,32 @@ export function ParentNotesParEnfantTab() {
     page: page || 1,
   });
 
+  const notes = useMemo(() => {
+    if (!notesData?.data) return [];
+    if (Array.isArray(notesData.data)) {
+      return notesData.data;
+    }
+    return notesData.data.data || [];
+  }, [notesData]);
+
+  const pagination = useMemo(() => {
+    if (notesData?.data && !Array.isArray(notesData.data)) {
+      return notesData.data;
+    }
+    return {
+      current_page: 1,
+      per_page: notes.length,
+      total: notes.length,
+    };
+  }, [notesData, notes]);
+
   const enfantSelectionne = useMemo(() => {
     if (!enfantId || !enfantsData?.data) return null;
     return enfantsData.data.find((e) => e.id === enfantId);
   }, [enfantId, enfantsData]);
 
   const stats = useMemo(() => {
-    if (!notesData?.data?.data) return null;
-
-    const notes = notesData.data.data;
-    if (notes.length === 0) return null;
+    if (!notes || notes.length === 0) return null;
 
     const moyenne =
       notes.reduce((acc, n) => acc + parseFloat(n.note), 0) / notes.length;
@@ -48,7 +64,7 @@ export function ParentNotesParEnfantTab() {
       nombreNotes: notes.length,
       moyenne: Math.round(moyenne * 10) / 10,
     };
-  }, [notesData]);
+  }, [notes]);
 
   if (enfantsLoading) {
     return (
@@ -167,7 +183,7 @@ export function ParentNotesParEnfantTab() {
                 <div className="flex justify-center items-center h-32">
                   <Spinner size="md" />
                 </div>
-              ) : !notesData?.data?.data || notesData.data.data.length === 0 ? (
+              ) : notes.length === 0 ? (
                 <EmptyState
                   title="Aucune note trouvée"
                   description="Cet enfant n'a pas encore ajouté de notes."
@@ -178,8 +194,8 @@ export function ParentNotesParEnfantTab() {
                 />
               ) : (
                 <ParentNotesTable
-                  notes={notesData.data.data}
-                  pagination={notesData.data}
+                  notes={notes}
+                  pagination={pagination}
                   page={page || 1}
                   setPage={setPage}
                 />

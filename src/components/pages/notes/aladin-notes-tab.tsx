@@ -11,34 +11,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { convertScoreToNote } from "@/lib/quiz-score";
 
 export function AladinNotesTab() {
-  const { user } = useSession();
-  const { data: dashboardData, isLoading } = useEleveDashboard(
-    user?.id || 0,
-    "year",
-  );
-
-  const stats = useMemo(() => {
-    if (!dashboardData?.all_notes) return null;
-
-    const notes = dashboardData.all_notes;
-
-    // Convertir les scores (nombre de bonnes réponses) en notes sur 20
-    const notesSur20 = notes.map((n) =>
-      convertScoreToNote(n.note, n.nombre_questions),
+    const { user } = useSession();
+    const { data: dashboardData, isLoading } = useEleveDashboard(
+      user?.id || 0,
+      "year",
     );
-
-    const averageNote =
-      notesSur20.length > 0
-        ? notesSur20.reduce((acc, n) => acc + n, 0) / notesSur20.length
-        : 0;
-
-    return {
-      totalNotes: notes.length,
-      moyenneGenerale: Math.round(averageNote * 10) / 10,
-      meilleureNote: notesSur20.length > 0 ? Math.max(...notesSur20) : 0,
-    };
-  }, [dashboardData]);
-
+    console.log("AladinNotesTab: Full dashboardData:", dashboardData);
+  
+    const stats = useMemo(() => {
+      if (!dashboardData?.all_notes) return null;
+  
+      const notes = dashboardData.all_notes;
+      console.log("AladinNotesTab: Raw notes data:", notes);
+  
+      const notesSur20 = notes
+        .filter((n) => n.nombre_questions !== null && n.nombre_questions !== 0)
+        .map((n) => {
+          console.log("AladinNotesTab: Processing note:", n.note, "nombre_questions:", n.nombre_questions);
+          const numericNote = parseFloat(String(n.note).split('/')[0]);
+          console.log("AladinNotesTab: Extracted numeric note:", numericNote);
+          return convertScoreToNote(numericNote, 5);
+        });
+  
+      const averageNote =
+        notesSur20.length > 0
+          ? notesSur20.reduce((acc, n) => acc + n, 0) / notesSur20.length
+          : 0;
+  
+      const finalStats = {
+        totalNotes: notes.length,
+        moyenneGenerale: Math.round(averageNote * 10) / 10,
+        meilleureNote: notesSur20.length > 0 ? Math.max(...notesSur20) : 0,
+      };
+      console.log("AladinNotesTab: Final calculated stats:", finalStats);
+      return finalStats;
+    }, [dashboardData]);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">

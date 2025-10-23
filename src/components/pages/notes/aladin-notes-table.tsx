@@ -110,8 +110,12 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
         },
         cell: (info) => {
           const row = info.row.original;
-          // Convertir le score (nombre de bonnes réponses) en note sur 20
-          const noteSur20 = convertScoreToNote(row.note, row.nombre_questions);
+          console.log("AladinNotesTable: Raw row.note:", row.note);
+          const numericScore = parseFloat(String(row.note).split('/')[0]);
+          console.log("AladinNotesTable: Extracted numeric score:", numericScore);
+          // Utiliser 5 comme nombre de questions fixe pour les quiz Aladin
+          const noteSur20 = convertScoreToNote(numericScore, 5);
+          console.log("AladinNotesTable: Final noteSur20 for display:", noteSur20);
           const colorClass =
             noteSur20 >= 15
               ? "text-green-600 font-bold"

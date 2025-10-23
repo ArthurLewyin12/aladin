@@ -74,7 +74,17 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
           );
         },
         cell: ({ row }) => {
-          const note = row.getValue("note_aladin") as number;
+          const rawValue = row.getValue("note_aladin");
+          let note = 0;
+          if (typeof rawValue === 'string') {
+            const parsedNote = parseFloat(rawValue);
+            if (isFinite(parsedNote)) {
+              note = parsedNote;
+            }
+          } else if (typeof rawValue === 'number' && isFinite(rawValue)) {
+            note = rawValue;
+          }
+
           const noteColorClass =
             note >= 15
               ? "text-green-600"
@@ -105,7 +115,17 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
           );
         },
         cell: ({ row }) => {
-          const note = row.getValue("note_classe") as number;
+          const rawValue = row.getValue("note_classe");
+          let note = 0;
+          if (typeof rawValue === 'string') {
+            const parsedNote = parseFloat(rawValue);
+            if (isFinite(parsedNote)) {
+              note = parsedNote;
+            }
+          } else if (typeof rawValue === 'number' && isFinite(rawValue)) {
+            note = rawValue;
+          }
+
           const noteColorClass =
             note >= 15
               ? "text-green-600"

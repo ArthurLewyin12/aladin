@@ -25,12 +25,10 @@ import {
   ArrowUpDown,
   Edit,
   Eye,
-  Filter,
 } from "lucide-react";
 import { NoteClasse } from "@/services/controllers/types/common";
 import { EditNoteModal } from "./edit-note-modal";
 import { NoteDetailsModal } from "./note-details-modal";
-import { NotesFilters } from "./notes-filters";
 import { parseAsInteger, useQueryState } from "nuqs";
 
 interface ClasseNotesTableProps {
@@ -51,7 +49,6 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
   ]);
   const [editingNote, setEditingNote] = useState<NoteClasse | null>(null);
   const [viewingNote, setViewingNote] = useState<NoteClasse | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
 
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
@@ -194,7 +191,7 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
   return (
     <div className="space-y-4">
       {/* Filtres toggle */}
-      <div className="flex justify-between items-center">
+      {/*<div className="flex justify-between items-center">
         <Button
           variant="outline"
           size="sm"
@@ -203,13 +200,10 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
           <Filter className="h-4 w-4 mr-2" />
           {showFilters ? "Masquer les filtres" : "Afficher les filtres"}
         </Button>
-      </div>
-
-      {/* Composant de filtres */}
-      {showFilters && <NotesFilters />}
+      </div>*/}
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -303,9 +297,7 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
                     size="sm"
                     onClick={() => setPage(pageNum)}
                     className={`rounded-full min-w-[2.5rem] ${
-                      pageNum === page
-                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
-                        : ""
+                      pageNum === page ? "bg-[#2C3E50] hover:bg-[#1a252f]" : ""
                     }`}
                   >
                     {pageNum}
@@ -318,7 +310,9 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPage(Math.min(pagination.last_page || 1, page + 1))}
+            onClick={() =>
+              setPage(Math.min(pagination.last_page || 1, page + 1))
+            }
             disabled={page === pagination.last_page}
             className="rounded-full"
           >

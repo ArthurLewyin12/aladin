@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNotesClasse } from "@/services/hooks/notes-classe";
 import { useNoteClasseStats } from "@/services/hooks/notes-classe";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,8 +30,40 @@ export function ClasseNotesTab() {
 
   const { data: statsData, isLoading: isLoadingStats } = useNoteClasseStats();
 
-  const notes = notesData?.data?.data || [];
-  const pagination = notesData?.data;
+  const totalNotes = useMemo(() => {
+    if (!statsData?.data?.moyennes_par_matiere) return 0;
+    return statsData.data.moyennes_par_matiere.reduce(
+      (sum, stat) => sum + stat.nombre_notes,
+      0,
+    );
+  }, [statsData]);
+
+  const meilleureNote = useMemo(() => {
+    if (
+      !statsData?.data?.evolution_notes ||
+      statsData.data.evolution_notes.length === 0
+    ) {
+      return 0;
+    }
+    return Math.max(
+      ...statsData.data.evolution_notes.map((n) => parseFloat(n.note)),
+    );
+  }, [statsData]);
+
+  const notes = useMemo(() => {
+    if (!notesData?.data) return [];
+    if (Array.isArray(notesData.data)) {
+      return notesData.data;
+    }
+    return notesData.data.data || [];
+  }, [notesData]);
+
+  const pagination = useMemo(() => {
+    if (!notesData?.data || Array.isArray(notesData.data)) {
+      return undefined;
+    }
+    return notesData.data;
+  }, [notesData]);
   const hasFilters = Boolean(matiereId || dateDebut || dateFin);
 
   if (isLoading || isLoadingStats) {
@@ -97,9 +129,7 @@ export function ClasseNotesTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {statsData?.data?.nombre_total_notes || 0}
-            </div>
+            <div className="text-2xl font-bold">{totalNotes}</div>
           </CardContent>
         </Card>
 
@@ -124,7 +154,7 @@ export function ClasseNotesTab() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {statsData?.data?.meilleure_note?.toFixed(1) || 0}/20
+              {meilleureNote.toFixed(1)}/20
             </div>
           </CardContent>
         </Card>
@@ -137,9 +167,9 @@ export function ClasseNotesTab() {
             Notes de Classe
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {statsData?.data?.nombre_total_notes || 0} note
-            {(statsData?.data?.nombre_total_notes || 0) > 1 ? "s" : ""}{" "}
-            enregistrée{(statsData?.data?.nombre_total_notes || 0) > 1 ? "s" : ""}
+            {totalNotes} note
+            {totalNotes > 1 ? "s" : ""} enregistrée
+            {totalNotes > 1 ? "s" : ""}
           </p>
         </div>
         <Button

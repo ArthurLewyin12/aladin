@@ -36,6 +36,10 @@ export function ComparisonTab() {
     const aladinByMatiere = new Map<string, number[]>();
 
     aladinData.all_notes.forEach((note) => {
+      // Filtrer les notes où nombre_questions est 0 pour éviter la division par zéro
+      if (note.nombre_questions === 0) {
+        return;
+      }
       if (!aladinByMatiere.has(note.matiere)) {
         aladinByMatiere.set(note.matiere, []);
       }
@@ -54,7 +58,7 @@ export function ComparisonTab() {
     const classeByMatiere = new Map(
       classeStatsData.data.moyennes_par_matiere.map((item) => [
         item.matiere_libelle,
-        item.moyenne,
+        parseFloat(item.moyenne as any),
       ]),
     );
 
@@ -83,7 +87,7 @@ export function ComparisonTab() {
 
     // Trier les notes Aladin par date
     const sortedAladinNotes = [...aladinData.all_notes]
-      .filter((note) => note.matiere && note.date)
+      .filter((note) => note.matiere && note.date && note.nombre_questions !== 0)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     if (sortedAladinNotes.length === 0) return [];
@@ -130,7 +134,8 @@ export function ComparisonTab() {
       aladinMatieresCumulatives.forEach((_, matiere) => {
         const moyenneClasse = classeMoyennesParMatiere.get(matiere);
         if (moyenneClasse !== undefined) {
-          point[`${matiere} (Classe)`] = Math.round(moyenneClasse * 10) / 10;
+          const actualMoyenneClasse: number = parseFloat(moyenneClasse as any);
+          point[`${matiere} (Classe)`] = Math.round(actualMoyenneClasse * 10) / 10;
         }
       });
     });

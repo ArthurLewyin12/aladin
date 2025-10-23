@@ -98,7 +98,9 @@ export default function DashboardPage() {
     const dateToLabelMap: Record<string, string> = {};
 
     // Extraire toutes les dates uniques des series
-    const uniqueDates = Array.from(new Set(series.map((item) => item.bucket))).sort();
+    const uniqueDates = Array.from(
+      new Set(series.map((item) => item.bucket)),
+    ).sort();
 
     // Mapper chaque date à son label correspondant (ordre chronologique)
     uniqueDates.forEach((date, index) => {
@@ -203,18 +205,18 @@ export default function DashboardPage() {
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          {/*<div className="flex items-center gap-2 sm:gap-3 flex-1">
-            <span className="text-2xl sm:text-3xl">📊</span>
+          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+            {/*<span className="text-2xl sm:text-3xl">📊</span>*/}
             <div className="flex-1">
               <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
                 Mon tableau de bord
               </h1>
-              <p className="text-xs sm:text-[1.5rem] text-gray-600 mt-1">
+              {/*<p className="text-xs sm:text-[1.5rem] text-gray-600 mt-1">
                 Bienvenue {user?.prenom}, voici tes statistiques{" "}
                 {dashboardData.user.niveau.libelle}
-              </p>
+              </p>*/}
             </div>
-          </div>*/}
+          </div>
         </div>
 
         {/* Quick Stats avec animations */}
@@ -304,7 +306,7 @@ export default function DashboardPage() {
 
         {/* Stats Cards traditionnelles */}
         <div className="mx-auto bg-white backdrop:blur-2xl p-10 mb-4 rounded-lg shadow-sm">
-          <h1 className="text-[2rem] mb-2 font-bold">Dashboard</h1>
+          {/*<h1 className="text-[2rem] mb-2 font-bold">Dashboard</h1>*/}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               title="Total des cours"
@@ -426,7 +428,10 @@ export default function DashboardPage() {
                               className={`w-2 h-2 rounded-full ${getNoteBadgeColor(convertScoreToNote(note.note, note.nombre_questions))}`}
                             />
                             <span className="font-bold text-lg">
-                              {convertScoreToNote(note.note, note.nombre_questions)}
+                              {convertScoreToNote(
+                                note.note,
+                                note.nombre_questions,
+                              )}
                               <span className="text-sm text-gray-500">/20</span>
                             </span>
                           </div>

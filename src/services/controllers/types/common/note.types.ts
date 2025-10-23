@@ -76,15 +76,17 @@ export type GetNoteClasseResponse = {
 export type GetNotesClasseResponse = {
   success: boolean;
   message: string;
-  data: {
-    data: NoteClasse[];
-    current_page: number;
-    per_page: number;
-    total: number;
-    last_page?: number;
-    from?: number;
-    to?: number;
-  };
+  data:
+    | NoteClasse[]
+    | {
+        data: NoteClasse[];
+        current_page: number;
+        per_page: number;
+        total: number;
+        last_page?: number;
+        from?: number;
+        to?: number;
+      };
 };
 
 /**
@@ -103,7 +105,7 @@ export type NotesClasseFilters = {
 export type MoyenneParMatiere = {
   matiere_id: number;
   matiere_libelle: string;
-  moyenne: number;
+  moyenne: string;
   nombre_notes: number;
 };
 
@@ -111,8 +113,10 @@ export type MoyenneParMatiere = {
  * Point d'évolution des notes (pour graphiques)
  */
 export type EvolutionNote = {
-  date: string;
-  moyenne: number;
+  note: string;
+  date_evaluation: string;
+  matiere_id: number;
+  matiere: Matiere;
 };
 
 /**

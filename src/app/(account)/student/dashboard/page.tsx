@@ -53,7 +53,8 @@ export default function DashboardPage() {
     const notes = dashboardData.notes_evolution || [];
     const averageNote =
       notes.length > 0
-        ? notes.reduce((acc, n) => acc + n.note, 0) / notes.length
+        ? notes.reduce((acc, n) => acc + parseFloat(String(n.note)), 0) /
+          notes.length
         : 0;
 
     const studySeconds = dashboardData.study_time.series.reduce(
@@ -65,7 +66,9 @@ export default function DashboardPage() {
     // Calcul du taux de réussite (notes > 10)
     const successRate =
       notes.length > 0
-        ? (notes.filter((n) => n.note >= 10).length / notes.length) * 100
+        ? (notes.filter((n) => parseFloat(String(n.note)) >= 10).length /
+            notes.length) *
+          100
         : 0;
 
     // Progression vers les limites
@@ -370,10 +373,10 @@ export default function DashboardPage() {
             <div className="p-2 rounded-lg bg-purple-100">
               <TrendingUp className="h-5 w-5 text-purple-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Dernières notes</h2>
+            <h2 className="text-xl font-bold text-gray-900">Derniers Quiz</h2>
           </div>
 
-          {dashboardData.all_notes.length > 0 ? (
+          {(dashboardData.notes_quiz?.length || 0) > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -388,7 +391,7 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dashboardData.all_notes
+                  {dashboardData.notes_quiz
                     .filter(
                       (note) =>
                         note.matiere !== null &&
@@ -397,47 +400,53 @@ export default function DashboardPage() {
                         note.matiere.trim() !== "",
                     )
                     .slice(0, 10)
-                    .map((note, index) => (
-                      <TableRow
-                        key={index}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <TableCell className="font-medium">
-                          {note.matiere}
-                        </TableCell>
-                        <TableCell className="max-w-[200px] truncate">
-                          {note.chapitre || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={`${getDifficultyColor(note.niveau || "")} border-0`}
-                          >
-                            {note.niveau || "N/A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
-                          {new Date(note.date).toLocaleDateString("fr-FR", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <div
-                              className={`w-2 h-2 rounded-full ${getNoteBadgeColor(convertScoreToNote(note.note, note.nombre_questions))}`}
-                            />
-                            <span className="font-bold text-lg">
-                              {convertScoreToNote(
-                                note.note,
-                                note.nombre_questions,
-                              )}
-                              <span className="text-sm text-gray-500">/20</span>
-                            </span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    .map((note, index) => {
+                      const noteValue = convertScoreToNote(
+                        note.note,
+                        note.nombre_questions,
+                      );
+
+                      return (
+                        <TableRow
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <TableCell className="font-medium">
+                            {note.matiere}
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">
+                            {note.chapitre || "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={`${getDifficultyColor(note.niveau || "")} border-0`}
+                            >
+                              {note.niveau || "N/A"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm">
+                            {new Date(note.date).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div
+                                className={`w-2 h-2 rounded-full ${getNoteBadgeColor(noteValue)}`}
+                              />
+                              <span className="font-bold text-lg">
+                                {noteValue.toFixed(2)}
+                                <span className="text-sm text-gray-500">
+                                  /20
+                                </span>
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
               </Table>
             </div>
@@ -445,7 +454,7 @@ export default function DashboardPage() {
             <div className="text-center py-12">
               <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-lg">
-                Aucune note disponible pour le moment
+                Aucune note de quiz disponible pour le moment
               </p>
               <p className="text-gray-400 text-sm mt-2">
                 Commence à faire des quiz pour voir tes résultats ici

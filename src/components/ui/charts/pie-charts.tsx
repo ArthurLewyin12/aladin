@@ -2,7 +2,7 @@
 import React from "react";
 import { pie, arc, PieArcDatum } from "d3";
 import { AnimatedSlice } from "./animated-slice";
-import { ClientTooltip, TooltipTrigger, TooltipContent } from "../tooltip";
+import { ClientTooltip, TooltipTrigger, TooltipContent } from "../../tooltip";
 
 // Types génériques pour les données
 export type ChartItem = {

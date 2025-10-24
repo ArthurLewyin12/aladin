@@ -1,18 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   flexRender,
   createColumnHelper,
   SortingState,
-  ColumnFiltersState,
 } from "@tanstack/react-table";
-import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -24,182 +21,278 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, ArrowUpDown, Search } from "lucide-react";
+import { ArrowUpDown, Search, Eye } from "lucide-react";
+import { NoteQuiz } from "@/services/controllers/types/common/stats.type";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
 import { convertScoreToNote } from "@/lib/quiz-score";
-
-type AladinNote = {
-  matiere: string;
-  chapitre: string;
-  niveau: string;
-  note: number;
-  nombre_questions: number;
-  date: string;
-};
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AladinNotesTableProps {
-  notes: AladinNote[];
+  notes: NoteQuiz[];
 }
 
-const columnHelper = createColumnHelper<AladinNote>();
+type AladinNoteBySubject = {
+  matiere: string;
+  notes: NoteQuiz[];
+  moyenne: number | null;
+};
+
+const columnHelper = createColumnHelper<AladinNoteBySubject>();
+
+function DetailsView({ rowData }: { rowData: AladinNoteBySubject }) {
+  return (
+    <div className="p-4">
+      <h3 className="text-lg font-bold mb-4">{rowData.matiere}</h3>
+      {rowData.notes.length > 0 ? (
+        <ul className="space-y-3">
+          {rowData.notes.map((note, index) => {
+            const noteSur20 = convertScoreToNote(
+              note.note,
+              note.nombre_questions,
+            );
+            return (
+              <li
+                key={index}
+                className="flex justify-between items-center border-b pb-2"
+              >
+                <div>
+                  <p className="font-semibold">{note.chapitre}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(note.date).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <Badge className="text-lg">{noteSur20.toFixed(2)}/20</Badge>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p>Aucune note de quiz pour cette matière.</p>
+      )}
+    </div>
+  );
+}
 
 export function AladinNotesTable({ notes }: AladinNotesTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "date", desc: true },
-  ]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const { user } = useSession();
+  const { data: matieres, isLoading: isLoadingMatieres } = useMatieresByNiveau(
+    user?.niveau?.id ?? 0,
+  );
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [selectedRow, setSelectedRow] = useState<AladinNoteBySubject | null>(
+    null,
+  );
+
+  const processedData = useMemo(() => {
+    if (!matieres) return [];
+
+    const notesByMatiere = new Map<string, NoteQuiz[]>();
+    notes.forEach((note) => {
+      if (note.matiere) {
+        const existing = notesByMatiere.get(note.matiere) || [];
+        existing.push(note);
+        notesByMatiere.set(note.matiere, existing);
+      }
+    });
+
+    return matieres.matieres.map((matiere) => {
+      const subjectNotes = notesByMatiere.get(matiere.libelle) || [];
+      let moyenne: number | null = null;
+      if (subjectNotes.length > 0) {
+        const total = subjectNotes.reduce(
+          (acc, curr) =>
+            acc + convertScoreToNote(curr.note, curr.nombre_questions),
+          0,
+        );
+        moyenne = total / subjectNotes.length;
+      }
+      return {
+        matiere: matiere.libelle,
+        notes: subjectNotes,
+        moyenne: moyenne,
+      };
+    });
+  }, [matieres, notes]);
 
   const columns = useMemo(
     () => [
       columnHelper.accessor("matiere", {
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
-            >
-              Matière
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
+        header: "Matière",
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
-      columnHelper.accessor("chapitre", {
-        header: "Chapitre",
+      columnHelper.accessor("notes", {
+        header: "Notes",
         cell: (info) => (
-          <span className="text-sm text-muted-foreground">
-            {info.getValue()}
-          </span>
+          <div className="flex flex-wrap gap-2 max-w-xs">
+            {info.getValue().length > 0 ? (
+              <TooltipProvider>
+                {info
+                  .getValue()
+                  .slice(0, 5)
+                  .map((note, index) => {
+                    const noteSur20 = convertScoreToNote(
+                      note.note,
+                      note.nombre_questions,
+                    );
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline">
+                            {noteSur20.toFixed(1)}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{note.chapitre}</p>
+                          <p>
+                            {new Date(note.date).toLocaleDateString("fr-FR")}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                {info.getValue().length > 5 && (
+                  <Badge variant="secondary">...</Badge>
+                )}
+              </TooltipProvider>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
         ),
       }),
-      columnHelper.accessor("niveau", {
-        header: "Difficulté",
+      columnHelper.accessor("moyenne", {
+        header: "Moyenne",
         cell: (info) => {
-          const niveau = info.getValue();
-          const variant =
-            niveau === "facile"
-              ? "default"
-              : niveau === "moyen"
-                ? "secondary"
-                : "destructive";
-          return (
-            <Badge variant={variant} className="capitalize">
-              {niveau}
-            </Badge>
-          );
-        },
-      }),
-      columnHelper.accessor("note", {
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
-            >
-              Note
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
-        cell: (info) => {
-          const row = info.row.original;
-          console.log("AladinNotesTable: Raw row.note:", row.note);
-          const numericScore = parseFloat(String(row.note).split('/')[0]);
-          console.log("AladinNotesTable: Extracted numeric score:", numericScore);
-          // Utiliser 5 comme nombre de questions fixe pour les quiz Aladin
-          const noteSur20 = convertScoreToNote(numericScore, 5);
-          console.log("AladinNotesTable: Final noteSur20 for display:", noteSur20);
+          const moyenne = info.getValue();
+          if (moyenne === null) {
+            return <span className="text-muted-foreground">-</span>;
+          }
           const colorClass =
-            noteSur20 >= 15
+            moyenne >= 15
               ? "text-green-600 font-bold"
-              : noteSur20 >= 10
+              : moyenne >= 10
                 ? "text-blue-600 font-semibold"
                 : "text-red-600 font-semibold";
-          return <span className={colorClass}>{noteSur20.toFixed(1)}/20</span>;
+          return <span className={colorClass}>{moyenne.toFixed(2)}/20</span>;
         },
       }),
-      columnHelper.accessor("nombre_questions", {
-        header: "Questions",
-        cell: (info) => (
-          <span className="text-sm text-muted-foreground">
-            {info.getValue()}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("date", {
-        header: ({ column }) => {
+      columnHelper.display({
+        id: "details",
+        header: "Détails",
+        cell: ({ row }) => {
+          const rowData = row.original;
+          if (isDesktop) {
+            return (
+              <Dialog
+                open={
+                  !!(selectedRow && selectedRow.matiere === rowData.matiere)
+                }
+                onOpenChange={(isOpen) => !isOpen && setSelectedRow(null)}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedRow(rowData)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Détails des notes d'Aladin</DialogTitle>
+                  </DialogHeader>
+                  <DetailsView rowData={rowData} />
+                </DialogContent>
+              </Dialog>
+            );
+          }
           return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
+            <Drawer
+              open={!!(selectedRow && selectedRow.matiere === rowData.matiere)}
+              onOpenChange={(isOpen) => !isOpen && setSelectedRow(null)}
             >
-              Date
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
-        cell: (info) => {
-          const date = new Date(info.getValue());
-          return (
-            <span className="text-sm text-muted-foreground">
-              {date.toLocaleDateString("fr-FR")}
-            </span>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedRow(rowData)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Détails des notes d'Aladin</DrawerTitle>
+                </DrawerHeader>
+                <DetailsView rowData={rowData} />
+              </DrawerContent>
+            </Drawer>
           );
         },
       }),
     ],
-    [],
+    [isDesktop, selectedRow],
   );
 
   const table = useReactTable({
-    data: notes,
+    data: processedData,
     columns,
     state: {
       sorting,
-      columnFilters,
       globalFilter,
     },
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
   });
+
+  if (isLoadingMatieres) {
+    return <p>Chargement des matières...</p>;
+  }
 
   return (
     <div className="space-y-4">
-      {/* Recherche globale */}
-      <div
-        className="relative max-w-sm bg-white
-        "
-      >
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 " />
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
-          placeholder="Rechercher..."
+          placeholder="Rechercher une matière..."
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="pl-9"
         />
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <Table>
           <TableHeader>
@@ -226,8 +319,7 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30"
+                  className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30" // Added background classes
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -252,76 +344,6 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
           </TableBody>
         </Table>
       </div>
-
-      {/* Pagination */}
-      {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="rounded-full"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          <div className="flex items-center gap-1">
-            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map(
-              (pageNum) => {
-                const currentPage = table.getState().pagination.pageIndex + 1;
-                const totalPages = table.getPageCount();
-                const showPage =
-                  pageNum <= 2 ||
-                  pageNum >= totalPages - 1 ||
-                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
-
-                const showEllipsisBefore = pageNum === 3 && currentPage > 4;
-                const showEllipsisAfter =
-                  pageNum === totalPages - 2 && currentPage < totalPages - 3;
-
-                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                  return null;
-                }
-
-                if (showEllipsisBefore || showEllipsisAfter) {
-                  return (
-                    <span key={pageNum} className="px-2 text-gray-400">
-                      ...
-                    </span>
-                  );
-                }
-
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === currentPage ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => table.setPageIndex(pageNum - 1)}
-                    className={`rounded-full min-w-[2.5rem] ${
-                      pageNum === currentPage
-                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
-                        : ""
-                    }`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              },
-            )}
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="rounded-full"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

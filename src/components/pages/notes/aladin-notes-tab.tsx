@@ -9,43 +9,51 @@ import { BookOpen, TrendingUp, Award } from "lucide-react";
 import { AladinNotesTable } from "./aladin-notes-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { convertScoreToNote } from "@/lib/quiz-score";
+import { NoteQuiz } from "@/services/controllers/types/common/stats.type";
 
 export function AladinNotesTab() {
-    const { user } = useSession();
-    const { data: dashboardData, isLoading } = useEleveDashboard(
-      user?.id || 0,
-      "year",
-    );
-    console.log("AladinNotesTab: Full dashboardData:", dashboardData);
-  
-    const stats = useMemo(() => {
-      if (!dashboardData?.all_notes) return null;
-  
-      const notes = dashboardData.all_notes;
-      console.log("AladinNotesTab: Raw notes data:", notes);
-  
-      const notesSur20 = notes
-        .filter((n) => n.nombre_questions !== null && n.nombre_questions !== 0)
-        .map((n) => {
-          console.log("AladinNotesTab: Processing note:", n.note, "nombre_questions:", n.nombre_questions);
-          const numericNote = parseFloat(String(n.note).split('/')[0]);
-          console.log("AladinNotesTab: Extracted numeric note:", numericNote);
-          return convertScoreToNote(numericNote, 5);
-        });
-  
-      const averageNote =
-        notesSur20.length > 0
-          ? notesSur20.reduce((acc, n) => acc + n, 0) / notesSur20.length
-          : 0;
-  
-      const finalStats = {
-        totalNotes: notes.length,
-        moyenneGenerale: Math.round(averageNote * 10) / 10,
-        meilleureNote: notesSur20.length > 0 ? Math.max(...notesSur20) : 0,
-      };
-      console.log("AladinNotesTab: Final calculated stats:", finalStats);
-      return finalStats;
-    }, [dashboardData]);
+  const { user } = useSession();
+  const { data: dashboardData, isLoading } = useEleveDashboard(
+    user?.id || 0,
+    "year",
+  );
+  console.log("AladinNotesTab: Full dashboardData:", dashboardData);
+
+  const stats = useMemo(() => {
+    if (!dashboardData?.all_notes) return null;
+
+    // Filter to get only Aladin quiz notes with a defined matiere
+    const aladinQuizNotes = dashboardData.all_notes.filter(
+      (note) => note.type_note === "quiz" && note.matiere !== null, // Added matiere filter
+    ) as NoteQuiz[];
+
+    console.log("AladinNotesTab: Filtered Aladin quiz notes:", aladinQuizNotes);
+
+    const notesSur20 = aladinQuizNotes
+      .filter((n) => n.nombre_questions !== null && n.nombre_questions !== 0)
+      .map((n) => {
+        console.log(
+          "AladinNotesTab: Processing note:",
+          n.note,
+          "nombre_questions:",
+          n.nombre_questions,
+        );
+        return convertScoreToNote(n.note, n.nombre_questions);
+      });
+
+    const averageNote =
+      notesSur20.length > 0
+        ? notesSur20.reduce((acc, n) => acc + n, 0) / notesSur20.length
+        : 0;
+
+    const finalStats = {
+      totalNotes: aladinQuizNotes.length, // Corrected here
+      moyenneGenerale: Math.round(averageNote * 10) / 10,
+      meilleureNote: notesSur20.length > 0 ? Math.max(...notesSur20) : 0,
+    };
+    console.log("AladinNotesTab: Final calculated stats:", finalStats);
+    return finalStats;
+  }, [dashboardData]);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -117,7 +125,13 @@ export function AladinNotesTab() {
       </div>
 
       {/* Table des notes */}
-      <AladinNotesTable notes={dashboardData.all_notes} />
+      <AladinNotesTable
+        notes={
+          dashboardData.all_notes.filter(
+            (note) => note.type_note === "quiz",
+          ) as NoteQuiz[]
+        }
+      />
     </div>
   );
 }

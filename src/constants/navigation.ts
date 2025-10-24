@@ -120,11 +120,20 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         path: "/repetiteur/dashboard",
         icon: BarChart3,
       },
-
       {
         label: "Mes élèves",
         path: "/repetiteur/students",
-        icon: BookOpen,
+        icon: Users,
+      },
+      {
+        label: "Notes des élèves",
+        path: "/repetiteur/notes",
+        icon: FileText,
+      },
+      {
+        label: "Mes groupes",
+        path: "/repetiteur/groups",
+        icon: UsersRound,
       },
     ],
   },

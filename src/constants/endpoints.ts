@@ -179,3 +179,34 @@ export enum ParentNoteClasseEndpoints {
   GET_ENFANTS = "/api/parent/notes-classe/enfants",
   GET_ENFANT_NOTES = "/api/parent/notes-classe/enfant/{enfantId}",
 }
+
+/**
+ * Endpoints relatifs à la gestion des élèves pour les répétiteurs.
+ */
+export enum RepetiteurEndpoints {
+  // Gestion des élèves
+  GET_ELEVES = "/api/repetiteur/eleves",
+  AJOUTER_ELEVE_MANUEL = "/api/repetiteur/eleves/ajouter-manuel",
+  AJOUTER_ELEVE_UTILISATEUR = "/api/repetiteur/eleves/ajouter",
+  RECHERCHER_ELEVE = "/api/repetiteur/eleves/rechercher",
+  RETIRER_ELEVE = "/api/repetiteur/eleves/retirer",
+  ASSOCIER_AUTOMATIQUEMENT = "/api/repetiteur/eleves/associer-automatiquement",
+  
+  // Sélection d'élève
+  SELECTIONNER_ELEVE = "/api/repetiteur/eleves/selectionner",
+  GET_ELEVE_ACTIF = "/api/repetiteur/eleve-actif",
+  
+  // Statistiques et dashboard
+  GET_STATS = "/api/repetiteurs/{id}/stats",
+  GET_DASHBOARD = "/api/repetiteurs/{id}/dashboard",
+  
+  // Contenus de l'élève sélectionné
+  GET_ELEVE_GROUPES = "/api/repetiteur/eleve/groupes",
+  GET_ELEVE_QUIZ = "/api/repetiteur/eleve/quiz",
+  GET_ELEVE_COURS = "/api/repetiteur/eleve/cours",
+  GET_ELEVE_RESUME = "/api/repetiteur/eleve/resume",
+  
+  // Relations
+  GET_REPETITEURS_ELEVE = "/api/eleve/repetiteurs",
+  GET_RELATIONS_STATS = "/api/relations-repetiteur/statistiques",
+}

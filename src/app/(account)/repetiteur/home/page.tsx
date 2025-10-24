@@ -13,13 +13,13 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 
-export default function ParentHomePage() {
+export default function RepetiteurHomePage() {
   const router = useRouter();
 
   const handleShare = async () => {
     const shareData = {
       title: "Découvrez Aladin !",
-      text: "J'utilise Aladin pour accompagner mes enfants dans leur apprentissage. Rejoignez-nous sur la plateforme pour offrir à vos enfants un accompagnement pédagogique de qualité.",
+      text: "J'utilise Aladin pour accompagner mes élèves dans leur apprentissage. Rejoignez-nous sur la plateforme pour offrir à vos élèves un accompagnement pédagogique de qualité.",
       url: window.location.origin,
     };
 
@@ -46,46 +46,39 @@ export default function ParentHomePage() {
     }
   };
 
-  const parentActions = [
+  const repetiteurActions = [
     {
       id: "dashboard",
       title: "Je vois mon tableau de bord",
-      description: "Suivez les progrès de vos enfants",
+      description: "Suivez vos statistiques et activités",
       icon: BarChart3,
-      handler: () => router.push("/parent/dashboard"),
+      handler: () => router.push("/repetiteur/dashboard"),
     },
-    // {
-    //   id: "courses",
-    //   title: "Je vois mes cours",
-    //   description: "Accédez aux cours et ressources",
-    //   icon: BookOpen,
-    //   handler: () => router.push("/parent/courses"),
-    // },
     {
-      id: "enfants",
-      title: "Je consulte mes enfants",
-      description: "Gérez vos différents enfants",
+      id: "students",
+      title: "Je gère mes élèves",
+      description: "Ajoutez et suivez vos élèves",
       icon: Users,
-      handler: () => router.push("/parent/enfants"),
+      handler: () => router.push("/repetiteur/students"),
     },
     {
       id: "notes",
       title: "Je consulte les notes",
-      description: "Suivez les notes de vos enfants",
+      description: "Suivez les notes de vos élèves",
       icon: FileText,
-      handler: () => router.push("/parent/notes"),
+      handler: () => router.push("/repetiteur/notes"),
     },
     {
       id: "groups",
-      title: "Je crée un groupe d'étude",
-      description: "Collaborez avec d'autres parents",
+      title: "Je gère les groupes",
+      description: "Créez des groupes d'étude",
       icon: UsersRound,
-      handler: () => router.push("/parent/groups"),
+      handler: () => router.push("/repetiteur/groups"),
     },
     {
       id: "share",
       title: "Je partage Aladin",
-      description: "Invitez d'autres parents à rejoindre",
+      description: "Invitez d'autres répétiteurs",
       icon: Share2,
       handler: handleShare,
     },
@@ -96,7 +89,7 @@ export default function ParentHomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Message de bienvenue professionnel */}
         <div className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#548C2F] mb-4">
             Bonjour
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
@@ -124,17 +117,17 @@ export default function ParentHomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
               Que souhaitez-vous faire ?
             </h2>
-            {parentActions.map((action) => {
+            {repetiteurActions.map((action) => {
               const IconComponent = action.icon;
               return (
                 <button
                   key={action.id}
                   onClick={action.handler}
-                  className="w-full bg-white hover:bg-purple-50 border-2 border-purple-100 rounded-2xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-purple-200 group"
+                  className="cursor-pointer w-full bg-white hover:bg-[#F0F7EC] border-2 border-[#C8E0B8] rounded-2xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-[#8FB376] group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-300">
-                      <IconComponent className="w-6 h-6 text-purple-600" />
+                    <div className="w-12 h-12 bg-[#E3F1D9] rounded-xl flex items-center justify-center group-hover:bg-[#C8E0B8] transition-colors duration-300">
+                      <IconComponent className="w-6 h-6 text-[#548C2F]" />
                     </div>
                     <div className="text-left">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5">
@@ -145,7 +138,7 @@ export default function ParentHomePage() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                  <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-[#548C2F] group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                 </button>
               );
             })}

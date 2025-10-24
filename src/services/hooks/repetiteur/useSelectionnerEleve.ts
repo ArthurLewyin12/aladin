@@ -20,7 +20,7 @@ export const useSelectionnerEleve = () => {
       await queryClient.invalidateQueries({
         queryKey: createQueryKey("eleves"),
       });
-      
+
       // Invalider toutes les queries liées aux contenus de l'élève
       await queryClient.invalidateQueries({
         queryKey: createQueryKey("eleve-cours"),
@@ -52,4 +52,3 @@ export const useSelectionnerEleve = () => {
     },
   });
 };
-

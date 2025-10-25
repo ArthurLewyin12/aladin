@@ -104,7 +104,7 @@ export type NotesClasseFilters = {
  */
 export type MoyenneParMatiere = {
   matiere_id: number;
-  matiere_libelle: string;
+  matiere: Matiere;
   moyenne: string;
   nombre_notes: number;
 };

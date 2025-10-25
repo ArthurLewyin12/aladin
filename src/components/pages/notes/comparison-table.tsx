@@ -68,7 +68,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
               }
               className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
             >
-              Note Aladin
+              Moyenne Aladin
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           );
@@ -119,7 +119,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
               }
               className="hover:bg-gray-100 dark:hover:bg-gray-800 -ml-4"
             >
-              Note Classe
+              Moyenne Classe
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           );

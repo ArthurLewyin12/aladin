@@ -30,7 +30,15 @@ export default function EnfantsPage() {
 
   const handleSelectEnfant = (enfant: Enfant) => {
     if (isSelectingEnfant) return;
-    selectionnerEnfant({ enfant_id: enfant.id });
+    // Sélectionner l'enfant ET rediriger vers son profil
+    selectionnerEnfant(
+      { enfant_id: enfant.id },
+      {
+        onSuccess: () => {
+          router.push(`/parent/enfants/${enfant.id}`);
+        },
+      },
+    );
   };
 
   const handleBack = () => {
@@ -110,7 +118,7 @@ export default function EnfantsPage() {
                 <Button
                   size="lg"
                   onClick={() => setIsAddModalOpen(true)}
-                  className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
                 >
                   <Plus className="w-4 sm:w-5 h-5 mr-2" />
                   Ajouter mon premier enfant
@@ -180,7 +188,7 @@ export default function EnfantsPage() {
             <Button
               size="lg"
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
             >
               <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
               <span className="hidden sm:inline">Ajouter un enfant</span>

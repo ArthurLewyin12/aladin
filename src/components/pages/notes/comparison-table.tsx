@@ -24,8 +24,8 @@ import { Badge } from "@/components/ui/badge";
 
 interface ComparisonData {
   matiere: string;
-  note_aladin: number;
-  note_classe: number;
+  note_aladin: number | null;
+  note_classe: number | null;
 }
 
 interface ComparisonTableProps {
@@ -75,6 +75,16 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
         },
         cell: ({ row }) => {
           const rawValue = row.getValue("note_aladin");
+
+          // Check if value is null or undefined
+          if (rawValue === null || rawValue === undefined) {
+            return (
+              <div className="font-semibold text-gray-400">
+                N/A
+              </div>
+            );
+          }
+
           let note = 0;
           if (typeof rawValue === 'string') {
             const parsedNote = parseFloat(rawValue);
@@ -116,6 +126,16 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
         },
         cell: ({ row }) => {
           const rawValue = row.getValue("note_classe");
+
+          // Check if value is null or undefined
+          if (rawValue === null || rawValue === undefined) {
+            return (
+              <div className="font-semibold text-gray-400">
+                N/A
+              </div>
+            );
+          }
+
           let note = 0;
           if (typeof rawValue === 'string') {
             const parsedNote = parseFloat(rawValue);
@@ -155,10 +175,26 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             </Button>
           );
         },
-        accessorFn: (row) => row.note_aladin - row.note_classe,
+        accessorFn: (row) => (row.note_aladin ?? 0) - (row.note_classe ?? 0),
         cell: ({ row }) => {
-          const noteAladin = row.getValue("note_aladin") as number;
-          const noteClasse = row.getValue("note_classe") as number;
+          const noteAladin = row.getValue("note_aladin") as number | null;
+          const noteClasse = row.getValue("note_classe") as number | null;
+
+          // If either note is missing, show N/A
+          if (noteAladin === null || noteClasse === null) {
+            return (
+              <div className="flex justify-start">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 bg-gray-50 text-gray-400 dark:bg-gray-800"
+                >
+                  <Minus className="h-3 w-3" />
+                  <span>N/A</span>
+                </Badge>
+              </div>
+            );
+          }
+
           const ecart = noteAladin - noteClasse;
           const ecartRounded = Math.round(ecart * 10) / 10;
 

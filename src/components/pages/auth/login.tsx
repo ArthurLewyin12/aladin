@@ -47,12 +47,18 @@ export default function AladinLoginForm() {
         toast({ variant: "success", message: "Connexion réussie !" });
         router.push("/student/home");
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error("Login error", error);
+
+        // Extract error message from API response
+        const errorMessage = error?.response?.data?.message ||
+                            error?.message ||
+                            "Vos identifiants sont incorrects. Veuillez réessayer.";
+
         toast({
           variant: "error",
           title: "Erreur de connexion",
-          message: "Vos identifiants sont incorrects. Veuillez réessayer.",
+          message: errorMessage,
         });
       },
     });

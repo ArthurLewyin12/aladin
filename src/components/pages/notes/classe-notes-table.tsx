@@ -5,6 +5,7 @@ import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
   flexRender,
   createColumnHelper,
   SortingState,
@@ -18,18 +19,33 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ArrowUpDown,
-  Edit,
-  Eye,
-} from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import { NoteClasse } from "@/services/controllers/types/common";
 import { EditNoteModal } from "./edit-note-modal";
 import { NoteDetailsModal } from "./note-details-modal";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ClasseNotesTableProps {
   notes: NoteClasse[];
@@ -41,173 +57,261 @@ interface ClasseNotesTableProps {
   };
 }
 
-const columnHelper = createColumnHelper<NoteClasse>();
+type ClasseNoteBySubject = {
+  matiere: string;
+  notes: NoteClasse[];
+  moyenne: number | null;
+};
+
+const columnHelper = createColumnHelper<ClasseNoteBySubject>();
+
+function DetailsView({ rowData }: { rowData: ClasseNoteBySubject }) {
+  return (
+    <div className="p-4">
+      <h3 className="text-lg font-bold mb-4">{rowData.matiere}</h3>
+      {rowData.notes.length > 0 ? (
+        <ul className="space-y-3">
+          {rowData.notes.map((note, index) => {
+            const noteValue = parseFloat(note.note);
+            return (
+              <li
+                key={index}
+                className="flex justify-between items-center border-b pb-2"
+              >
+                <div>
+                  <p className="font-semibold">
+                    {note.type_evaluation}
+                    {note.chapitres_ids && note.chapitres_ids.length > 0 && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        (Chapitres: {note.chapitres_ids.join(", ")})
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(note.date_evaluation).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <Badge className="text-lg">{noteValue.toFixed(1)}/20</Badge>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p>Aucune note de classe pour cette matière.</p>
+      )}
+    </div>
+  );
+}
 
 export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "date_evaluation", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
   const [editingNote, setEditingNote] = useState<NoteClasse | null>(null);
-  const [viewingNote, setViewingNote] = useState<NoteClasse | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [selectedRow, setSelectedRow] = useState<ClasseNoteBySubject | null>(
+    null,
+  );
 
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const processedData = useMemo(() => {
+    const notesByMatiere = new Map<string, NoteClasse[]>();
+    notes.forEach((note) => {
+      if (note.matiere?.libelle) {
+        const existing = notesByMatiere.get(note.matiere.libelle) || [];
+        existing.push(note);
+        notesByMatiere.set(note.matiere.libelle, existing);
+      }
+    });
+
+    return Array.from(notesByMatiere, ([matiere, notes]) => {
+      let moyenne: number | null = null;
+      if (notes.length > 0) {
+        const total = notes.reduce(
+          (acc, curr) => acc + parseFloat(curr.note),
+          0,
+        );
+        moyenne = total / notes.length;
+      }
+      return {
+        matiere,
+        notes: notes.sort(
+          (a, b) =>
+            new Date(b.date_evaluation).getTime() -
+            new Date(a.date_evaluation).getTime(),
+        ),
+        moyenne,
+      };
+    });
+  }, [notes]);
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor("matiere.libelle", {
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="hover:bg-transparent px-0"
-            >
-              Matière
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
-        cell: (info) => (
-          <span className="font-medium">{info.getValue() || "N/A"}</span>
-        ),
+      columnHelper.accessor("matiere", {
+        header: "Matière",
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
-      columnHelper.accessor("note", {
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="hover:bg-transparent px-0"
-            >
-              Note
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
+      columnHelper.accessor("notes", {
+        header: "Notes",
         cell: (info) => {
-          const note = parseFloat(info.getValue());
-          const colorClass =
-            note >= 15
-              ? "text-green-600 font-bold"
-              : note >= 10
-                ? "text-blue-600 font-semibold"
-                : "text-red-600 font-semibold";
-          return <span className={colorClass}>{note.toFixed(1)}/20</span>;
-        },
-      }),
-      columnHelper.accessor("type_evaluation", {
-        header: "Type",
-        cell: (info) => {
-          const type = info.getValue();
+          const notesArray = info.getValue();
           return (
-            <Badge variant="outline" className="capitalize">
-              {type}
-            </Badge>
-          );
-        },
-      }),
-      columnHelper.accessor("date_evaluation", {
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="hover:bg-transparent px-0"
-            >
-              Date
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
-        cell: (info) => {
-          const date = new Date(info.getValue());
-          return (
-            <span className="text-sm text-muted-foreground">
-              {date.toLocaleDateString("fr-FR")}
-            </span>
-          );
-        },
-      }),
-      columnHelper.accessor("commentaire", {
-        header: "Commentaire",
-        cell: (info) => {
-          const comment = info.getValue();
-          if (!comment) return <span className="text-muted-foreground">-</span>;
-          return (
-            <span className="text-sm text-muted-foreground line-clamp-1">
-              {comment}
-            </span>
-          );
-        },
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-          const note = row.original;
-          return (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewingNote(note)}
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setEditingNote(note)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+            <div className="flex flex-wrap gap-2 max-w-xs">
+              {notesArray.length > 0 ? (
+                <TooltipProvider>
+                  {notesArray.slice(0, 5).map((note, index) => {
+                    const noteValue = parseFloat(note.note);
+                    const colorClass =
+                      noteValue >= 15
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                        : noteValue >= 10
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className={colorClass}>
+                            {noteValue.toFixed(1)}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-semibold">{note.type_evaluation}</p>
+                          {note.chapitres_ids && note.chapitres_ids.length > 0 && (
+                            <p className="text-sm">
+                              Ch: {note.chapitres_ids.join(", ")}
+                            </p>
+                          )}
+                          <p className="text-sm">
+                            {new Date(note.date_evaluation).toLocaleDateString(
+                              "fr-FR",
+                            )}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                  {notesArray.length > 5 && (
+                    <Badge variant="secondary">...</Badge>
+                  )}
+                </TooltipProvider>
+              ) : (
+                <span className="text-muted-foreground">-</span>
+              )}
             </div>
           );
         },
       }),
+      columnHelper.accessor("moyenne", {
+        header: "Moyenne",
+        cell: (info) => {
+          const moyenne = info.getValue();
+          if (moyenne === null) {
+            return <span className="text-muted-foreground">-</span>;
+          }
+          const colorClass =
+            moyenne >= 15
+              ? "text-green-600 font-bold"
+              : moyenne >= 10
+                ? "text-blue-600 font-semibold"
+                : "text-red-600 font-semibold";
+          return <span className={colorClass}>{moyenne.toFixed(2)}/20</span>;
+        },
+      }),
+      columnHelper.display({
+        id: "details",
+        header: "Détails",
+        cell: ({ row }) => {
+          const rowData = row.original;
+          if (isDesktop) {
+            return (
+              <Dialog
+                open={
+                  !!(selectedRow && selectedRow.matiere === rowData.matiere)
+                }
+                onOpenChange={(isOpen) => !isOpen && setSelectedRow(null)}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedRow(rowData)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Détails des notes de classe</DialogTitle>
+                  </DialogHeader>
+                  <DetailsView rowData={rowData} />
+                </DialogContent>
+              </Dialog>
+            );
+          }
+          return (
+            <Drawer
+              open={!!(selectedRow && selectedRow.matiere === rowData.matiere)}
+              onOpenChange={(isOpen) => !isOpen && setSelectedRow(null)}
+            >
+              <DrawerTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedRow(rowData)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Détails des notes de classe</DrawerTitle>
+                </DrawerHeader>
+                <DetailsView rowData={rowData} />
+              </DrawerContent>
+            </Drawer>
+          );
+        },
+      }),
     ],
-    [],
+    [isDesktop, selectedRow],
   );
 
   const table = useReactTable({
-    data: notes,
+    data: processedData,
     columns,
     state: {
       sorting,
+      globalFilter,
     },
     onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    manualPagination: true,
-    pageCount: pagination?.last_page || 1,
+    getFilteredRowModel: getFilteredRowModel(),
   });
 
   return (
     <div className="space-y-4">
-      {/* Filtres toggle */}
-      {/*<div className="flex justify-between items-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <Filter className="h-4 w-4 mr-2" />
-          {showFilters ? "Masquer les filtres" : "Afficher les filtres"}
-        </Button>
-      </div>*/}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Input
+          placeholder="Rechercher une matière..."
+          value={globalFilter ?? ""}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
-      {/* Table */}
-      <div className="rounded-md border bg-card">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="bg-gray-50 dark:bg-gray-800/50"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -226,7 +330,7 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -244,7 +348,7 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Aucune note trouvée.
+                  Aucun résultat trouvé.
                 </TableCell>
               </TableRow>
             )}
@@ -252,89 +356,11 @@ export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
         </Table>
       </div>
 
-      {/* Pagination */}
-      {pagination && pagination.last_page && pagination.last_page > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-            className="rounded-full"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          <div className="flex items-center gap-1">
-            {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map(
-              (pageNum) => {
-                const showPage =
-                  pageNum <= 2 ||
-                  pageNum >= pagination.last_page! - 1 ||
-                  (pageNum >= page - 1 && pageNum <= page + 1);
-
-                const showEllipsisBefore = pageNum === 3 && page > 4;
-                const showEllipsisAfter =
-                  pageNum === pagination.last_page! - 2 &&
-                  page < pagination.last_page! - 3;
-
-                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                  return null;
-                }
-
-                if (showEllipsisBefore || showEllipsisAfter) {
-                  return (
-                    <span key={pageNum} className="px-2 text-gray-400">
-                      ...
-                    </span>
-                  );
-                }
-
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setPage(pageNum)}
-                    className={`rounded-full min-w-[2.5rem] ${
-                      pageNum === page ? "bg-[#2C3E50] hover:bg-[#1a252f]" : ""
-                    }`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              },
-            )}
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setPage(Math.min(pagination.last_page || 1, page + 1))
-            }
-            disabled={page === pagination.last_page}
-            className="rounded-full"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Modals */}
       {editingNote && (
         <EditNoteModal
           note={editingNote}
           isOpen={!!editingNote}
           onOpenChange={(open) => !open && setEditingNote(null)}
-        />
-      )}
-
-      {viewingNote && (
-        <NoteDetailsModal
-          note={viewingNote}
-          isOpen={!!viewingNote}
-          onOpenChange={(open) => !open && setViewingNote(null)}
         />
       )}
     </div>

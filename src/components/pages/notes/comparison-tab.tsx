@@ -77,7 +77,7 @@ export function ComparisonTab() {
 
     const classeByMatiere = new Map(
       classeStatsData.data.moyennes_par_matiere.map((item) => [
-        item.matiere_libelle,
+        item.matiere.libelle,
         parseFloat(item.moyenne as any),
       ]),
     );
@@ -154,7 +154,7 @@ export function ComparisonTab() {
     // Ajouter les moyennes de classe par matière (données statiques)
     const classeMoyennesParMatiere = new Map(
       classeStatsData.data.moyennes_par_matiere?.map((item) => [
-        item.matiere_libelle,
+        item.matiere.libelle,
         item.moyenne,
       ]) || [],
     );

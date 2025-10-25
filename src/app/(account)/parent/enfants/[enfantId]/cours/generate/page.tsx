@@ -136,7 +136,8 @@ export default function ParentGenerateCoursPage() {
           <>
             <div className="text-center mb-8">
               <p className="text-gray-600 text-lg md:text-[1.2rem]">
-                Créez un cours personnalisé pour {enfant.prenom}. Choisissez la matière et le chapitre.
+                Créez un cours personnalisé pour {enfant.prenom}. Choisissez la
+                matière et le chapitre.
               </p>
             </div>
             <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm">
@@ -174,7 +175,8 @@ export default function ParentGenerateCoursPage() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600 font-medium">
-                    Aucune matière n'est disponible pour le niveau de {enfant.prenom}.
+                    Aucune matière n'est disponible pour le niveau de{" "}
+                    {enfant.prenom}.
                   </p>
                 </div>
               )}
@@ -197,7 +199,8 @@ export default function ParentGenerateCoursPage() {
                 {selectedMatiereName}
               </h1>
               <p className="text-gray-600 text-base md:text-lg">
-                Maintenant, choisis le chapitre pour créer le cours de {enfant.prenom}.
+                Maintenant, choisis le chapitre pour créer le cours de{" "}
+                {enfant.prenom}.
               </p>
             </div>
             <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm">

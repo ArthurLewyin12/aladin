@@ -54,7 +54,6 @@ export default function EnfantProfilPage() {
 
   // Ne charger les contenus que si l'enfant est prêt
   const { data: resumeData, isLoading: isLoadingResume } = useEnfantResume(isEnfantReady);
-  const resume = resumeData?.resume;
 
   const handleBack = () => {
     router.push("/parent/enfants");
@@ -199,35 +198,27 @@ export default function EnfantProfilPage() {
           </div>
 
           {/* Statistiques si disponibles */}
-          {resume?.statistiques && (
+          {resumeData?.statistiques && (
             <div className="mt-4 pt-4 border-t border-purple-200">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resume.statistiques.nombre_groupes}
+                    {resumeData.statistiques.groupes}
                   </p>
                   <p className="text-xs text-gray-600">Groupes</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resume.statistiques.nombre_quiz}
+                    {resumeData.statistiques.quiz_total}
                   </p>
                   <p className="text-xs text-gray-600">Quiz</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resume.statistiques.nombre_cours}
+                    {resumeData.statistiques.cours}
                   </p>
                   <p className="text-xs text-gray-600">Cours</p>
                 </div>
-                {resume.statistiques.moyenne_generale !== undefined && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-purple-600">
-                      {resume.statistiques.moyenne_generale.toFixed(1)}
-                    </p>
-                    <p className="text-xs text-gray-600">Moyenne</p>
-                  </div>
-                )}
               </div>
             </div>
           )}

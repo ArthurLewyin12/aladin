@@ -7,12 +7,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Course } from "@/services/controllers/types/common/cours.type";
+import { CoursEnfant, Enfant } from "@/services/controllers/types/common/parent.types";
 import { getOneCourse } from "@/services/controllers/cours.controller";
 import { toast } from "@/lib/toast";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Enfant } from "@/services/controllers/types/common/parent.types";
-import { RepetiteurCourseCard } from "../repetiteur/repetiteur-course-card";
+import { ParentCourseCard } from "./parent-course-card";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -24,7 +23,7 @@ interface ParentCourseListProps {
 export function ParentCourseList({ enfant, isEnfantReady }: ParentCourseListProps) {
   const router = useRouter();
   const { data, isLoading, isError } = useEnfantCours(isEnfantReady);
-  const courses: Course[] = (data?.cours as Course[]) || [];
+  const courses: CoursEnfant[] = data?.cours || [];
   const [loadingCourseId, setLoadingCourseId] = useState<number | null>(null);
 
   // Pagination avec nuqs
@@ -40,7 +39,7 @@ export function ParentCourseList({ enfant, isEnfantReady }: ParentCourseListProp
     };
   }, [courses, page]);
 
-  const handleOpenDetails = async (course: Course) => {
+  const handleOpenDetails = async (course: CoursEnfant) => {
     setLoadingCourseId(course.id);
 
     try {
@@ -188,7 +187,7 @@ export function ParentCourseList({ enfant, isEnfantReady }: ParentCourseListProp
         {/* Grille des cours paginés */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {paginatedCourses.map((course, index) => (
-            <RepetiteurCourseCard
+            <ParentCourseCard
               key={course.id}
               course={course}
               index={(page - 1) * ITEMS_PER_PAGE + index}

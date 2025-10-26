@@ -1,0 +1,98 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { QuizPersonnel, QuizGroupe } from "@/services/controllers/types/common/parent.types";
+
+type QuizEnfant = QuizPersonnel | QuizGroupe;
+
+interface ParentQuizCardProps {
+  quiz: QuizEnfant;
+  index: number;
+  className?: string;
+  onDetailsClick?: () => void;
+}
+
+const CARD_COLORS = [
+  "bg-[#F5E6D3]", // Beige/Pêche
+  "bg-[#D4EBE8]", // Bleu clair
+  "bg-[#E5DFF7]", // Violet clair
+  "bg-[#FFE8D6]", // Orange clair
+];
+
+export const ParentQuizCard = ({
+  quiz,
+  index,
+  className,
+  onDetailsClick,
+}: ParentQuizCardProps) => {
+  const bgColor = CARD_COLORS[index % CARD_COLORS.length];
+  const isGroupQuiz = quiz.type === "groupe";
+
+  return (
+    <div
+      className={cn(
+        "relative rounded-3xl p-10 shadow-sm transition-all hover:shadow-md",
+        bgColor,
+        className,
+      )}
+    >
+      {/* Header avec titre et badge type */}
+      <div className="mb-4 flex items-start justify-between">
+        <h3 className="text-xl font-bold text-gray-900 line-clamp-1 pr-2">
+          {isGroupQuiz ? (quiz as QuizGroupe).titre : quiz.chapitre?.libelle || "Quiz sans titre"}
+        </h3>
+        {isGroupQuiz && (
+          <span className="text-xs font-semibold px-2 py-1 bg-purple-100 text-purple-700 rounded-full flex-shrink-0">
+            Groupe
+          </span>
+        )}
+      </div>
+
+      {/* Informations du quiz */}
+      <div className="mb-6 space-y-1">
+        {!isGroupQuiz && "created_at" in quiz && (
+          <p className="text-sm text-gray-500">
+            Généré le : {new Date(quiz.created_at).toLocaleDateString()}
+          </p>
+        )}
+        <p className="text-base text-gray-500">
+          Niveau : {quiz.chapitre?.niveau?.libelle || "N/A"}
+        </p>
+        <p className="text-sm text-gray-500">Difficulté : {quiz.difficulte}</p>
+        <p className="text-base font-bold text-gray-900">
+          Durée estimée : {isGroupQuiz ? (quiz as QuizGroupe).temps : (quiz as QuizPersonnel).time} min
+        </p>
+        <p className="text-base text-gray-500">
+          Matière : {quiz.chapitre?.matiere?.libelle || "N/A"}
+        </p>
+        {isGroupQuiz && (
+          <>
+            <p className="text-sm text-gray-600">
+              Groupe : {(quiz as QuizGroupe).groupe.nom}
+            </p>
+            <p className="text-sm text-gray-600">
+              Questions : {(quiz as QuizGroupe).nombre_questions}
+            </p>
+            {(quiz as QuizGroupe).is_active && (
+              <p className="text-xs text-green-600">
+                ✓ Quiz actif
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Footer avec bouton "Voir les détails" */}
+      <div className="flex items-center justify-end gap-3">
+        <Button
+          variant="outline"
+          onClick={onDetailsClick}
+          className="bg-white border-2 border-[#548C2F] text-[#548C2F] hover:bg-[#F0F7EC] rounded-xl px-6 h-11 font-medium w-full"
+        >
+          Voir les détails
+        </Button>
+      </div>
+    </div>
+  );
+};

@@ -7,11 +7,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileQuestion, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Quiz } from "@/services/controllers/types/common/quiz.types";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Enfant } from "@/services/controllers/types/common/parent.types";
+import { Enfant, QuizPersonnel, QuizGroupe } from "@/services/controllers/types/common/parent.types";
 import { QuizDetailsModal } from "@/components/pages/user-quizzes/quiz-details-modal";
-import { RepetiteurQuizCard } from "../repetiteur/repetiteur-quiz-card";
+import { ParentQuizCard } from "./parent-quiz-card";
+
+type QuizEnfant = QuizPersonnel | QuizGroupe;
 
 const ITEMS_PER_PAGE = 6;
 
@@ -23,7 +24,13 @@ interface ParentQuizListProps {
 export function ParentQuizList({ enfant, isEnfantReady }: ParentQuizListProps) {
   const router = useRouter();
   const { data, isLoading, isError } = useEnfantQuiz(isEnfantReady);
-  const quizzes: Quiz[] = (data?.quiz as Quiz[]) || [];
+
+  // Combiner les quiz personnels et de groupe
+  const quizzes: QuizEnfant[] = useMemo(() => {
+    if (!data) return [];
+    return [...(data.quiz_personnels || []), ...(data.quiz_groupes || [])];
+  }, [data]);
+
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
 
   // Pagination avec nuqs
@@ -172,7 +179,7 @@ export function ParentQuizList({ enfant, isEnfantReady }: ParentQuizListProps) {
         {/* Grille des quiz paginés */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {paginatedQuizzes.map((quiz, index) => (
-            <RepetiteurQuizCard
+            <ParentQuizCard
               key={quiz.id}
               quiz={quiz}
               index={(page - 1) * ITEMS_PER_PAGE + index}

@@ -1,30 +1,159 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Users, BookOpen, FileText, TrendingUp } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { useEleves } from "@/services/hooks/repetiteur";
+import { useEleves, useRepetiteurStats } from "@/services/hooks/repetiteur";
 import { useSession } from "@/services/hooks/auth/useSession";
-import { useRepetiteurStats } from "@/services/hooks/repetiteur";
+import {
+  RepetiteurDashboardStats,
+  RepetiteurStudentStudyTimeChart,
+  RepetiteurStudentPerformanceChart,
+  RepetiteurStudentPerformanceEvolutionChart,
+  RepetiteurRecentActivities,
+  RepetiteurStudentQuickView,
+} from "@/components/pages/repetiteur/dashboard";
+
+// Mock data for charts and activities (to be replaced with API data)
+const mockData = {
+  studyTimeData: [
+    { name: "Alice", hours: 30, color: "#8b5cf6" },
+    { name: "Bob", hours: 25, color: "#06b6d4" },
+    { name: "Charlie", hours: 35, color: "#f97316" },
+  ],
+  performanceData: [
+    { name: "Alice", average: 14.2, color: "#8b5cf6" },
+    { name: "Bob", average: 12.8, color: "#06b6d4" },
+    { name: "Charlie", average: 15.1, color: "#f97316" },
+  ],
+  evolutionData: [
+    { month: "Juillet", Alice: 13.0, Bob: 12.0, Charlie: 14.0 },
+    { month: "Août", Alice: 13.5, Bob: 12.5, Charlie: 14.5 },
+    { month: "Septembre", Alice: 13.8, Bob: 12.7, Charlie: 14.8 },
+    { month: "Octobre", Alice: 14.0, Bob: 12.8, Charlie: 15.0 },
+    { month: "Novembre", Alice: 14.2, Bob: 12.8, Charlie: 15.1 },
+    { month: "Décembre", Alice: 14.2, Bob: 12.8, Charlie: 15.1 },
+  ],
+  studentsConfig: [
+    { name: "Alice", color: "#8b5cf6" }, // Violet
+    { name: "Bob", color: "#06b6d4" }, // Cyan
+    { name: "Charlie", color: "#f97316" }, // Orange
+  ],
+  recentActivities: [
+    {
+      id: "1",
+      studentName: "Alice",
+      studentColor: "#8b5cf6",
+      type: "quiz" as const,
+      subject: "Mathématiques",
+      title: "Algèbre linéaire",
+      date: new Date().toISOString(),
+      score: 17.0,
+    },
+    {
+      id: "2",
+      studentName: "Bob",
+      studentColor: "#06b6d4",
+      type: "cours" as const,
+      subject: "Physique",
+      title: "Mécanique quantique",
+      date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "3",
+      studentName: "Charlie",
+      studentColor: "#f97316",
+      type: "quiz" as const,
+      subject: "SVT",
+      title: "La génétique",
+      date: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+      score: 14.5,
+    },
+    {
+      id: "4",
+      studentName: "Alice",
+      studentColor: "#8b5cf6",
+      type: "groupe" as const,
+      title: "Préparation Bac S",
+      date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "5",
+      studentName: "Bob",
+      studentColor: "#06b6d4",
+      type: "quiz" as const,
+      subject: "Anglais",
+      title: "Grammar Test",
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      score: 10.0,
+    },
+  ],
+  studentsQuickView: [
+    {
+      id: "1",
+      name: "Alice",
+      niveau: "Terminale S",
+      color: "#8b5cf6",
+      averageNote: 14.2,
+      weeklyStudyHours: 15,
+      totalQuizzes: 35,
+      totalCourses: 20,
+      totalGroups: 4,
+      trend: "up" as const,
+      progressToNextMilestone: 70,
+      nextMilestone: "50 quiz complétés",
+    },
+    {
+      id: "2",
+      name: "Bob",
+      niveau: "Première L",
+      color: "#06b6d4",
+      averageNote: 12.8,
+      weeklyStudyHours: 10,
+      totalQuizzes: 20,
+      totalCourses: 12,
+      totalGroups: 2,
+      trend: "stable" as const,
+      progressToNextMilestone: 50,
+      nextMilestone: "25 heures d'étude",
+    },
+    {
+      id: "3",
+      name: "Charlie",
+      niveau: "Seconde",
+      color: "#f97316",
+      averageNote: 15.1,
+      weeklyStudyHours: 18,
+      totalQuizzes: 40,
+      totalCourses: 25,
+      totalGroups: 3,
+      trend: "up" as const,
+      progressToNextMilestone: 80,
+      nextMilestone: "100 heures d'étude",
+    },
+  ],
+};
 
 export default function RepetiteurDashboardPage() {
   const router = useRouter();
   const { user } = useSession();
   const { data: elevesData, isLoading: isLoadingEleves } = useEleves();
   const { data: statsData, isLoading: isLoadingStats } = useRepetiteurStats(
-    user?.id || 0
+    user?.id || 0,
   );
 
   const eleves = elevesData?.eleves || [];
   const eleveActif = elevesData?.eleve_actif;
   const stats = statsData?.stats;
 
+  // Handle navigation back to home
   const handleBack = () => {
     router.push("/repetiteur/home");
   };
 
+  // Loading state
   if (isLoadingEleves || isLoadingStats) {
     return (
       <div className="min-h-screen relative">
@@ -56,7 +185,6 @@ export default function RepetiteurDashboardPage() {
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-2xl sm:text-3xl">📊</span>
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#548C2F] leading-tight">
@@ -73,73 +201,22 @@ export default function RepetiteurDashboardPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-[#F0F7EC] to-white border-[#C8E0B8]">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Élèves
-              </CardTitle>
-              <Users className="h-5 w-5 text-[#548C2F]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[#548C2F]">
-                {stats?.nombre_eleves || eleves.length}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {stats?.nombre_eleves_actifs || 0} actifs
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Quiz créés
-              </CardTitle>
-              <BookOpen className="h-5 w-5 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-600">
-                {stats?.total_quiz_crees || 0}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Total généré</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-white border-purple-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Cours créés
-              </CardTitle>
-              <FileText className="h-5 w-5 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-600">
-                {stats?.total_cours_crees || 0}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Total généré</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-amber-50 to-white border-amber-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Progression
-              </CardTitle>
-              <TrendingUp className="h-5 w-5 text-amber-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-amber-600">+12%</div>
-              <p className="text-xs text-gray-500 mt-1">Ce mois</p>
-            </CardContent>
-          </Card>
+        <div className="mb-8">
+          <RepetiteurDashboardStats
+            totalStudents={stats?.nombre_eleves || eleves.length}
+            activeStudents={stats?.nombre_eleves_actifs || 0}
+            totalQuizzesCreated={stats?.total_quiz_crees || 0}
+            totalCoursesCreated={stats?.total_cours_crees || 0}
+          />
         </div>
 
-        {/* Élève actif */}
+        {/* Active Student Card */}
         {eleveActif ? (
           <Card className="mb-8 bg-[#F0F7EC] border-[#C8E0B8]">
             <CardHeader>
-              <CardTitle className="text-[#548C2F]">Élève actuellement suivi</CardTitle>
+              <CardTitle className="text-[#548C2F]">
+                Élève actuellement suivi
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -183,9 +260,9 @@ export default function RepetiteurDashboardPage() {
           </Card>
         )}
 
-        {/* Liste des élèves */}
+        {/* Students List */}
         {eleves.length > 0 && (
-          <Card>
+          <Card className="mb-8">
             <CardHeader>
               <CardTitle>Mes élèves</CardTitle>
             </CardHeader>
@@ -227,8 +304,29 @@ export default function RepetiteurDashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Comparison Charts */}
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 mb-6">
+          <RepetiteurStudentStudyTimeChart data={mockData.studyTimeData} />
+          <RepetiteurStudentPerformanceChart data={mockData.performanceData} />
+        </div>
+
+        {/* Evolution Chart */}
+        <div className="mb-6">
+          <RepetiteurStudentPerformanceEvolutionChart
+            data={mockData.evolutionData}
+            studentsConfig={mockData.studentsConfig}
+          />
+        </div>
+
+        {/* Recent Activities */}
+        <div className="mb-6">
+          <RepetiteurRecentActivities activities={mockData.recentActivities} />
+        </div>
+
+        {/* Students Quick View */}
+        <RepetiteurStudentQuickView students={mockData.studentsQuickView} />
       </div>
     </div>
   );
 }
-

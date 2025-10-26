@@ -1,13 +1,13 @@
 "use client";
 
-import { Users, Clock, Trophy, Activity, Group } from "lucide-react";
+import { Users, BookOpen, FileText, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface DashboardStatsProps {
-  totalChildren: number;
-  totalGroups: number;
-  averageNote: number;
-  totalActivities: number;
+interface RepetiteurDashboardStatsProps {
+  totalStudents: number;
+  activeStudents: number;
+  totalQuizzesCreated: number;
+  totalCoursesCreated: number;
 }
 
 const CARD_COLORS = [
@@ -17,36 +17,36 @@ const CARD_COLORS = [
   "bg-[#FFE8D6]", // Orange clair
 ];
 
-export function ParentDashboardStats({
-  totalChildren,
-  totalGroups,
-  averageNote,
-  totalActivities,
-}: DashboardStatsProps) {
+export function RepetiteurDashboardStats({
+  totalStudents,
+  activeStudents,
+  totalQuizzesCreated,
+  totalCoursesCreated,
+}: RepetiteurDashboardStatsProps) {
   const stats = [
     {
-      title: "Enfants suivis",
-      value: totalChildren,
-      subtitle: totalChildren > 1 ? "enfants" : "enfant",
+      title: "Élèves suivis",
+      value: totalStudents,
+      subtitle: totalStudents > 1 ? "élèves" : "élève",
       icon: Users,
     },
     {
-      title: "Nombre de groupes",
-      value: totalGroups,
-      subtitle: "groupes",
-      icon: Group,
+      title: "Élèves actifs",
+      value: activeStudents,
+      subtitle: activeStudents > 1 ? "actifs" : "actif",
+      icon: Users,
     },
     {
-      title: "Moyenne générale",
-      value: averageNote.toFixed(1),
-      subtitle: "/20",
-      icon: Trophy,
+      title: "Quiz créés",
+      value: totalQuizzesCreated,
+      subtitle: "quiz",
+      icon: BookOpen,
     },
     {
-      title: "Total activités",
-      value: totalActivities,
-      subtitle: "activités",
-      icon: Activity,
+      title: "Cours créés",
+      value: totalCoursesCreated,
+      subtitle: "cours",
+      icon: FileText,
     },
   ];
 
@@ -63,9 +63,7 @@ export function ParentDashboardStats({
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <p className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </p>
+                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
                 <div className="w-10 h-10 bg-white/60 rounded-xl flex items-center justify-center">
                   <Icon className="h-5 w-5 text-gray-700" />
                 </div>

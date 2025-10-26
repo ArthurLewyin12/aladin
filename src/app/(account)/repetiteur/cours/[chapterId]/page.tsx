@@ -101,7 +101,8 @@ export default function RepetiteurCoursePage() {
 
   const handleBack = () => {
     if (eleveActif) {
-      router.push(`/repetiteur/students/${eleveActif.id}`);
+      // Retourner vers l'onglet Cours de l'élève
+      router.push(`/repetiteur/students/${eleveActif.id}?tab=cours`);
     } else {
       router.push("/repetiteur/students");
     }

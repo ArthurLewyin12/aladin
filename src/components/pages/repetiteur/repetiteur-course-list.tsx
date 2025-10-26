@@ -91,20 +91,7 @@ export function RepetiteurCourseList({ eleve, isEleveReady }: RepetiteurCourseLi
   if (isError || courses.length === 0) {
     return (
       <div className="px-4 sm:px-0">
-        {/* Info élève */}
-        <div className="bg-[#F0F7EC] border border-[#C8E0B8] rounded-xl p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#E3F1D9] rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-[#548C2F]" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Générer des cours pour</p>
-              <h3 className="text-lg font-semibold text-[#548C2F]">
-                {eleve.prenom} {eleve.nom}
-              </h3>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Illustration centrale */}
         <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">

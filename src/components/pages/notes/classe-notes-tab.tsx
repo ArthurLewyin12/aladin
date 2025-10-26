@@ -12,7 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 
-export function ClasseNotesTab() {
+interface ClasseNotesTabProps {
+  readOnly?: boolean;
+}
+
+export function ClasseNotesTab({ readOnly = false }: ClasseNotesTabProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Filtres avec nuqs
@@ -81,7 +85,11 @@ export function ClasseNotesTab() {
           <div className="relative w-full max-w-2xl">
             <EmptyState
               title="Aucune note de classe"
-              description="Commence à enregistrer tes notes de classe pour suivre ta progression !"
+              description={
+                readOnly
+                  ? "Cet élève n'a pas encore de notes de classe enregistrées."
+                  : "Commence à enregistrer tes notes de classe pour suivre ta progression !"
+              }
               icons={[
                 <FileText key="1" size={20} />,
                 <Plus key="2" size={20} />,
@@ -94,26 +102,30 @@ export function ClasseNotesTab() {
             />
           </div>
 
-          <div className="text-center px-4">
-            <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
-              Clique ci-dessous pour ajouter ta première note !
-            </p>
+          {!readOnly && (
+            <div className="text-center px-4">
+              <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
+                Clique ci-dessous pour ajouter ta première note !
+              </p>
 
-            <Button
-              size="lg"
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
-            >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Ajouter une note
-            </Button>
-          </div>
+              <Button
+                size="lg"
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Ajouter une note
+              </Button>
+            </div>
+          )}
         </div>
 
-        <AddNoteModal
-          isOpen={isAddModalOpen}
-          onOpenChange={setIsAddModalOpen}
-        />
+        {!readOnly && (
+          <AddNoteModal
+            isOpen={isAddModalOpen}
+            onOpenChange={setIsAddModalOpen}
+          />
+        )}
       </div>
     );
   }
@@ -164,7 +176,7 @@ export function ClasseNotesTab() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
         <div className="flex-1 min-w-0">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-            Notes de Classe
+            {readOnly ? "Notes de Classe de l'élève" : "Notes de Classe"}
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
             {totalNotes} note
@@ -172,21 +184,25 @@ export function ClasseNotesTab() {
             {totalNotes > 1 ? "s" : ""}
           </p>
         </div>
-        <Button
-          size="lg"
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
-        >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Ajouter une note</span>
-          <span className="sm:hidden">Ajouter</span>
-        </Button>
+        {!readOnly && (
+          <Button
+            size="lg"
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+            <span className="hidden sm:inline">Ajouter une note</span>
+            <span className="sm:hidden">Ajouter</span>
+          </Button>
+        )}
       </div>
 
       {/* Table des notes */}
-      <ClasseNotesTable notes={notes} pagination={pagination} />
+      <ClasseNotesTable notes={notes} pagination={pagination} readOnly={readOnly} />
 
-      <AddNoteModal isOpen={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+      {!readOnly && (
+        <AddNoteModal isOpen={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+      )}
     </div>
   );
 }

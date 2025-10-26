@@ -5,11 +5,9 @@ import Image from "next/image";
 import {
   ChevronRight,
   BarChart3,
-  BookOpen,
   Users,
   Share2,
   UsersRound,
-  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -77,13 +75,6 @@ export default function RepetiteurHomePage() {
       description: "Ajoutez et suivez vos élèves",
       icon: Users,
       handler: () => router.push("/repetiteur/students"),
-    },
-    {
-      id: "notes",
-      title: "Je consulte les notes",
-      description: "Suivez les notes de vos élèves",
-      icon: FileText,
-      handler: () => router.push("/repetiteur/notes"),
     },
     {
       id: "groups",

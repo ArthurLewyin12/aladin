@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useEnfants } from "@/services/hooks/parent";
+import { useEleves } from "@/services/hooks/repetiteur";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { toast } from "@/lib/toast";
 
@@ -27,9 +28,9 @@ const CARD_COLORS = [
 
 interface GroupListProps {
   onCreateGroup: () => void;
-  basePath?: string; // Chemin de base pour la redirection (ex: "/student/groups" ou "/parent/groups")
+  basePath?: string; // Chemin de base pour la redirection (ex: "/student/groups", "/parent/groups", ou "/repetiteur/groups")
   showCreateButton?: boolean; // Afficher ou masquer le bouton de création
-  variant?: "student" | "parent"; // Variant pour savoir si c'est un parent ou un étudiant
+  variant?: "student" | "parent" | "repetiteur"; // Variant pour savoir si c'est un parent, un étudiant ou un répétiteur
 }
 
 export const GroupList = ({
@@ -41,7 +42,10 @@ export const GroupList = ({
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
   const { user: currentUser } = useSession();
+  
+  // Appeler conditionnellement les hooks en fonction du variant
   const { data: enfantsData } = useEnfants(); // Pour les parents
+  const { data: elevesData } = useEleves(); // Pour les répétiteurs
 
   console.log("Groupes Data:", JSON.stringify(groupes, null, 2));
   console.log("Current User:", JSON.stringify(currentUser, null, 2));
@@ -232,12 +236,16 @@ export const GroupList = ({
         <div className=" flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-              {variant === "parent" ? "Groupes de vos enfants" : "Mes Groupes"}
+              {variant === "parent" 
+                ? "Groupes de vos enfants" 
+                : variant === "repetiteur"
+                  ? "Groupes de vos élèves"
+                  : "Mes Groupes"}
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
               {enrichedGroupes.length} groupe
               {enrichedGroupes.length > 1 ? "s" : ""}{" "}
-              {variant === "parent"
+              {variant === "parent" || variant === "repetiteur"
                 ? enrichedGroupes.length > 1
                   ? "rejoints"
                   : "rejoint"
@@ -262,9 +270,10 @@ export const GroupList = ({
         {/* Grille des groupes paginés */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {paginatedGroupes.map((groupe) => {
-            if (variant === "parent") {
-              // Calculer les enfants disponibles (pas encore dans ce groupe)
-              const availableEnfants = (enfantsData?.enfants || []).filter(
+            if (variant === "parent" || variant === "repetiteur") {
+              // Calculer les enfants/élèves disponibles (pas encore dans ce groupe)
+              const sourceData = variant === "parent" ? enfantsData?.enfants : elevesData?.eleves;
+              const availableEnfants = (sourceData || []).filter(
                 (enfant) =>
                   !groupe.utilisateurs.some((u) => u.id === enfant.id),
               );
@@ -294,6 +303,7 @@ export const GroupList = ({
                   availableEnfants={availableEnfants}
                   onAddEnfant={handleAddEnfant}
                   onOpen={() => handleOpen(groupe.id)}
+                  variant={variant === "repetiteur" ? "repetiteur" : "parent"}
                 />
               );
             }

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Enfant } from "@/services/controllers/types/common/parent.types";
+import { Eleve } from "@/services/controllers/types/common/repetiteur.types";
 
 interface Avatar {
   imageUrl: string;
@@ -29,10 +30,11 @@ interface ParentGroupCardProps {
   isChief: boolean;
   index: number;
   bgColor: string;
-  availableEnfants: Enfant[]; // Enfants du parent qui ne sont pas déjà dans le groupe
+  availableEnfants: (Enfant | Eleve)[]; // Enfants du parent ou élèves du répétiteur qui ne sont pas déjà dans le groupe
   onAddEnfant?: (enfantId: number, groupId: number) => void;
   onOpen?: () => void;
   className?: string;
+  variant?: "parent" | "repetiteur"; // Pour adapter le texte
 }
 
 export const ParentGroupCard = ({
@@ -48,9 +50,13 @@ export const ParentGroupCard = ({
   onAddEnfant,
   onOpen,
   className,
+  variant = "parent",
 }: ParentGroupCardProps) => {
   const [showEnfantSelect, setShowEnfantSelect] = useState(false);
   const [selectedEnfantId, setSelectedEnfantId] = useState<string>("");
+  
+  const addButtonText = variant === "parent" ? "Ajouter un enfant" : "Ajouter un élève";
+  const selectPlaceholder = variant === "parent" ? "Sélectionner un enfant" : "Sélectionner un élève";
 
   const handleAddEnfant = () => {
     if (selectedEnfantId && onAddEnfant) {
@@ -100,16 +106,21 @@ export const ParentGroupCard = ({
             {!showEnfantSelect ? (
               <button
                 onClick={() => setShowEnfantSelect(true)}
-                className="w-full bg-white px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-50 rounded-lg border border-purple-200 flex items-center justify-center gap-2 transition-colors"
+                className={cn(
+                  "w-full bg-white px-4 py-2 text-sm font-medium rounded-lg border flex items-center justify-center gap-2 transition-colors",
+                  variant === "parent" 
+                    ? "text-purple-700 hover:bg-purple-50 border-purple-200" 
+                    : "text-[#548C2F] hover:bg-green-50 border-green-200"
+                )}
               >
                 <PlusIcon className="w-4 h-4" />
-                <span>Ajouter un enfant</span>
+                <span>{addButtonText}</span>
               </button>
             ) : (
               <div className="space-y-2">
                 <Select value={selectedEnfantId} onValueChange={setSelectedEnfantId}>
                   <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Sélectionner un enfant" />
+                    <SelectValue placeholder={selectPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableEnfants.map((enfant) => (
@@ -135,7 +146,12 @@ export const ParentGroupCard = ({
                     size="sm"
                     onClick={handleAddEnfant}
                     disabled={!selectedEnfantId}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                    className={cn(
+                      "flex-1",
+                      variant === "parent" 
+                        ? "bg-purple-600 hover:bg-purple-700" 
+                        : "bg-[#548C2F] hover:bg-[#4a7829]"
+                    )}
                   >
                     Ajouter
                   </Button>

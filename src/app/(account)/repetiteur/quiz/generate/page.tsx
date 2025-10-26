@@ -230,8 +230,15 @@ export default function RepetiteurGenerateQuizPage() {
         JSON.stringify(transformedCorrections),
       );
 
-      // Rediriger vers les résultats du student (car la page de résultats est commune)
-      router.push(`/student/quiz/results/${result.userQuiz.id}`);
+      // Rediriger vers l'onglet Quiz de l'élève après avoir vu les résultats
+      // Attendre un peu pour que l'utilisateur voie le toast de succès
+      setTimeout(() => {
+        if (eleveUtilise) {
+          router.push(`/repetiteur/students/${eleveUtilise.id}?tab=quiz`);
+        } else {
+          router.push("/repetiteur/students");
+        }
+      }, 2000);
     } catch (error) {
       console.error("Erreur lors de la soumission du quiz", error);
       toast({

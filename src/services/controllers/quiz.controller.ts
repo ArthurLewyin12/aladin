@@ -27,31 +27,28 @@ export const getQuizHistory = async (): Promise<QuizHistory> => {
 
 /**
  * Génère un nouveau quiz basé sur les paramètres fournis.
- * Supporte deux modes:
- * - Sans document: envoi JSON classique
- * - Avec document: envoi multipart/form-data
+ * L'API attend toujours du FormData (multipart/form-data), que le document soit présent ou non.
  * @param {QuizGeneratePayload} payload - Les options de génération du quiz (chapter_id, difficulty, document_file optionnel).
  * @returns {Promise<QuizGenerateResponse>} La réponse de l'API contenant les informations du quiz généré.
  */
 export const generateQuiz = async (
   payload: QuizGeneratePayload,
 ): Promise<QuizGenerateResponse> => {
-  let response: any;
+  // L'API attend toujours du FormData (avec ou sans fichier)
+  const formDataPayload: Record<string, any> = {
+    chapter_id: payload.chapter_id,
+    difficulty: payload.difficulty,
+  };
 
-  // Si un fichier est présent, utiliser FormData
+  // Ajouter le fichier s'il est présent
   if (payload.document_file) {
-    response = await request.postFormData<any>(QuizEndpoints.QUIZ_GENERATE, {
-      chapter_id: payload.chapter_id,
-      difficulty: payload.difficulty,
-      document_file: payload.document_file,
-    });
-  } else {
-    // Sinon, envoi JSON classique
-    response = await request.post<any>(QuizEndpoints.QUIZ_GENERATE, {
-      chapter_id: payload.chapter_id,
-      difficulty: payload.difficulty,
-    });
+    formDataPayload.document_file = payload.document_file;
   }
+
+  const response = await request.postFormData<any>(
+    QuizEndpoints.QUIZ_GENERATE,
+    formDataPayload,
+  );
 
   // Manually transform the data to fit the frontend types
   const transformedQuestions = response.questions.map(

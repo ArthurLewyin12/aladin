@@ -41,9 +41,9 @@ export default function QuizPage() {
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-2xl sm:text-3xl">📚</span>
+            {/*<span className="text-2xl sm:text-3xl">📚</span>*/}
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
-              Tes quiz !
+              Mes quiz !
             </h1>
           </div>
         </div>

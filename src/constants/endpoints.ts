@@ -157,6 +157,11 @@ export enum ParentEndpoints {
   AJOUTER_ENFANT_UTILISATEUR = "/api/parent/enfants/ajouter",
   RETIRER_ENFANT = "/api/parent/enfants/retirer",
   ASSOCIER_AUTOMATIQUEMENT = "/api/parent/enfants/associer-automatiquement",
+  // Récupération de contenu pour l'enfant actif
+  GET_ENFANT_GROUPES = "/api/parent/enfant/groupes",
+  GET_ENFANT_QUIZ = "/api/parent/enfant/quiz",
+  GET_ENFANT_COURS = "/api/parent/enfant/cours",
+  GET_ENFANT_RESUME = "/api/parent/enfant/resume",
 }
 
 /**

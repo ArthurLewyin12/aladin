@@ -25,8 +25,8 @@ import {
 
 interface ComparisonData {
   matiere: string;
-  note_aladin: number;
-  note_classe: number;
+  note_aladin: number | null;
+  note_classe: number | null;
 }
 
 interface NotesComparisonBarChartProps {

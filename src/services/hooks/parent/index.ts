@@ -5,3 +5,7 @@ export { useSelectionnerEnfant } from "./useSelectionnerEnfant";
 export { useAjouterEnfantUtilisateur } from "./useAjouterEnfantUtilisateur";
 export { useRetirerEnfant } from "./useRetirerEnfant";
 export { useAssocierAutomatiquement } from "./useAssocierAutomatiquement";
+export { useEnfantGroupes } from "./useEnfantGroupes";
+export { useEnfantQuiz } from "./useEnfantQuiz";
+export { useEnfantCours } from "./useEnfantCours";
+export { useEnfantResume } from "./useEnfantResume";

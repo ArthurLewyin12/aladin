@@ -53,7 +53,8 @@ export default function DashboardPage() {
     const notes = dashboardData.notes_evolution || [];
     const averageNote =
       notes.length > 0
-        ? notes.reduce((acc, n) => acc + n.note, 0) / notes.length
+        ? notes.reduce((acc, n) => acc + parseFloat(String(n.note)), 0) /
+          notes.length
         : 0;
 
     const studySeconds = dashboardData.study_time.series.reduce(
@@ -65,7 +66,9 @@ export default function DashboardPage() {
     // Calcul du taux de réussite (notes > 10)
     const successRate =
       notes.length > 0
-        ? (notes.filter((n) => n.note >= 10).length / notes.length) * 100
+        ? (notes.filter((n) => parseFloat(String(n.note)) >= 10).length /
+            notes.length) *
+          100
         : 0;
 
     // Progression vers les limites
@@ -98,7 +101,9 @@ export default function DashboardPage() {
     const dateToLabelMap: Record<string, string> = {};
 
     // Extraire toutes les dates uniques des series
-    const uniqueDates = Array.from(new Set(series.map((item) => item.bucket))).sort();
+    const uniqueDates = Array.from(
+      new Set(series.map((item) => item.bucket)),
+    ).sort();
 
     // Mapper chaque date à son label correspondant (ordre chronologique)
     uniqueDates.forEach((date, index) => {
@@ -203,18 +208,18 @@ export default function DashboardPage() {
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          {/*<div className="flex items-center gap-2 sm:gap-3 flex-1">
-            <span className="text-2xl sm:text-3xl">📊</span>
+          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+            {/*<span className="text-2xl sm:text-3xl">📊</span>*/}
             <div className="flex-1">
               <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
                 Mon tableau de bord
               </h1>
-              <p className="text-xs sm:text-[1.5rem] text-gray-600 mt-1">
+              {/*<p className="text-xs sm:text-[1.5rem] text-gray-600 mt-1">
                 Bienvenue {user?.prenom}, voici tes statistiques{" "}
                 {dashboardData.user.niveau.libelle}
-              </p>
+              </p>*/}
             </div>
-          </div>*/}
+          </div>
         </div>
 
         {/* Quick Stats avec animations */}
@@ -304,7 +309,7 @@ export default function DashboardPage() {
 
         {/* Stats Cards traditionnelles */}
         <div className="mx-auto bg-white backdrop:blur-2xl p-10 mb-4 rounded-lg shadow-sm">
-          <h1 className="text-[2rem] mb-2 font-bold">Dashboard</h1>
+          {/*<h1 className="text-[2rem] mb-2 font-bold">Dashboard</h1>*/}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               title="Total des cours"
@@ -368,10 +373,10 @@ export default function DashboardPage() {
             <div className="p-2 rounded-lg bg-purple-100">
               <TrendingUp className="h-5 w-5 text-purple-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Dernières notes</h2>
+            <h2 className="text-xl font-bold text-gray-900">Derniers Quiz</h2>
           </div>
 
-          {dashboardData.all_notes.length > 0 ? (
+          {(dashboardData.notes_quiz?.length || 0) > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -386,7 +391,7 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dashboardData.all_notes
+                  {dashboardData.notes_quiz
                     .filter(
                       (note) =>
                         note.matiere !== null &&
@@ -395,44 +400,53 @@ export default function DashboardPage() {
                         note.matiere.trim() !== "",
                     )
                     .slice(0, 10)
-                    .map((note, index) => (
-                      <TableRow
-                        key={index}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <TableCell className="font-medium">
-                          {note.matiere}
-                        </TableCell>
-                        <TableCell className="max-w-[200px] truncate">
-                          {note.chapitre || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={`${getDifficultyColor(note.niveau || "")} border-0`}
-                          >
-                            {note.niveau || "N/A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
-                          {new Date(note.date).toLocaleDateString("fr-FR", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <div
-                              className={`w-2 h-2 rounded-full ${getNoteBadgeColor(convertScoreToNote(note.note, note.nombre_questions))}`}
-                            />
-                            <span className="font-bold text-lg">
-                              {convertScoreToNote(note.note, note.nombre_questions)}
-                              <span className="text-sm text-gray-500">/20</span>
-                            </span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    .map((note, index) => {
+                      const noteValue = convertScoreToNote(
+                        note.note,
+                        note.nombre_questions,
+                      );
+
+                      return (
+                        <TableRow
+                          key={index}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <TableCell className="font-medium">
+                            {note.matiere}
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">
+                            {note.chapitre || "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={`${getDifficultyColor(note.niveau || "")} border-0`}
+                            >
+                              {note.niveau || "N/A"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm">
+                            {new Date(note.date).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div
+                                className={`w-2 h-2 rounded-full ${getNoteBadgeColor(noteValue)}`}
+                              />
+                              <span className="font-bold text-lg">
+                                {noteValue.toFixed(2)}
+                                <span className="text-sm text-gray-500">
+                                  /20
+                                </span>
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
               </Table>
             </div>
@@ -440,7 +454,7 @@ export default function DashboardPage() {
             <div className="text-center py-12">
               <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-lg">
-                Aucune note disponible pour le moment
+                Aucune note de quiz disponible pour le moment
               </p>
               <p className="text-gray-400 text-sm mt-2">
                 Commence à faire des quiz pour voir tes résultats ici

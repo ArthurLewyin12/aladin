@@ -145,3 +145,122 @@ export type AssocierAutomatiquementResponse = {
   message: string;
   enfants_associes: number; // Nombre d'enfants associés automatiquement
 };
+
+/**
+ * Groupe créé par le parent pour un enfant
+ */
+export type GroupeEnfant = {
+  id: number;
+  nom: string;
+  description: string;
+  niveau: Niveau;
+  nombre_membres: number;
+  group_type: string;
+  is_active: boolean;
+  created_at: string;
+};
+
+/**
+ * Quiz personnel créé pour l'enfant
+ */
+export type QuizPersonnel = {
+  id: number;
+  type: "personnel";
+  chapitre: {
+    id: number;
+    libelle: string;
+    matiere: { id: number; libelle: string };
+    niveau: Niveau;
+  };
+  difficulte: string;
+  time: number;
+  created_at: string;
+};
+
+/**
+ * Quiz de groupe créé pour l'enfant
+ */
+export type QuizGroupe = {
+  id: number;
+  type: "groupe";
+  titre: string;
+  nombre_questions: number;
+  temps: number;
+  difficulte: string;
+  chapitre: {
+    id: number;
+    libelle: string;
+    matiere: { id: number; libelle: string };
+    niveau: Niveau;
+  };
+  groupe: { id: number; nom: string };
+  is_active: boolean;
+};
+
+/**
+ * Cours créé pour l'enfant
+ */
+export type CoursEnfant = {
+  id: number;
+  chapitre: {
+    id: number;
+    libelle: string;
+    matiere: { id: number; libelle: string };
+    niveau: Niveau;
+  };
+  time: number;
+  has_content: boolean;
+  has_questions: boolean;
+  created_at: string;
+};
+
+/**
+ * Réponse GET /api/parent/enfant/groupes
+ */
+export type GetEnfantGroupesResponse = {
+  success: boolean;
+  enfant: Enfant;
+  groupes: GroupeEnfant[];
+  count: number;
+};
+
+/**
+ * Réponse GET /api/parent/enfant/quiz
+ */
+export type GetEnfantQuizResponse = {
+  success: boolean;
+  enfant: Enfant;
+  quiz_personnels: QuizPersonnel[];
+  quiz_groupes: QuizGroupe[];
+  count: {
+    personnels: number;
+    groupes: number;
+    total: number;
+  };
+};
+
+/**
+ * Réponse GET /api/parent/enfant/cours
+ */
+export type GetEnfantCoursResponse = {
+  success: boolean;
+  enfant: Enfant;
+  cours: CoursEnfant[];
+  count: number;
+};
+
+/**
+ * Réponse GET /api/parent/enfant/resume
+ */
+export type GetEnfantResumeResponse = {
+  success: boolean;
+  enfant: Enfant;
+  statistiques: {
+    groupes: number;
+    quiz_personnels: number;
+    quiz_groupes: number;
+    quiz_total: number;
+    cours: number;
+    total_contenus: number;
+  };
+};

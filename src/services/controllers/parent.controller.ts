@@ -95,3 +95,47 @@ export const associerAutomatiquement =
       ParentEndpoints.ASSOCIER_AUTOMATIQUEMENT,
     );
   };
+
+/**
+ * Récupère les groupes créés pour l'enfant actif.
+ * @returns {Promise<GetEnfantGroupesResponse>} Les groupes de l'enfant.
+ */
+export const getEnfantGroupes =
+  async (): Promise<import("./types/common/parent.types").GetEnfantGroupesResponse> => {
+    return request.get<
+      import("./types/common/parent.types").GetEnfantGroupesResponse
+    >(ParentEndpoints.GET_ENFANT_GROUPES);
+  };
+
+/**
+ * Récupère les quiz créés pour l'enfant actif.
+ * @returns {Promise<GetEnfantQuizResponse>} Les quiz de l'enfant.
+ */
+export const getEnfantQuiz =
+  async (): Promise<import("./types/common/parent.types").GetEnfantQuizResponse> => {
+    return request.get<
+      import("./types/common/parent.types").GetEnfantQuizResponse
+    >(ParentEndpoints.GET_ENFANT_QUIZ);
+  };
+
+/**
+ * Récupère les cours créés pour l'enfant actif.
+ * @returns {Promise<GetEnfantCoursResponse>} Les cours de l'enfant.
+ */
+export const getEnfantCours =
+  async (): Promise<import("./types/common/parent.types").GetEnfantCoursResponse> => {
+    return request.get<
+      import("./types/common/parent.types").GetEnfantCoursResponse
+    >(ParentEndpoints.GET_ENFANT_COURS);
+  };
+
+/**
+ * Récupère le résumé/statistiques de l'enfant actif.
+ * @returns {Promise<GetEnfantResumeResponse>} Le résumé de l'enfant.
+ */
+export const getEnfantResume =
+  async (): Promise<import("./types/common/parent.types").GetEnfantResumeResponse> => {
+    return request.get<
+      import("./types/common/parent.types").GetEnfantResumeResponse
+    >(ParentEndpoints.GET_ENFANT_RESUME);
+  };

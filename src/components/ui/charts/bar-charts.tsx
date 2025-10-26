@@ -1,7 +1,7 @@
 "use client";
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
-import { ClientTooltip, TooltipTrigger, TooltipContent } from "../tooltip";
+import { ClientTooltip, TooltipTrigger, TooltipContent } from "../../tooltip";
 import { motion } from "motion/react";
 
 // Types génériques pour les données

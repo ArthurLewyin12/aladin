@@ -186,7 +186,7 @@ export default function GroupsPage() {
             </Button>
 
             <div className="flex items-center gap-3">
-              <span className="text-3xl">🤝</span>
+              {/*<span className="text-3xl">🤝</span>*/}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-500">
                 Réviser à plusieurs, c'est mieux !
               </h1>

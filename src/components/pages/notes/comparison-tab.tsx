@@ -13,6 +13,10 @@ import { ComparisonTable } from "./comparison-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { convertScoreToNote } from "@/lib/quiz-score";
+import {
+  NoteQuiz,
+  NoteClasse,
+} from "@/services/controllers/types/common/stats.type";
 
 export function ComparisonTab() {
   const { user } = useSession();
@@ -36,11 +40,31 @@ export function ComparisonTab() {
     const aladinByMatiere = new Map<string, number[]>();
 
     aladinData.all_notes.forEach((note) => {
+      if (note.matiere === null) {
+        // Filter out notes with null matiere
+        return;
+      }
+
+      let noteSur20: number;
+      if (note.type_note === "quiz") {
+        // Ensure it's a NoteQuiz and handle nombre_questions
+        const quizNote = note as NoteQuiz;
+        if (quizNote.nombre_questions === 0) {
+          return; // Avoid division by zero
+        }
+        noteSur20 = convertScoreToNote(
+          quizNote.note,
+          quizNote.nombre_questions,
+        );
+      } else {
+        // It's a NoteClasse, note is already a string on 20
+        const classNote = note as NoteClasse;
+        noteSur20 = parseFloat(classNote.note);
+      }
+
       if (!aladinByMatiere.has(note.matiere)) {
         aladinByMatiere.set(note.matiere, []);
       }
-      // Convertir le score en note sur 20
-      const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
       aladinByMatiere.get(note.matiere)!.push(noteSur20);
     });
 
@@ -53,8 +77,8 @@ export function ComparisonTab() {
 
     const classeByMatiere = new Map(
       classeStatsData.data.moyennes_par_matiere.map((item) => [
-        item.matiere_libelle,
-        item.moyenne,
+        item.matiere.libelle,
+        parseFloat(item.moyenne as any),
       ]),
     );
 
@@ -66,8 +90,8 @@ export function ComparisonTab() {
 
     return Array.from(allMatieres).map((matiere) => ({
       matiere,
-      note_aladin: aladinMoyennes.get(matiere) || 0,
-      note_classe: classeByMatiere.get(matiere) || 0,
+      note_aladin: aladinMoyennes.get(matiere) ?? null, // Changed || 0 to ?? null
+      note_classe: classeByMatiere.get(matiere) ?? null, // Changed || 0 to ?? null
     }));
   }, [aladinData, classeStatsData]);
 
@@ -81,31 +105,41 @@ export function ComparisonTab() {
       return [];
     }
 
+    // Filter aladinData.all_notes to get only NoteQuiz objects
+    const aladinQuizNotes = aladinData.all_notes.filter(
+      (note) => note.type_note === "quiz",
+    ) as NoteQuiz[];
+
     // Trier les notes Aladin par date
-    const sortedAladinNotes = [...aladinData.all_notes]
-      .filter((note) => note.matiere && note.date)
+    const sortedAladinNotes = [...aladinQuizNotes] // Use filtered notes
+      .filter(
+        (note) => note.matiere && note.date && note.nombre_questions !== 0,
+      )
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     if (sortedAladinNotes.length === 0) return [];
 
     // Construire l'évolution cumulative par matière pour Aladin
     const aladinMatieresCumulatives = new Map<string, number[]>();
-    const dataPoints: Array<{ date: string; [key: string]: string | number }> = [];
+    const dataPoints: Array<{ date: string; [key: string]: string | number }> =
+      [];
 
     sortedAladinNotes.forEach((note) => {
+      // Now 'note' is guaranteed to be NoteQuiz
       const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
 
       // Initialiser le tableau pour cette matière si nécessaire
-      if (!aladinMatieresCumulatives.has(note.matiere)) {
-        aladinMatieresCumulatives.set(note.matiere, []);
+      if (!aladinMatieresCumulatives.has(note.matiere!)) {
+        // Use non-null assertion
+        aladinMatieresCumulatives.set(note.matiere!, []);
       }
 
       // Ajouter la note à l'historique de cette matière
-      aladinMatieresCumulatives.get(note.matiere)!.push(noteSur20);
+      aladinMatieresCumulatives.get(note.matiere!)!.push(noteSur20);
 
       // Créer un point de données avec la moyenne actuelle pour chaque matière
       const dataPoint: { date: string; [key: string]: string | number } = {
-        date: note.date
+        date: note.date,
       };
 
       // Calculer la moyenne cumulative pour chaque matière Aladin
@@ -120,9 +154,9 @@ export function ComparisonTab() {
     // Ajouter les moyennes de classe par matière (données statiques)
     const classeMoyennesParMatiere = new Map(
       classeStatsData.data.moyennes_par_matiere?.map((item) => [
-        item.matiere_libelle,
+        item.matiere.libelle,
         item.moyenne,
-      ]) || []
+      ]) || [],
     );
 
     // Ajouter les moyennes de classe à chaque point de données
@@ -130,7 +164,12 @@ export function ComparisonTab() {
       aladinMatieresCumulatives.forEach((_, matiere) => {
         const moyenneClasse = classeMoyennesParMatiere.get(matiere);
         if (moyenneClasse !== undefined) {
-          point[`${matiere} (Classe)`] = Math.round(moyenneClasse * 10) / 10;
+          const actualMoyenneClasse: number = parseFloat(moyenneClasse as any);
+          point[`${matiere} (Classe)`] =
+            Math.round(actualMoyenneClasse * 10) / 10;
+        } else {
+          // If no class average for this subject, ensure it's not added or is null
+          point[`${matiere} (Classe)`] = 0; // Changed from undefined to 0
         }
       });
     });
@@ -143,8 +182,13 @@ export function ComparisonTab() {
   const globalStats = useMemo(() => {
     const aladinNotes = aladinData?.all_notes || [];
 
+    // Filter to get only NoteQuiz objects
+    const aladinQuizNotes = aladinNotes.filter(
+      (n) => n.type_note === "quiz",
+    ) as NoteQuiz[];
+
     // Convertir tous les scores Aladin en notes sur 20
-    const aladinNotesSur20 = aladinNotes.map((n) =>
+    const aladinNotesSur20 = aladinQuizNotes.map((n) =>
       convertScoreToNote(n.note, n.nombre_questions),
     );
 

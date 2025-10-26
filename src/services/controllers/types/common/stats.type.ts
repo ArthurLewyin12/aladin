@@ -13,6 +13,30 @@ export interface EleveStatsResponse {
   }>; // Limité à 5, trié décroissant
 }
 
+export interface NoteQuiz {
+  matiere: string | null;
+  chapitre: string | null;
+  niveau: string | null;
+  note: number; // Score brut (ex: 3)
+  nombre_questions: number;
+  date: string; // "2025-10-24 18:14:38"
+  type_note: "quiz";
+  commentaire?: string | null;
+}
+
+export interface NoteClasse {
+  date: string;
+  matiere: string | null;
+  chapitre: string | null;
+  niveau: string | null;
+  note: string; // Note sur 20, sous forme de string (ex: "16.00")
+  nombre_questions: number | null;
+  type_note: "classe";
+  commentaire?: string | null;
+}
+
+export type CombinedNote = NoteQuiz | NoteClasse;
+
 export interface DashboardResponse {
   user: {
     id: number;
@@ -53,20 +77,17 @@ export interface DashboardResponse {
     avg_note: number; // Moyenne /20
   }>; // Trié décroissant
   notes_evolution: Array<{
-    date: string; // ex: "2025-10-01"
+    date: string;
     matiere: string;
-    note: number; // /20
-    chapitre: string;
-    niveau: string; // "facile" | "moyen" | "difficile"
-  }>; // Pour l'année en cours, trié par date croissante
-  all_notes: Array<{
-    matiere: string;
+    note: number | string; // Peut être un score ou une note/20
     chapitre: string;
     niveau: string;
-    note: number;
-    nombre_questions: number;
-    date: string; // ISO date
-  }>; // Toutes notes historiques, trié par date décroissante
+    type_note: "quiz" | "classe";
+  }>;
+  all_notes: CombinedNote[];
+  notes_quiz: NoteQuiz[];
+  notes_classe: NoteClasse[];
+  notes_combined: CombinedNote[];
 }
 
 export interface ClassesResponse {

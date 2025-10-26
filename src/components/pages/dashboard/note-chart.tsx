@@ -45,20 +45,20 @@ const getSubjectColor = (subjectName: string, subjects: string[]) => {
 
 // Mapping des jours en anglais vers le français
 const dayMapping: Record<string, string> = {
-  "Mon": "Lun",
-  "Tue": "Mar",
-  "Wed": "Mer",
-  "Thu": "Jeu",
-  "Fri": "Ven",
-  "Sat": "Sam",
-  "Sun": "Dim",
-  "Monday": "Lundi",
-  "Tuesday": "Mardi",
-  "Wednesday": "Mercredi",
-  "Thursday": "Jeudi",
-  "Friday": "Vendredi",
-  "Saturday": "Samedi",
-  "Sunday": "Dimanche"
+  Mon: "Lun",
+  Tue: "Mar",
+  Wed: "Mer",
+  Thu: "Jeu",
+  Fri: "Ven",
+  Sat: "Sam",
+  Sun: "Dim",
+  Monday: "Lundi",
+  Tuesday: "Mardi",
+  Wednesday: "Mercredi",
+  Thursday: "Jeudi",
+  Friday: "Vendredi",
+  Saturday: "Samedi",
+  Sunday: "Dimanche",
 };
 
 export function NotesEvolutionChart() {
@@ -77,7 +77,10 @@ export function NotesEvolutionChart() {
     if (!dashboardData?.notes_evolution) return [];
 
     // Grouper les notes par date et matière (calculer la moyenne si plusieurs notes)
-    const groupedByDateAndSubject: Record<string, Record<string, number[]>> = {};
+    const groupedByDateAndSubject: Record<
+      string,
+      Record<string, number[]>
+    > = {};
 
     dashboardData.notes_evolution.forEach((note) => {
       if (!note.matiere) return; // Ignorer les notes sans matière
@@ -89,7 +92,9 @@ export function NotesEvolutionChart() {
       if (!groupedByDateAndSubject[date][note.matiere]) {
         groupedByDateAndSubject[date][note.matiere] = [];
       }
-      groupedByDateAndSubject[date][note.matiere].push(note.note);
+      groupedByDateAndSubject[date][note.matiere].push(
+        parseFloat(String(note.note)),
+      );
     });
 
     // Calculer les moyennes et créer les données du graphique
@@ -119,7 +124,7 @@ export function NotesEvolutionChart() {
       for (let i = 0; i < 7; i++) {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = date.toISOString().split("T")[0];
         allDates.push(dateStr);
       }
     } else {
@@ -128,7 +133,7 @@ export function NotesEvolutionChart() {
     }
 
     // Créer le résultat final avec tous les jours
-    const result = allDates.map(date => {
+    const result = allDates.map((date) => {
       return groupedByDate[date] || { date };
     });
 

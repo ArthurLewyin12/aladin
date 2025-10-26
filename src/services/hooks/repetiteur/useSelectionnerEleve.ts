@@ -16,8 +16,8 @@ export const useSelectionnerEleve = () => {
     mutationFn: (payload: SelectionnerElevePayload) =>
       selectionnerEleve(payload),
     onSuccess: async (data) => {
-      // Invalider la liste des élèves pour mettre à jour l'élève actif
-      await queryClient.invalidateQueries({
+      // Invalider ET refetch la liste des élèves pour mettre à jour l'élève actif
+      await queryClient.refetchQueries({
         queryKey: createQueryKey("eleves"),
       });
 

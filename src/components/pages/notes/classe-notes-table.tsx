@@ -55,6 +55,7 @@ interface ClasseNotesTableProps {
     total: number;
     last_page?: number;
   };
+  readOnly?: boolean;
 }
 
 type ClasseNoteBySubject = {
@@ -107,7 +108,7 @@ function DetailsView({ rowData }: { rowData: ClasseNoteBySubject }) {
   );
 }
 
-export function ClasseNotesTable({ notes, pagination }: ClasseNotesTableProps) {
+export function ClasseNotesTable({ notes, pagination, readOnly = false }: ClasseNotesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingNote, setEditingNote] = useState<NoteClasse | null>(null);

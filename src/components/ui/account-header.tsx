@@ -49,8 +49,8 @@ export function AccountHeader() {
           width={80}
           src="/logo.png"
           alt="Logo du site"
-          className="sm:h-[60px] sm:w-[60px] md:h-[70px] md:w-[70px] lg:h-[80px] lg:w-[80px] cursor-pointer"
-          // onClick={() => router.push("/")}
+          className="cursor-pointer"
+          onClick={() => router.push("/")}
         />
       </div>
 

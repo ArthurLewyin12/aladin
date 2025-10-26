@@ -196,7 +196,7 @@ export default function GroupsPage() {
 
         {groupes && groupes.length > 0 ? (
           // Scénario: Des groupes sont présents
-          <GroupList onCreateGroup={() => setIsOpen(true)} />
+          <GroupList basePath="/student/groups" onCreateGroup={() => setIsOpen(true)} />
         ) : (
           // Scénario: Aucun groupe (contenu placeholder original)
           <>

@@ -86,6 +86,7 @@ export type AjouterEnfantManuelResponse = {
  */
 export type SelectionnerEnfantPayload = {
   enfant_id: string | number; // "123" ou "manuel_456"
+  type: "utilisateur" | "manuel"; // Type de l'enfant
 };
 
 /**

@@ -102,7 +102,19 @@ export default function SettingsGeneralPage() {
   const filteredNiveaux = useMemo(() => {
     if (!niveaux || !user) return [];
     const userNiveauId = user.niveau_id || user.niveau?.id;
-    return niveaux.filter((niveau) => niveau.id !== userNiveauId);
+
+    // Find the current niveau index in the array
+    const currentIndex = niveaux.findIndex((n) => n.id === userNiveauId);
+
+    if (currentIndex === -1) return [];
+
+    // N+1 is the next niveau in the array (next grade up)
+    // For French system: 6ème → 5ème → 4ème → 3ème → 2nde → 1ère → Terminale
+    // So index + 1 gives us the next higher grade
+    const nextNiveau = niveaux[currentIndex + 1];
+
+    // Only return the next niveau if it exists
+    return nextNiveau ? [nextNiveau] : [];
   }, [niveaux, user]);
 
   // Calculer si l'utilisateur peut changer de niveau
@@ -116,7 +128,7 @@ export default function SettingsGeneralPage() {
     ) {
       return {
         allowed: false,
-        reason: "Tu as déjà modifié ton niveau cette année scolaire.",
+        reason: "Tu as déjà modifié ton niveau durant ton abonnement.",
       };
     }
 
@@ -133,11 +145,11 @@ export default function SettingsGeneralPage() {
       };
     }
 
-    // Sinon, l'utilisateur peut modifier son niveau une seule fois par an
+    // Sinon, l'utilisateur peut modifier son niveau une seule fois pendant l'abonnement
     return {
       allowed: true,
       reason:
-        "Tu peux modifier ton niveau une seule fois durant l'année scolaire.",
+        "Tu peux modifier ton niveau une seule fois durant ton abonnement de 12 mois.",
     };
   }, [user]);
 
@@ -339,8 +351,8 @@ export default function SettingsGeneralPage() {
               </p>
               {!canChangeNiveau.allowed && (
                 <p className="text-xs text-red-700 mt-1">
-                  Tu ne pourras plus modifier ton niveau jusqu'à la prochaine
-                  année scolaire.
+                  Tu ne pourras plus modifier ton niveau jusqu'à ton prochain
+                  abonnement.
                 </p>
               )}
             </div>
@@ -357,22 +369,30 @@ export default function SettingsGeneralPage() {
 
         {/* Select niveau */}
         <div className="space-y-4">
-          <Select
-            value={selectedNiveau}
-            onValueChange={setSelectedNiveau}
-            disabled={!canChangeNiveau.allowed || isLoadingNiveaux}
-          >
-            <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
-              <SelectValue placeholder="Sélectionne un nouveau niveau" />
-            </SelectTrigger>
-            <SelectContent>
-              {filteredNiveaux.map((niveau) => (
-                <SelectItem key={niveau.id} value={niveau.id.toString()}>
-                  {niveau.libelle}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {filteredNiveaux.length === 0 && canChangeNiveau.allowed ? (
+            <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl">
+              <p className="text-sm text-gray-600">
+                Tu es déjà au niveau le plus élevé. Aucune mise à jour possible.
+              </p>
+            </div>
+          ) : (
+            <Select
+              value={selectedNiveau}
+              onValueChange={setSelectedNiveau}
+              disabled={!canChangeNiveau.allowed || isLoadingNiveaux || filteredNiveaux.length === 0}
+            >
+              <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
+                <SelectValue placeholder="Sélectionne le niveau suivant" />
+              </SelectTrigger>
+              <SelectContent>
+                {filteredNiveaux.map((niveau) => (
+                  <SelectItem key={niveau.id} value={niveau.id.toString()}>
+                    {niveau.libelle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           <Button
             onClick={handleOpenConfirmDialog}
@@ -693,7 +713,7 @@ export default function SettingsGeneralPage() {
                 <br />
                 <br />
                 <span className="text-orange-600 font-medium">
-                  ⚠️ Cette action est irréversible pour cette année scolaire.
+                  ⚠️ Cette action est irréversible durant ton abonnement.
                 </span>
                 {" "}Tu ne pourras plus modifier ton niveau une fois la
                 confirmation effectuée.
@@ -737,7 +757,7 @@ export default function SettingsGeneralPage() {
             <div className="px-4 pb-4">
               <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-2xl">
                 <p className="text-sm text-orange-900 font-medium">
-                  ⚠️ Cette action est irréversible pour cette année scolaire.
+                  ⚠️ Cette action est irréversible durant ton abonnement.
                 </p>
                 <p className="text-sm text-orange-700 mt-2">
                   Tu ne pourras plus modifier ton niveau une fois la

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { parseAsString, useQueryState } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { ArrowLeft, BookOpen, FileText, User, Brain } from "lucide-react";
@@ -10,12 +11,23 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RepetiteurCourseList } from "@/components/pages/repetiteur/repetiteur-course-list";
 import { RepetiteurQuizList } from "@/components/pages/repetiteur/repetiteur-quiz-list";
+import { AladinNotesTab } from "@/components/pages/notes/aladin-notes-tab";
+import { ClasseNotesTab } from "@/components/pages/notes/classe-notes-tab";
+import { ComparisonTab } from "@/components/pages/notes/comparison-tab";
+import { AnimatedTabs as NestedTabs } from "@/components/ui/animated-tabs";
+import { GitCompare } from "lucide-react";
 
 export default function EleveDetailPage() {
   const router = useRouter();
   const params = useParams();
   const eleveId = params.eleveId as string;
-  const [activeTab, setActiveTab] = useState("Cours");
+  
+  // Utiliser nuqs pour synchroniser l'onglet avec l'URL
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    parseAsString.withDefault("cours")
+  );
+  const [notesTab, setNotesTab] = useState("Notes de Classe");
   const [isEleveReady, setIsEleveReady] = useState(false);
 
   // Récupérer les données de l'élève
@@ -31,24 +43,26 @@ export default function EleveDetailPage() {
     if (!isLoadingEleves && eleve) {
       const isCurrentlyActive = eleveActif?.id.toString() === eleveId;
       
-      if (!isCurrentlyActive && !isSelecting && !isEleveReady) {
-        // Sélectionner l'élève
+      if (isCurrentlyActive) {
+        // L'élève est déjà actif
+        if (!isEleveReady) {
+          setIsEleveReady(true);
+        }
+      } else if (!isSelecting && !isEleveReady) {
+        // Sélectionner l'élève seulement s'il n'est pas en cours de sélection
         selectionnerEleve({
           eleve_id: eleve.id,
           type: eleve.type
         }, {
           onSuccess: async () => {
-            // Attendre un peu que le backend soit à jour
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Attendre que le backend ET React Query soient à jour
+            await new Promise(resolve => setTimeout(resolve, 1000));
             setIsEleveReady(true);
           }
         });
-      } else if (isCurrentlyActive) {
-        // L'élève est déjà actif
-        setIsEleveReady(true);
       }
     }
-  }, [eleve, eleveActif, eleveId, isLoadingEleves, isSelecting, isEleveReady, selectionnerEleve]);
+  }, [eleve, eleveActif, eleveId, isLoadingEleves]);
 
   // Ne charger les contenus que si l'élève est prêt
   const { data: resumeData, isLoading: isLoadingResume } = useEleveResume(isEleveReady);
@@ -72,6 +86,23 @@ export default function EleveDetailPage() {
       icon: <FileText className="w-4 h-4" />,
     },
   ];
+  
+  // Mapper les labels affichés aux valeurs d'URL
+  const tabMapping: Record<string, string> = {
+    "Cours": "cours",
+    "Quiz": "quiz",
+    "Notes": "notes"
+  };
+  
+  const reversTabMapping: Record<string, string> = {
+    "cours": "Cours",
+    "quiz": "Quiz",
+    "notes": "Notes"
+  };
+  
+  const handleTabChange = (label: string) => {
+    setActiveTab(tabMapping[label] || "cours");
+  };
 
   if (isLoadingEleves || isSelecting || !isEleveReady) {
     return (
@@ -116,7 +147,9 @@ export default function EleveDetailPage() {
     );
   }
 
-  const isEleveActif = eleveActif?.id === eleve.id;
+  // L'élève est considéré comme actif si isEleveReady est true (car on vient de le sélectionner)
+  // ou si l'eleveActif correspond dans le cache
+  const isEleveActif = isEleveReady || eleveActif?.id === eleve.id;
 
   return (
     <div className="min-h-screen relative">
@@ -237,40 +270,42 @@ export default function EleveDetailPage() {
 
         {/* Tabs */}
         <div className="flex justify-center mb-8">
-          <AnimatedTabs tabs={tabs} onTabChange={setActiveTab} />
+          <AnimatedTabs 
+            tabs={tabs} 
+            onTabChange={handleTabChange}
+            activeTab={reversTabMapping[activeTab]}
+          />
         </div>
 
         {/* Contenu basé sur l'onglet actif */}
         <div className="space-y-6">
-          {activeTab === "Cours" && (
+          {activeTab === "cours" && (
             <RepetiteurCourseList eleve={eleve} isEleveReady={isEleveReady} />
           )}
 
-          {activeTab === "Quiz" && (
+          {activeTab === "quiz" && (
             <RepetiteurQuizList eleve={eleve} isEleveReady={isEleveReady} />
           )}
 
-          {activeTab === "Notes" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#548C2F]" />
-                  Notes de l'élève
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Notes
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Les notes de classe et Aladin de cet élève seront affichées
-                    ici
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          {activeTab === "notes" && (
+            <div className="space-y-6">
+              {/* Sous-onglets pour Notes */}
+              <div className="flex justify-center">
+                <NestedTabs 
+                  tabs={[
+                    { label: "Notes de Classe", icon: <FileText className="w-4 h-4" /> },
+                    { label: "Notes Aladin", icon: <BookOpen className="w-4 h-4" /> },
+                    { label: "Comparaison", icon: <GitCompare className="w-4 h-4" /> },
+                  ]}
+                  onTabChange={setNotesTab}
+                />
+              </div>
+
+              {/* Contenu des sous-onglets en mode lecture seule */}
+              {notesTab === "Notes de Classe" && <ClasseNotesTab readOnly />}
+              {notesTab === "Notes Aladin" && <AladinNotesTab />}
+              {notesTab === "Comparaison" && <ComparisonTab />}
+            </div>
           )}
         </div>
       </div>

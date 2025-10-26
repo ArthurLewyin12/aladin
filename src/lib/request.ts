@@ -175,11 +175,13 @@ export const request = {
    * @template T Le type de données attendu dans la réponse.
    * @param {string} url L'URL de l'endpoint.
    * @param {Record<string, any>} data Un objet contenant les données à envoyer (peut inclure des File).
+   * @param {import("axios").AxiosRequestConfig} [config] Configuration optionnelle (ex: timeout).
    * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
    */
   postFormData: async <T>(
     url: string,
     data: Record<string, any>,
+    config?: import("axios").AxiosRequestConfig,
   ): Promise<T> => {
     const formData = new FormData();
 
@@ -202,7 +204,9 @@ export const request = {
     }
 
     const response = await api.post<T>(url, formData, {
+      ...config,
       headers: {
+        ...config?.headers,
         "Content-Type": "multipart/form-data",
       },
     });

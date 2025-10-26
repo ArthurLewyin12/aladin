@@ -6,14 +6,18 @@ import { useMediaQuery } from "@/services/hooks/use-media-query";
 export interface AnimatedTabsProps {
   tabs: { label: string; icon?: React.ReactNode }[];
   onTabChange?: (label: string) => void;
+  activeTab?: string; // Prop optionnelle pour contrôler l'onglet actif depuis le parent
 }
 
-export function AnimatedTabs({ tabs, onTabChange }: AnimatedTabsProps) {
-  const [activeTab, setActiveTab] = useState(tabs[0].label);
+export function AnimatedTabs({ tabs, onTabChange, activeTab: controlledActiveTab }: AnimatedTabsProps) {
+  const [internalActiveTab, setInternalActiveTab] = useState(tabs[0].label);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  // Utiliser l'état contrôlé si fourni, sinon l'état interne
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+
   const handleTabChange = (label: string) => {
-    setActiveTab(label);
+    setInternalActiveTab(label);
     onTabChange?.(label);
   };
 

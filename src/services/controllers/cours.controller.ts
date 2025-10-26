@@ -9,32 +9,28 @@ import { request } from "@/lib/request";
 
 /**
  * Génère une explication de cours pour un chapitre donné.
- * Supporte deux modes:
- * - Sans document: envoi JSON classique
- * - Avec document: envoi multipart/form-data
+ * L'API attend toujours du FormData (multipart/form-data), que le document soit présent ou non.
  * @param {GenerateCoursPayload} payload - L'ID du chapitre et le fichier optionnel.
  * @returns {Promise<GenerateCoursResponse>} La réponse de l'API contenant le contenu du cours.
  */
 export const expliquerCours = async (
   payload: GenerateCoursPayload,
 ): Promise<GenerateCoursResponse> => {
-  // Si un fichier est présent, utiliser FormData
+  // L'API attend toujours du FormData (avec ou sans fichier)
+  const formDataPayload: Record<string, any> = {
+    chapter_id: payload.chapter_id,
+  };
+
+  // Ajouter le fichier s'il est présent
   if (payload.document_file) {
-    return request.postFormData<GenerateCoursResponse>(
-      CourseEndpoints.COURSES_BY_CHAPITRE,
-      {
-        chapter_id: payload.chapter_id,
-        document_file: payload.document_file,
-      },
-    );
-  } else {
-    // Sinon, envoi JSON classique
-    return request.post<GenerateCoursResponse>(
-      CourseEndpoints.COURSES_BY_CHAPITRE,
-      { chapter_id: payload.chapter_id },
-      { timeout: 60000 }, // 60 seconds timeout
-    );
+    formDataPayload.document_file = payload.document_file;
   }
+
+  return request.postFormData<GenerateCoursResponse>(
+    CourseEndpoints.COURSES_BY_CHAPITRE,
+    formDataPayload,
+    { timeout: 60000 }, // 60 seconds timeout
+  );
 };
 
 /**

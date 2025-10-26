@@ -10,4 +10,6 @@ export * from "./useEleveGroupes";
 export * from "./useEleveQuiz";
 export * from "./useEleveCours";
 export * from "./useEleveResume";
+export * from "./useNiveauxChoisis";
+export * from "./useDefinirNiveaux";
 

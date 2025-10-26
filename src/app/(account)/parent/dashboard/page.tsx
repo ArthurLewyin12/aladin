@@ -16,7 +16,7 @@ import {
 const mockData = {
   // Stats globales
   totalChildren: 3,
-  totalStudyHours: 127,
+  totalGroups: 4,
   averageNote: 13.2,
   totalActivities: 89,
 
@@ -230,7 +230,7 @@ export default function ParentDashboardPage() {
         <div className="mb-6">
           <ParentDashboardStats
             totalChildren={mockData.totalChildren}
-            totalStudyHours={mockData.totalStudyHours}
+            totalGroups={mockData.totalGroups}
             averageNote={mockData.averageNote}
             totalActivities={mockData.totalActivities}
           />

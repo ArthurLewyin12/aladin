@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAjouterEleveManuel } from "@/services/hooks/repetiteur";
+import { useAjouterEleveManuel, useNiveauxChoisis } from "@/services/hooks/repetiteur";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
 import { Loader2 } from "lucide-react";
 
@@ -65,6 +65,12 @@ export const AddEleveModal = ({
   });
 
   const { mutate: ajouterEleve, isPending } = useAjouterEleveManuel();
+  const { data: niveauxChoisisData } = useNiveauxChoisis();
+  
+  // Filtrer les niveaux pour ne garder que ceux choisis par le répétiteur
+  const niveauxChoisisIds = niveauxChoisisData?.niveaux?.map(n => n.id) || [];
+  const niveauxFiltres = niveaux.filter(niveau => niveauxChoisisIds.includes(niveau.id));
+  const hasNoNiveaux = niveauxFiltres.length === 0;
 
   const onSubmit = (data: EleveFormData) => {
     ajouterEleve(data, {
@@ -82,6 +88,15 @@ export const AddEleveModal = ({
 
   const FormContent = (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
+      {/* Alerte si aucun niveau */}
+      {hasNoNiveaux && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <p className="text-sm text-amber-800">
+            ⚠️ Vous devez d'abord configurer vos niveaux d'enseignement.
+          </p>
+        </div>
+      )}
+      
       {/* Nom */}
       <div className="space-y-2">
         <Label htmlFor="nom" className="text-sm text-gray-600">
@@ -125,13 +140,19 @@ export const AddEleveModal = ({
           <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
             <SelectValue placeholder="Sélectionnez un niveau" />
           </SelectTrigger>
-          <SelectContent>
-            {niveaux.map((niveau) => (
-              <SelectItem key={niveau.id} value={niveau.id.toString()}>
-                {niveau.libelle}
-              </SelectItem>
-            ))}
-          </SelectContent>
+                  <SelectContent>
+                    {niveauxFiltres.length > 0 ? (
+                      niveauxFiltres.map((niveau) => (
+                        <SelectItem key={niveau.id} value={niveau.id.toString()}>
+                          {niveau.libelle}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-gray-500 text-center">
+                        Aucun niveau disponible
+                      </div>
+                    )}
+                  </SelectContent>
         </Select>
         {errors.niveau_id && (
           <p className="text-sm text-red-500">{errors.niveau_id.message}</p>
@@ -184,7 +205,7 @@ export const AddEleveModal = ({
         </Button>
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || hasNoNiveaux}
           className="flex-1 bg-[#548C2F] hover:bg-[#4a7829] text-white rounded-lg"
         >
           {isPending ? (
@@ -192,6 +213,8 @@ export const AddEleveModal = ({
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Ajout en cours...
             </>
+          ) : hasNoNiveaux ? (
+            "Configurez vos niveaux d'abord"
           ) : (
             "Ajouter l'élève"
           )}

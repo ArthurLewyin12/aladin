@@ -31,24 +31,26 @@ export default function EleveDetailPage() {
     if (!isLoadingEleves && eleve) {
       const isCurrentlyActive = eleveActif?.id.toString() === eleveId;
       
-      if (!isCurrentlyActive && !isSelecting && !isEleveReady) {
-        // Sélectionner l'élève
+      if (isCurrentlyActive) {
+        // L'élève est déjà actif
+        if (!isEleveReady) {
+          setIsEleveReady(true);
+        }
+      } else if (!isSelecting && !isEleveReady) {
+        // Sélectionner l'élève seulement s'il n'est pas en cours de sélection
         selectionnerEleve({
           eleve_id: eleve.id,
           type: eleve.type
         }, {
           onSuccess: async () => {
-            // Attendre un peu que le backend soit à jour
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Attendre que le backend ET React Query soient à jour
+            await new Promise(resolve => setTimeout(resolve, 1000));
             setIsEleveReady(true);
           }
         });
-      } else if (isCurrentlyActive) {
-        // L'élève est déjà actif
-        setIsEleveReady(true);
       }
     }
-  }, [eleve, eleveActif, eleveId, isLoadingEleves, isSelecting, isEleveReady, selectionnerEleve]);
+  }, [eleve, eleveActif, eleveId, isLoadingEleves]);
 
   // Ne charger les contenus que si l'élève est prêt
   const { data: resumeData, isLoading: isLoadingResume } = useEleveResume(isEleveReady);

@@ -251,3 +251,31 @@ export type GetRelationsStatistiquesResponse = {
   };
 };
 
+// ========================================
+// Niveaux du répétiteur
+// ========================================
+
+export interface RepetiteurNiveau {
+  id: number;
+  libelle: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DefinirNiveauxPayload {
+  niveaux: number[];
+}
+
+export interface DefinirNiveauxResponse {
+  success: boolean;
+  message: string;
+  niveaux: RepetiteurNiveau[];
+}
+
+export interface GetNiveauxChoisisResponse {
+  success: boolean;
+  niveaux: RepetiteurNiveau[];
+  nombre_niveaux: number;
+  a_defini_niveaux: boolean;
+}
+

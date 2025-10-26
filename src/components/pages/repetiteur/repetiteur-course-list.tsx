@@ -7,10 +7,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/lib/toast";
 import { RepetiteurCourseCard } from "./repetiteur-course-card";
 import { Course } from "@/services/controllers/types/common/cours.type";
 import { getOneCourse } from "@/services/controllers/cours.controller";
-import { toast } from "@/lib/toast";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Eleve } from "@/services/controllers/types/common/repetiteur.types";
 
@@ -64,8 +64,19 @@ export function RepetiteurCourseList({ eleve, isEleveReady }: RepetiteurCourseLi
   };
 
   const handleGenerateCourse = () => {
-    // Rediriger vers la page de génération de cours
-    router.push("/student/revision/generated");
+    // Vérifier qu'un élève est sélectionné avant de rediriger
+    if (!isEleveReady || !eleve) {
+      toast({
+        variant: "error",
+        title: "Erreur",
+        message: "Veuillez d'abord sélectionner un élève",
+      });
+      return;
+    }
+    
+    // Rediriger vers la page de génération de cours pour le répétiteur
+    // Passer l'ID de l'élève dans l'URL pour garantir la disponibilité
+    router.push(`/repetiteur/revision/generated?eleveId=${eleve.id}`);
   };
 
   if (isLoading) {
@@ -76,19 +87,8 @@ export function RepetiteurCourseList({ eleve, isEleveReady }: RepetiteurCourseLi
     );
   }
 
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px] px-4">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 sm:p-6 text-center max-w-md w-full">
-          <p className="text-red-600 text-sm sm:text-base">
-            Une erreur est survenue lors du chargement des cours.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (courses.length === 0) {
+  // Traiter les erreurs comme un état vide (afficher la possibilité de créer)
+  if (isError || courses.length === 0) {
     return (
       <div className="px-4 sm:px-0">
         {/* Info élève */}
@@ -110,8 +110,12 @@ export function RepetiteurCourseList({ eleve, isEleveReady }: RepetiteurCourseLi
         <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
           <div className="relative w-full max-w-2xl">
             <EmptyState
-              title="Aucun cours généré"
-              description="Générez le premier cours personnalisé pour votre élève et aidez-le à progresser !"
+              title={isError ? "Erreur de chargement" : "Aucun cours généré"}
+              description={
+                isError
+                  ? "Impossible de charger les cours pour le moment. Vous pouvez tout de même générer un nouveau cours !"
+                  : "Générez le premier cours personnalisé pour votre élève et aidez-le à progresser !"
+              }
               icons={[
                 <FileText key="1" size={20} />,
                 <BookOpen key="2" size={20} />,

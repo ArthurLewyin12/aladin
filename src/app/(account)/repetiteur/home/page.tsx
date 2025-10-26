@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   ChevronRight,
@@ -12,9 +13,25 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { useNiveauxChoisis } from "@/services/hooks/repetiteur";
+import { DefinirNiveauxModal } from "@/components/pages/repetiteur/definir-niveaux-modal";
 
 export default function RepetiteurHomePage() {
   const router = useRouter();
+  const { user } = useSession();
+  const { data: niveauxData, isLoading: isLoadingNiveaux } = useNiveauxChoisis();
+  const [showNiveauxModal, setShowNiveauxModal] = useState(false);
+
+  // Vérifier si le répétiteur a défini ses niveaux
+  useEffect(() => {
+    if (!isLoadingNiveaux && niveauxData) {
+      if (!niveauxData.a_defini_niveaux) {
+        // Ouvrir le modal si les niveaux ne sont pas définis
+        setShowNiveauxModal(true);
+      }
+    }
+  }, [niveauxData, isLoadingNiveaux]);
 
   const handleShare = async () => {
     const shareData = {
@@ -85,12 +102,18 @@ export default function RepetiteurHomePage() {
   ];
 
   return (
-    <div className="min-h-screen w-full relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <>
+      <DefinirNiveauxModal
+        open={showNiveauxModal}
+        onOpenChange={setShowNiveauxModal}
+      />
+      
+      <div className="min-h-screen w-full relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Message de bienvenue professionnel */}
         <div className="mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#548C2F] mb-4">
-            Bonjour
+            Bonjour {user?.prenom}
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
             Suivez le niveau de vos élèves , créez vos cours et exercices, et
@@ -144,7 +167,8 @@ export default function RepetiteurHomePage() {
             })}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

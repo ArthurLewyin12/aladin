@@ -76,7 +76,7 @@ export const ajouterEleveUtilisateur = async (
   payload: AjouterEleveUtilisateurPayload,
 ): Promise<AjouterEleveUtilisateurResponse> => {
   return request.post<AjouterEleveUtilisateurResponse>(
-    RepetiteurEndpoints.AJOUTER_ELEVE_UTILISATEUR,
+    RepetiteurEndpoints.ASSOCIER_AUTOMATIQUEMENT,
     payload,
   );
 };
@@ -181,5 +181,22 @@ export const getEleveResume = async (): Promise<GetEleveResumeResponse> => {
  */
 export const getRelationsStatistiques = async (): Promise<GetRelationsStatistiquesResponse> => {
   return request.get<GetRelationsStatistiquesResponse>(RepetiteurEndpoints.GET_RELATIONS_STATS);
+};
+
+/**
+ * Récupère les niveaux choisis par le répétiteur.
+ * @returns {Promise<GetNiveauxChoisisResponse>} Les niveaux choisis.
+ */
+export const getNiveauxChoisis = async (): Promise<GetNiveauxChoisisResponse> => {
+  return request.get<GetNiveauxChoisisResponse>(RepetiteurEndpoints.GET_NIVEAUX_CHOISIS);
+};
+
+/**
+ * Définit les niveaux d'enseignement du répétiteur.
+ * @param {DefinirNiveauxPayload} payload - Les IDs des niveaux à définir.
+ * @returns {Promise<DefinirNiveauxResponse>} La réponse de l'API.
+ */
+export const definirNiveaux = async (payload: DefinirNiveauxPayload): Promise<DefinirNiveauxResponse> => {
+  return request.post<DefinirNiveauxResponse>(RepetiteurEndpoints.DEFINIR_NIVEAUX, payload);
 };
 

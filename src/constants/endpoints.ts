@@ -187,10 +187,9 @@ export enum RepetiteurEndpoints {
   // Gestion des élèves
   GET_ELEVES = "/api/repetiteur/eleves",
   AJOUTER_ELEVE_MANUEL = "/api/repetiteur/eleves/ajouter-manuel",
-  AJOUTER_ELEVE_UTILISATEUR = "/api/repetiteur/eleves/ajouter",
+  ASSOCIER_AUTOMATIQUEMENT = "/api/repetiteur/eleves/associer-automatiquement",
   RECHERCHER_ELEVE = "/api/repetiteur/eleves/rechercher",
   RETIRER_ELEVE = "/api/repetiteur/eleves/retirer",
-  ASSOCIER_AUTOMATIQUEMENT = "/api/repetiteur/eleves/associer-automatiquement",
   
   // Sélection d'élève
   SELECTIONNER_ELEVE = "/api/repetiteur/eleves/selectionner",
@@ -209,4 +208,8 @@ export enum RepetiteurEndpoints {
   // Relations
   GET_REPETITEURS_ELEVE = "/api/eleve/repetiteurs",
   GET_RELATIONS_STATS = "/api/relations-repetiteur/statistiques",
+  
+  // Niveaux du répétiteur
+  GET_NIVEAUX_CHOISIS = "/api/repetiteur/niveaux/choisis",
+  DEFINIR_NIVEAUX = "/api/repetiteur/niveaux/definir",
 }

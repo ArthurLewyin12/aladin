@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileQuestion, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/lib/toast";
 import { RepetiteurQuizCard } from "./repetiteur-quiz-card";
 import { Quiz } from "@/services/controllers/types/common/quiz.types";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -48,8 +49,19 @@ export function RepetiteurQuizList({ eleve, isEleveReady }: RepetiteurQuizListPr
   };
 
   const handleGenerateQuiz = () => {
-    // Rediriger vers la page de génération de quiz
-    router.push("/student/quiz/generate");
+    // Vérifier qu'un élève est sélectionné avant de rediriger
+    if (!isEleveReady || !eleve) {
+      toast({
+        variant: "error",
+        title: "Erreur",
+        message: "Veuillez d'abord sélectionner un élève",
+      });
+      return;
+    }
+    
+    // Rediriger vers la page de génération de quiz pour le répétiteur
+    // Passer l'ID de l'élève dans l'URL pour garantir la disponibilité
+    router.push(`/repetiteur/quiz/generate?eleveId=${eleve.id}`);
   };
 
   if (isLoading) {
@@ -60,19 +72,8 @@ export function RepetiteurQuizList({ eleve, isEleveReady }: RepetiteurQuizListPr
     );
   }
 
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px] px-4">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 sm:p-6 text-center max-w-md w-full">
-          <p className="text-red-600 text-sm sm:text-base">
-            Une erreur est survenue lors du chargement des quiz.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (quizzes.length === 0) {
+  // Traiter les erreurs comme un état vide (afficher la possibilité de créer)
+  if (isError || quizzes.length === 0) {
     return (
       <div className="px-4 sm:px-0">
         {/* Info élève */}
@@ -94,8 +95,12 @@ export function RepetiteurQuizList({ eleve, isEleveReady }: RepetiteurQuizListPr
         <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
           <div className="relative w-full max-w-2xl">
             <EmptyState
-              title="Aucun quiz généré"
-              description="Générez le premier quiz personnalisé pour votre élève et aidez-le à réviser efficacement !"
+              title={isError ? "Erreur de chargement" : "Aucun quiz généré"}
+              description={
+                isError
+                  ? "Impossible de charger les quiz pour le moment. Vous pouvez tout de même générer un nouveau quiz !"
+                  : "Générez le premier quiz personnalisé pour votre élève et aidez-le à réviser efficacement !"
+              }
               icons={[
                 <FileQuestion key="1" size={20} />,
                 <BookOpen key="2" size={20} />,

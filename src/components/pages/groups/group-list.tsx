@@ -42,7 +42,7 @@ export const GroupList = ({
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
   const { user: currentUser } = useSession();
-  
+
   // Appeler conditionnellement les hooks en fonction du variant
   const { data: enfantsData } = useEnfants(); // Pour les parents
   const { data: elevesData } = useEleves(); // Pour les répétiteurs
@@ -213,7 +213,7 @@ export const GroupList = ({
   if (!groupes || groupes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="mb-4 text-6xl">📚</div>
+        {/*<div className="mb-4 text-6xl">📚</div>*/}
         <h3 className="mb-2 text-xl font-semibold text-gray-900">
           Aucun groupe pour le moment
         </h3>
@@ -236,8 +236,8 @@ export const GroupList = ({
         <div className=" flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-              {variant === "parent" 
-                ? "Groupes de vos enfants" 
+              {variant === "parent"
+                ? "Groupes de vos enfants"
                 : variant === "repetiteur"
                   ? "Groupes de vos élèves"
                   : "Mes Groupes"}
@@ -272,7 +272,10 @@ export const GroupList = ({
           {paginatedGroupes.map((groupe) => {
             if (variant === "parent" || variant === "repetiteur") {
               // Calculer les enfants/élèves disponibles (pas encore dans ce groupe)
-              const sourceData = variant === "parent" ? enfantsData?.enfants : elevesData?.eleves;
+              const sourceData =
+                variant === "parent"
+                  ? enfantsData?.enfants
+                  : elevesData?.eleves;
               const availableEnfants = (sourceData || []).filter(
                 (enfant) =>
                   !groupe.utilisateurs.some((u) => u.id === enfant.id),

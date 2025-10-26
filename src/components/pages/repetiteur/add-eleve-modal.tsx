@@ -68,7 +68,7 @@ export const AddEleveModal = ({
   const { data: niveauxChoisisData } = useNiveauxChoisis();
   
   // Filtrer les niveaux pour ne garder que ceux choisis par le répétiteur
-  const niveauxChoisisIds = niveauxChoisisData?.niveaux?.map(n => n.id) || [];
+  const niveauxChoisisIds = niveauxChoisisData?.niveaux?.map((n: { id: number }) => n.id) || [];
   const niveauxFiltres = niveaux.filter(niveau => niveauxChoisisIds.includes(niveau.id));
   const hasNoNiveaux = niveauxFiltres.length === 0;
 

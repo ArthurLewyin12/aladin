@@ -302,7 +302,7 @@ export default function RepetiteurRevisionPage() {
 
                   {useDocument && (
                     <FileUpload
-                      onFileSelect={setSelectedFile}
+                      onChange={setSelectedFile}
                       selectedFile={selectedFile}
                     />
                   )}

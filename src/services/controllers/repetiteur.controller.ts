@@ -21,6 +21,9 @@ import {
   GetEleveCoursResponse,
   GetEleveResumeResponse,
   GetRelationsStatistiquesResponse,
+  GetNiveauxChoisisResponse,
+  DefinirNiveauxPayload,
+  DefinirNiveauxResponse,
 } from "./types/common/repetiteur.types";
 
 /**
@@ -64,7 +67,9 @@ export const selectionnerEleve = async (
  * @returns {Promise<GetEleveActifResponse>} L'élève actif et sa classe.
  */
 export const getEleveActif = async (): Promise<GetEleveActifResponse> => {
-  return request.get<GetEleveActifResponse>(RepetiteurEndpoints.GET_ELEVE_ACTIF);
+  return request.get<GetEleveActifResponse>(
+    RepetiteurEndpoints.GET_ELEVE_ACTIF,
+  );
 };
 
 /**
@@ -89,9 +94,12 @@ export const ajouterEleveUtilisateur = async (
 export const retirerEleve = async (
   payload: RetirerElevePayload,
 ): Promise<RetirerEleveResponse> => {
-  return request.delete<RetirerEleveResponse>(RepetiteurEndpoints.RETIRER_ELEVE, {
-    data: payload,
-  });
+  return request.delete<RetirerEleveResponse>(
+    RepetiteurEndpoints.RETIRER_ELEVE,
+    {
+      data: payload,
+    },
+  );
 };
 
 /**
@@ -127,7 +135,10 @@ export const associerAutomatiquement =
 export const getRepetiteurStats = async (
   repetiteurId: number,
 ): Promise<GetRepetiteurStatsResponse> => {
-  const endpoint = RepetiteurEndpoints.GET_STATS.replace("{id}", repetiteurId.toString());
+  const endpoint = RepetiteurEndpoints.GET_STATS.replace(
+    "{id}",
+    repetiteurId.toString(),
+  );
   return request.get<GetRepetiteurStatsResponse>(endpoint);
 };
 
@@ -139,7 +150,10 @@ export const getRepetiteurStats = async (
 export const getRepetiteurDashboard = async (
   repetiteurId: number,
 ): Promise<GetRepetiteurDashboardResponse> => {
-  const endpoint = RepetiteurEndpoints.GET_DASHBOARD.replace("{id}", repetiteurId.toString());
+  const endpoint = RepetiteurEndpoints.GET_DASHBOARD.replace(
+    "{id}",
+    repetiteurId.toString(),
+  );
   return request.get<GetRepetiteurDashboardResponse>(endpoint);
 };
 
@@ -148,7 +162,9 @@ export const getRepetiteurDashboard = async (
  * @returns {Promise<GetEleveGroupesResponse>} Les groupes de l'élève.
  */
 export const getEleveGroupes = async (): Promise<GetEleveGroupesResponse> => {
-  return request.get<GetEleveGroupesResponse>(RepetiteurEndpoints.GET_ELEVE_GROUPES);
+  return request.get<GetEleveGroupesResponse>(
+    RepetiteurEndpoints.GET_ELEVE_GROUPES,
+  );
 };
 
 /**
@@ -164,7 +180,9 @@ export const getEleveQuiz = async (): Promise<GetEleveQuizResponse> => {
  * @returns {Promise<GetEleveCoursResponse>} Les cours de l'élève.
  */
 export const getEleveCours = async (): Promise<GetEleveCoursResponse> => {
-  return request.get<GetEleveCoursResponse>(RepetiteurEndpoints.GET_ELEVE_COURS);
+  return request.get<GetEleveCoursResponse>(
+    RepetiteurEndpoints.GET_ELEVE_COURS,
+  );
 };
 
 /**
@@ -172,31 +190,43 @@ export const getEleveCours = async (): Promise<GetEleveCoursResponse> => {
  * @returns {Promise<GetEleveResumeResponse>} Le résumé de l'élève.
  */
 export const getEleveResume = async (): Promise<GetEleveResumeResponse> => {
-  return request.get<GetEleveResumeResponse>(RepetiteurEndpoints.GET_ELEVE_RESUME);
+  return request.get<GetEleveResumeResponse>(
+    RepetiteurEndpoints.GET_ELEVE_RESUME,
+  );
 };
 
 /**
  * Récupère les statistiques des relations répétiteur-élève.
  * @returns {Promise<GetRelationsStatistiquesResponse>} Les statistiques.
  */
-export const getRelationsStatistiques = async (): Promise<GetRelationsStatistiquesResponse> => {
-  return request.get<GetRelationsStatistiquesResponse>(RepetiteurEndpoints.GET_RELATIONS_STATS);
-};
+export const getRelationsStatistiques =
+  async (): Promise<GetRelationsStatistiquesResponse> => {
+    return request.get<GetRelationsStatistiquesResponse>(
+      RepetiteurEndpoints.GET_RELATIONS_STATS,
+    );
+  };
 
 /**
  * Récupère les niveaux choisis par le répétiteur.
  * @returns {Promise<GetNiveauxChoisisResponse>} Les niveaux choisis.
  */
-export const getNiveauxChoisis = async (): Promise<GetNiveauxChoisisResponse> => {
-  return request.get<GetNiveauxChoisisResponse>(RepetiteurEndpoints.GET_NIVEAUX_CHOISIS);
-};
+export const getNiveauxChoisis =
+  async (): Promise<GetNiveauxChoisisResponse> => {
+    return request.get<GetNiveauxChoisisResponse>(
+      RepetiteurEndpoints.GET_NIVEAUX_CHOISIS,
+    );
+  };
 
 /**
  * Définit les niveaux d'enseignement du répétiteur.
  * @param {DefinirNiveauxPayload} payload - Les IDs des niveaux à définir.
  * @returns {Promise<DefinirNiveauxResponse>} La réponse de l'API.
  */
-export const definirNiveaux = async (payload: DefinirNiveauxPayload): Promise<DefinirNiveauxResponse> => {
-  return request.post<DefinirNiveauxResponse>(RepetiteurEndpoints.DEFINIR_NIVEAUX, payload);
+export const definirNiveaux = async (
+  payload: DefinirNiveauxPayload,
+): Promise<DefinirNiveauxResponse> => {
+  return request.post<DefinirNiveauxResponse>(
+    RepetiteurEndpoints.DEFINIR_NIVEAUX,
+    payload,
+  );
 };
-

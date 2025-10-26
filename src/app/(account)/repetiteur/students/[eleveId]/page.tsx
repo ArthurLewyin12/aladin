@@ -116,7 +116,9 @@ export default function EleveDetailPage() {
     );
   }
 
-  const isEleveActif = eleveActif?.id === eleve.id;
+  // L'élève est considéré comme actif si isEleveReady est true (car on vient de le sélectionner)
+  // ou si l'eleveActif correspond dans le cache
+  const isEleveActif = isEleveReady || eleveActif?.id === eleve.id;
 
   return (
     <div className="min-h-screen relative">

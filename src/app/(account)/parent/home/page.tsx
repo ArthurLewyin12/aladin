@@ -77,7 +77,7 @@ export default function ParentHomePage() {
     },
     {
       id: "groups",
-      title: "Je crée un groupe d'étude",
+      title: "Je gère les  groupes d'étude de  mes enfants",
       description: "Collaborez avec d'autres parents",
       icon: UsersRound,
       handler: () => router.push("/parent/groups"),

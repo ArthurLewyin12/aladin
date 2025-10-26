@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, X } from "lucide-react";
@@ -24,9 +24,9 @@ import { Label } from "@/components/ui/label";
 import { GroupList } from "@/components/pages/groups/group-list";
 import { useGroupes } from "@/services/hooks/groupes/useGroupes";
 import { useCreateGroupe } from "@/services/hooks/groupes/useCreateGroupe";
-import { useSession } from "@/services/hooks/auth/useSession";
+import { useEnfants } from "@/services/hooks/parent";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
 import { Spinner } from "@/components/ui/spinner";
-// import { toast } from "sonner";
 import { toast } from "@/lib/toast";
 
 interface FormContentProps {
@@ -76,44 +76,44 @@ const FormContent = ({
   </div>
 );
 
-export default function GroupsPage() {
+export default function ParentGroupsPage() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
 
-  const { user } = useSession();
+  const { data: enfantsData } = useEnfants();
   const { mutate: createGroupeMutation, isPending: isCreatingGroup } =
     useCreateGroupe();
   const { data: groupes, isLoading, isError } = useGroupes();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  // Détecter si on est sur mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const enfantActif = enfantsData?.enfant_actif;
 
   const handleBack = () => {
-    router.push("/student/home");
+    router.push("/parent/home");
   };
 
   const handleCreateGroup = () => {
-    const niveauId = user?.niveau?.id ?? user?.niveau_id;
-    if (!user || niveauId === undefined) {
+    if (!enfantActif) {
       toast({
         variant: "error",
         message:
-          "Impossible de créer le groupe : niveau utilisateur non défini.",
+          "Veuillez sélectionner un enfant avant de créer un groupe.",
       });
       return;
     }
+
+    const niveauId = enfantActif.niveau_id;
+    if (!niveauId) {
+      toast({
+        variant: "error",
+        message:
+          "Impossible de créer le groupe : niveau de l'enfant non défini.",
+      });
+      return;
+    }
+
     if (!groupName.trim()) {
       toast({
         variant: "warning",
@@ -186,27 +186,44 @@ export default function GroupsPage() {
             </Button>
 
             <div className="flex items-center gap-3">
-              {/*<span className="text-3xl">🤝</span>*/}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-500">
-                Réviser à plusieurs, c'est mieux !
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600">
+                Groupes d'étude
               </h1>
             </div>
           </div>
         </div>
 
+        {/* Afficher l'enfant actif */}
+        {enfantActif && (
+          <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-[20px]">
+            <p className="text-sm text-gray-700">
+              Groupes pour :{" "}
+              <span className="font-semibold text-purple-700">
+                {enfantActif.prenom} {enfantActif.nom}
+              </span>{" "}
+              ({enfantActif.niveau?.libelle})
+            </p>
+          </div>
+        )}
+
         {groupes && groupes.length > 0 ? (
           // Scénario: Des groupes sont présents
-          <GroupList basePath="/student/groups" onCreateGroup={() => setIsOpen(true)} />
+          <GroupList
+            basePath="/parent/groups"
+            onCreateGroup={() => setIsOpen(true)}
+            showCreateButton={false} // Les parents ne créent pas de groupes
+            variant="parent" // Mode parent
+          />
         ) : (
           // Scénario: Aucun groupe (contenu placeholder original)
           <>
             {/* Description originale */}
             <div className="text-center mb-12">
               <p className="text-gray-600 text-base sm:text-lg max-w-4xl mx-auto leading-relaxed">
-                Crée ton groupe d'étude en quelques clics, invite tes amis ou
-                camarades de classe et avancez ensemble. Posez-vous des
-                questions, faites des quiz en groupe et entraidez-vous avec
-                l'aide d'Aladin.
+                Créez un groupe d'étude pour votre enfant, invitez d'autres
+                parents ou élèves et permettez-leur d'apprendre ensemble.
+                Posez des questions, créez des quiz en groupe et suivez les
+                progrès de chacun.
               </p>
             </div>
 
@@ -226,18 +243,25 @@ export default function GroupsPage() {
               {/* Texte et bouton CTA originaux */}
               <div className="text-center">
                 <p className="text-gray-600 text-lg mb-6">
-                  Clique ci-dessous pour créer ton premier groupe et commencer
-                  l'aventure collaborative !
+                  Cliquez ci-dessous pour créer le premier groupe de votre
+                  enfant !
                 </p>
 
                 <Button
                   size="lg"
                   onClick={() => setIsOpen(true)}
-                  className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+                  disabled={!enfantActif}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   Créer un groupe
                 </Button>
+
+                {!enfantActif && (
+                  <p className="text-sm text-red-600 mt-4">
+                    Veuillez sélectionner un enfant pour créer un groupe
+                  </p>
+                )}
               </div>
             </div>
           </>
@@ -245,11 +269,11 @@ export default function GroupsPage() {
       </div>
 
       {/* Modal pour Desktop/Tablette */}
-      {!isMobile && (
+      {isDesktop && (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogContent className="sm:max-w-[500px] bg-white">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-[#2C3E50]">
+              <DialogTitle className="text-2xl font-bold text-purple-600">
                 Créer un groupe
               </DialogTitle>
             </DialogHeader>
@@ -270,7 +294,7 @@ export default function GroupsPage() {
               </Button>
               <Button
                 onClick={handleCreateGroup}
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8"
                 disabled={isCreatingGroup}
               >
                 {isCreatingGroup ? <Spinner /> : "Créer"}
@@ -281,11 +305,11 @@ export default function GroupsPage() {
       )}
 
       {/* Drawer pour Mobile */}
-      {isMobile && (
+      {!isDesktop && (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent className="bg-white max-h-[90vh]">
             <DrawerHeader className="text-left">
-              <DrawerTitle className="text-2xl font-bold text-[#2C3E50]">
+              <DrawerTitle className="text-2xl font-bold text-purple-600">
                 Créer un groupe
               </DrawerTitle>
               <DrawerClose className="absolute right-4 top-4">
@@ -310,7 +334,7 @@ export default function GroupsPage() {
               </Button>
               <Button
                 onClick={handleCreateGroup}
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
+                className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
                 disabled={isCreatingGroup}
               >
                 {isCreatingGroup ? <Spinner /> : "Créer"}

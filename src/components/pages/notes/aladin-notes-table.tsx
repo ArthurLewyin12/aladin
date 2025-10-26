@@ -72,22 +72,42 @@ function DetailsView({ rowData }: { rowData: AladinNoteBySubject }) {
               note.note,
               note.nombre_questions,
             );
+            const noteDate = new Date(note.date);
             return (
               <li
                 key={index}
-                className="flex justify-between items-center border-b pb-2"
+                className="flex justify-between items-start border-b pb-3"
               >
-                <div>
-                  <p className="font-semibold">{note.chapitre}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(note.date).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
+                <div className="flex-1">
+                  <p className="font-semibold text-base">{note.chapitre}</p>
+                  <div className="flex flex-col gap-1 mt-1">
+                    <p className="text-sm text-muted-foreground">
+                      📅 {noteDate.toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                      {" à "}
+                      <span className="font-medium">
+                        {noteDate.toLocaleTimeString("fr-FR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </p>
+                    {note.niveau && (
+                      <p className="text-sm">
+                        🎯 Difficulté:{" "}
+                        <span className="font-medium text-foreground">
+                          {note.niveau}
+                        </span>
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <Badge className="text-lg">{noteSur20.toFixed(2)}/20</Badge>
+                <Badge className="text-lg ml-3 shrink-0">
+                  {noteSur20.toFixed(2)}/20
+                </Badge>
               </li>
             );
           })}
@@ -162,6 +182,7 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
                       note.note,
                       note.nombre_questions,
                     );
+                    const noteDate = new Date(note.date);
                     return (
                       <Tooltip key={index}>
                         <TooltipTrigger asChild>
@@ -170,10 +191,19 @@ export function AladinNotesTable({ notes }: AladinNotesTableProps) {
                           </Badge>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{note.chapitre}</p>
-                          <p>
-                            {new Date(note.date).toLocaleDateString("fr-FR")}
+                          <p className="font-semibold">{note.chapitre}</p>
+                          <p className="text-sm">
+                            {noteDate.toLocaleDateString("fr-FR")} à{" "}
+                            {noteDate.toLocaleTimeString("fr-FR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
+                          {note.niveau && (
+                            <p className="text-sm">
+                              Difficulté: {note.niveau}
+                            </p>
+                          )}
                         </TooltipContent>
                       </Tooltip>
                     );

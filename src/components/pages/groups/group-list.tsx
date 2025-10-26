@@ -6,13 +6,15 @@ import { useGroupes } from "@/services/hooks/groupes/useGroupes";
 import { useDeactivateGroupe } from "@/services/hooks/groupes/useDeactivateGroupe";
 import { useReactivateGroupe } from "@/services/hooks/groupes/useReactivateGroupe";
 import { GroupCard } from "./group-card";
+import { ParentGroupCard } from "../parent/parent-group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-// import { toast } from "sonner";
 import { useSession } from "@/services/hooks/auth/useSession";
+import { useEnfants } from "@/services/hooks/parent";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { toast } from "@/lib/toast";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -25,12 +27,21 @@ const CARD_COLORS = [
 
 interface GroupListProps {
   onCreateGroup: () => void;
+  basePath?: string; // Chemin de base pour la redirection (ex: "/student/groups" ou "/parent/groups")
+  showCreateButton?: boolean; // Afficher ou masquer le bouton de création
+  variant?: "student" | "parent"; // Variant pour savoir si c'est un parent ou un étudiant
 }
 
-export const GroupList = ({ onCreateGroup }: GroupListProps) => {
+export const GroupList = ({
+  onCreateGroup,
+  basePath = "/student/groups",
+  showCreateButton = true,
+  variant = "student",
+}: GroupListProps) => {
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
   const { user: currentUser } = useSession();
+  const { data: enfantsData } = useEnfants(); // Pour les parents
 
   console.log("Groupes Data:", JSON.stringify(groupes, null, 2));
   console.log("Current User:", JSON.stringify(currentUser, null, 2));
@@ -139,9 +150,9 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
 
   const handleOpen = useCallback(
     (groupId: number) => {
-      router.push(`/student/groups/${groupId}`);
+      router.push(`${basePath}/${groupId}`);
     },
-    [router],
+    [router, basePath],
   );
 
   const handleInvite = useCallback(
@@ -163,6 +174,15 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
       groupName: "",
       cardColor: CARD_COLORS[0],
     });
+  }, []);
+
+  const handleAddEnfant = useCallback((enfantId: number, groupId: number) => {
+    // TODO: Implémenter l'API pour ajouter un enfant à un groupe
+    toast({
+      variant: "default",
+      message: "Fonctionnalité en cours de développement",
+    });
+    console.log(`Ajouter enfant ${enfantId} au groupe ${groupId}`);
   }, []);
 
   // État de chargement
@@ -212,46 +232,93 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
         <div className=" flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-              Mes Groupes
+              {variant === "parent" ? "Groupes de vos enfants" : "Mes Groupes"}
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
               {enrichedGroupes.length} groupe
               {enrichedGroupes.length > 1 ? "s" : ""}{" "}
-              {enrichedGroupes.length > 1 ? "disponibles" : "disponible"}
+              {variant === "parent"
+                ? enrichedGroupes.length > 1
+                  ? "rejoints"
+                  : "rejoint"
+                : enrichedGroupes.length > 1
+                  ? "disponibles"
+                  : "disponible"}
               {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </p>
           </div>
-          <button
-            onClick={onCreateGroup}
-            className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3  text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
-          >
-            <span className="text-lg mr-2">+</span>
-            <span className="hidden sm:inline">Nouveau groupe</span>
-            <span className="sm:hidden">Créer</span>
-          </button>
+          {showCreateButton && (
+            <button
+              onClick={onCreateGroup}
+              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3  text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
+            >
+              <span className="text-lg mr-2">+</span>
+              <span className="hidden sm:inline">Nouveau groupe</span>
+              <span className="sm:hidden">Créer</span>
+            </button>
+          )}
         </div>
 
         {/* Grille des groupes paginés */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {paginatedGroupes.map((groupe) => (
-            <GroupCard
-              key={groupe.id}
-              title={groupe.nom}
-              description={groupe.description}
-              groupId={groupe.id.toString()}
-              members={groupe.hasMembers ? groupe.memberAvatars : undefined}
-              numPeople={groupe.remainingCount}
-              isActive={groupe.groupe.is_active}
-              isChief={groupe.isChief}
-              index={groupe.index}
-              onDeactivate={() => handleDeactivate(groupe.id)}
-              onActivate={() => handleActivate(groupe.id)}
-              onOpen={() => handleOpen(groupe.id)}
-              onInvite={() =>
-                handleInvite(groupe.id, groupe.nom, groupe.cardColor)
-              }
-            />
-          ))}
+          {paginatedGroupes.map((groupe) => {
+            if (variant === "parent") {
+              // Calculer les enfants disponibles (pas encore dans ce groupe)
+              const availableEnfants = (enfantsData?.enfants || []).filter(
+                (enfant) =>
+                  !groupe.utilisateurs.some((u) => u.id === enfant.id),
+              );
+
+              return (
+                <ParentGroupCard
+                  key={groupe.id}
+                  title={groupe.nom}
+                  description={groupe.description}
+                  groupId={groupe.id}
+                  members={
+                    groupe.hasMembers
+                      ? groupe.memberAvatars.map((m, i) => ({
+                          ...m,
+                          name:
+                            groupe.utilisateurs[i]?.prenom +
+                              " " +
+                              groupe.utilisateurs[i]?.nom || "Membre",
+                        }))
+                      : undefined
+                  }
+                  numPeople={groupe.members_count}
+                  isActive={groupe.groupe.is_active}
+                  isChief={groupe.isChief}
+                  index={groupe.index}
+                  bgColor={groupe.cardColor}
+                  availableEnfants={availableEnfants}
+                  onAddEnfant={handleAddEnfant}
+                  onOpen={() => handleOpen(groupe.id)}
+                />
+              );
+            }
+
+            // Cas étudiant (par défaut)
+            return (
+              <GroupCard
+                key={groupe.id}
+                title={groupe.nom}
+                description={groupe.description}
+                groupId={groupe.id.toString()}
+                members={groupe.hasMembers ? groupe.memberAvatars : undefined}
+                numPeople={groupe.remainingCount}
+                isActive={groupe.groupe.is_active}
+                isChief={groupe.isChief}
+                index={groupe.index}
+                onDeactivate={() => handleDeactivate(groupe.id)}
+                onActivate={() => handleActivate(groupe.id)}
+                onOpen={() => handleOpen(groupe.id)}
+                onInvite={() =>
+                  handleInvite(groupe.id, groupe.nom, groupe.cardColor)
+                }
+              />
+            );
+          })}
         </div>
 
         {/* Pagination */}
@@ -268,44 +335,46 @@ export const GroupList = ({ onCreateGroup }: GroupListProps) => {
             </Button>
 
             <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                const showPage =
-                  pageNum <= 2 ||
-                  pageNum >= totalPages - 1 ||
-                  (pageNum >= page - 1 && pageNum <= page + 1);
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => {
+                  const showPage =
+                    pageNum <= 2 ||
+                    pageNum >= totalPages - 1 ||
+                    (pageNum >= page - 1 && pageNum <= page + 1);
 
-                const showEllipsisBefore = pageNum === 3 && page > 4;
-                const showEllipsisAfter =
-                  pageNum === totalPages - 2 && page < totalPages - 3;
+                  const showEllipsisBefore = pageNum === 3 && page > 4;
+                  const showEllipsisAfter =
+                    pageNum === totalPages - 2 && page < totalPages - 3;
 
-                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                  return null;
-                }
+                  if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                    return null;
+                  }
 
-                if (showEllipsisBefore || showEllipsisAfter) {
+                  if (showEllipsisBefore || showEllipsisAfter) {
+                    return (
+                      <span key={pageNum} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
                   return (
-                    <span key={pageNum} className="px-2 text-gray-400">
-                      ...
-                    </span>
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(pageNum)}
+                      className={`rounded-full min-w-[2.5rem] ${
+                        pageNum === page
+                          ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                          : ""
+                      }`}
+                    >
+                      {pageNum}
+                    </Button>
                   );
-                }
-
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setPage(pageNum)}
-                    className={`rounded-full min-w-[2.5rem] ${
-                      pageNum === page
-                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
-                        : ""
-                    }`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
+                },
+              )}
             </div>
 
             <Button

@@ -30,9 +30,15 @@ export default function EnfantsPage() {
 
   const handleSelectEnfant = (enfant: Enfant) => {
     if (isSelectingEnfant) return;
+
+    const payload = {
+      enfant_id: enfant.id,
+      type: enfant.type as "utilisateur" | "manuel"
+    };
+
     // Sélectionner l'enfant ET rediriger vers son profil
     selectionnerEnfant(
-      { enfant_id: enfant.id },
+      payload,
       {
         onSuccess: () => {
           router.push(`/parent/enfants/${enfant.id}`);
@@ -175,7 +181,7 @@ export default function EnfantsPage() {
 
         <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
           {/* Bouton en haut quand il y a des enfants */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 bg-white/80 backdrop-blur-sm rounded-[24px] p-4 sm:p-6 shadow-md border border-purple-100">
             <div className="flex-1 min-w-0">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 Mes Enfants
@@ -188,7 +194,7 @@ export default function EnfantsPage() {
             <Button
               size="lg"
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-[18px] shadow-lg transition-all hover:shadow-xl hover:scale-105 w-full sm:w-auto whitespace-nowrap"
             >
               <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
               <span className="hidden sm:inline">Ajouter un enfant</span>
@@ -215,11 +221,11 @@ export default function EnfantsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mt-4 p-4 sm:p-6 bg-purple-50/50 border border-purple-200/50 rounded-2xl"
+              className="mt-4 p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-purple-100/30 border-2 border-purple-200 rounded-[24px] shadow-sm"
             >
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-[18px] flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">

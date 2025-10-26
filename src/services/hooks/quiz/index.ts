@@ -39,6 +39,8 @@ export const useQuizHistory = () => {
  * - Les tentatives s'arrêtent si l'API retourne une erreur 429 (Too Many Requests).
  */
 export const useGenerateQuiz = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (payload: QuizGeneratePayload) => generateQuiz(payload),
 
@@ -54,6 +56,17 @@ export const useGenerateQuiz = () => {
 
     // Délai exponentiel entre les tentatives (ex: 1s, 2s, 4s, 8s)
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+
+    // Invalider les queries après succès pour rafraîchir les données
+    onSuccess: () => {
+      // Invalider les quiz de l'utilisateur
+      queryClient.invalidateQueries({ queryKey: createQueryKey("allQuiz") });
+      queryClient.invalidateQueries({ queryKey: createQueryKey("quizHistory") });
+
+      // Invalider les données parent (quiz et résumé de l'enfant)
+      queryClient.invalidateQueries({ queryKey: createQueryKey("enfant-quiz") });
+      queryClient.invalidateQueries({ queryKey: createQueryKey("enfant-resume") });
+    },
   });
 };
 

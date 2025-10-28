@@ -13,6 +13,7 @@ import {
   RetirerEnfantResponse,
   AssocierAutomatiquementResponse,
 } from "./types/common/parent.types";
+import { GetParentDashboardResponse, DashboardPeriod } from "./types/common/dashboard-data.types";
 
 /**
  * Récupère tous les enfants (utilisateurs + manuels) du parent.
@@ -139,3 +140,22 @@ export const getEnfantResume =
       import("./types/common/parent.types").GetEnfantResumeResponse
     >(ParentEndpoints.GET_ENFANT_RESUME);
   };
+
+/**
+ * Récupère le dashboard du parent avec les statistiques, graphiques et activités récentes.
+ * @param {number} parentId - L'ID du parent.
+ * @param {DashboardPeriod} period - La période d'analyse (week, month, quarter, semester, year). Par défaut: month
+ * @returns {Promise<GetParentDashboardResponse>} Le dashboard du parent.
+ */
+export const getParentDashboard = async (
+  parentId: number,
+  period: DashboardPeriod = "month",
+): Promise<GetParentDashboardResponse> => {
+  const endpoint = ParentEndpoints.GET_DASHBOARD.replace(
+    "{parentId}",
+    parentId.toString(),
+  );
+  return request.get<GetParentDashboardResponse>(endpoint, {
+    params: { period },
+  });
+};

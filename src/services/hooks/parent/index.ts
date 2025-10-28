@@ -9,3 +9,4 @@ export { useEnfantGroupes } from "./useEnfantGroupes";
 export { useEnfantQuiz } from "./useEnfantQuiz";
 export { useEnfantCours } from "./useEnfantCours";
 export { useEnfantResume } from "./useEnfantResume";
+export { useParentDashboard } from "./useParentDashboard";

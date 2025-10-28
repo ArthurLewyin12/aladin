@@ -4,3 +4,4 @@ export * from "./chapitre.types";
 export * from "./quiz.types";
 export * from "./groupe.types";
 export * from "./note.types";
+export * from "./dashboard-data.types";

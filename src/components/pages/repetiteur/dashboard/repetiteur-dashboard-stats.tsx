@@ -1,13 +1,13 @@
 "use client";
 
-import { Users, BookOpen, FileText, TrendingUp } from "lucide-react";
+import { Users, FileQuestion, BookOpen, Group } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface RepetiteurDashboardStatsProps {
   totalStudents: number;
-  activeStudents: number;
-  totalQuizzesCreated: number;
-  totalCoursesCreated: number;
+  totalQuizzes: number;
+  totalCourses: number;
+  totalGroups: number;
 }
 
 const CARD_COLORS = [
@@ -19,34 +19,34 @@ const CARD_COLORS = [
 
 export function RepetiteurDashboardStats({
   totalStudents,
-  activeStudents,
-  totalQuizzesCreated,
-  totalCoursesCreated,
+  totalQuizzes,
+  totalCourses,
+  totalGroups,
 }: RepetiteurDashboardStatsProps) {
   const stats = [
     {
-      title: "Élèves suivis",
+      title: "Élèves gérés",
       value: totalStudents,
       subtitle: totalStudents > 1 ? "élèves" : "élève",
       icon: Users,
     },
     {
-      title: "Élèves actifs",
-      value: activeStudents,
-      subtitle: activeStudents > 1 ? "actifs" : "actif",
-      icon: Users,
-    },
-    {
       title: "Quiz créés",
-      value: totalQuizzesCreated,
-      subtitle: "quiz",
-      icon: BookOpen,
+      value: totalQuizzes,
+      subtitle: totalQuizzes > 1 ? "quiz" : "quiz",
+      icon: FileQuestion,
     },
     {
       title: "Cours créés",
-      value: totalCoursesCreated,
-      subtitle: "cours",
-      icon: FileText,
+      value: totalCourses,
+      subtitle: totalCourses > 1 ? "cours" : "cours",
+      icon: BookOpen,
+    },
+    {
+      title: "Groupes créés",
+      value: totalGroups,
+      subtitle: totalGroups > 1 ? "groupes" : "groupe",
+      icon: Group,
     },
   ];
 

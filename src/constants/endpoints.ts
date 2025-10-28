@@ -162,6 +162,8 @@ export enum ParentEndpoints {
   GET_ENFANT_QUIZ = "/api/parent/enfant/quiz",
   GET_ENFANT_COURS = "/api/parent/enfant/cours",
   GET_ENFANT_RESUME = "/api/parent/enfant/resume",
+  // Dashboard parent
+  GET_DASHBOARD = "/api/parents/{parentId}/dashboard",
 }
 
 /**

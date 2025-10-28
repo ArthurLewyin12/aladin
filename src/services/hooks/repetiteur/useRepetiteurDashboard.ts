@@ -46,6 +46,8 @@ export const useRepetiteurDashboard = (
         id: eleve.id,
         prenom: eleve.prenom,
         nom: eleve.nom,
+        niveau_id: eleve.niveau_id,
+        niveau: eleve.niveau,
       })),
     );
   }

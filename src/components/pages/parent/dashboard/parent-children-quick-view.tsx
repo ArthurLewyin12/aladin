@@ -2,8 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { BookOpen, Brain, Clock, Users, TrendingUp, TrendingDown } from "lucide-react";
+import { BookOpen, Brain, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface ChildQuickView {
@@ -12,14 +11,9 @@ interface ChildQuickView {
   niveau: string;
   avatar?: string;
   color: string;
-  averageNote: number;
-  weeklyStudyHours: number;
   totalQuizzes: number;
   totalCourses: number;
   totalGroups: number;
-  trend: "up" | "down" | "stable";
-  progressToNextMilestone: number;
-  nextMilestone?: string;
 }
 
 interface ParentChildrenQuickViewProps {
@@ -38,12 +32,6 @@ export function ParentChildrenQuickView({
 }: ParentChildrenQuickViewProps) {
   const router = useRouter();
 
-  const getPerformanceBadge = (average: number) => {
-    if (average >= 14) return { label: "Excellent", color: "bg-green-100 text-green-800" };
-    if (average >= 12) return { label: "Très bien", color: "bg-blue-100 text-blue-800" };
-    if (average >= 10) return { label: "Bien", color: "bg-yellow-100 text-yellow-800" };
-    return { label: "À améliorer", color: "bg-red-100 text-red-800" };
-  };
 
   if (children.length === 0) {
     return (
@@ -69,7 +57,6 @@ export function ParentChildrenQuickView({
       </h3>
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {children.map((child, index) => {
-          const perfBadge = getPerformanceBadge(child.averageNote);
           const bgColor = CARD_COLORS[index % CARD_COLORS.length];
           const initials = child.name
             .split(" ")
@@ -108,36 +95,10 @@ export function ParentChildrenQuickView({
                       <p className="text-sm text-gray-600">{child.niveau}</p>
                     </div>
                   </div>
-                  {child.trend === "up" && (
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                  )}
-                  {child.trend === "down" && (
-                    <TrendingDown className="h-5 w-5 text-red-600" />
-                  )}
-                </div>
-
-                {/* Moyenne et badge */}
-                <div className="mb-4">
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-3xl font-bold text-gray-900">
-                      {child.averageNote.toFixed(1)}
-                    </span>
-                    <span className="text-sm text-gray-600">/20</span>
-                  </div>
-                  <Badge className={`${perfBadge.color} border-0`}>
-                    {perfBadge.label}
-                  </Badge>
                 </div>
 
                 {/* Stats */}
                 <div className="space-y-2 mb-4 text-sm text-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      <span>Temps d'étude</span>
-                    </div>
-                    <span className="font-medium">{child.weeklyStudyHours}h/sem</span>
-                  </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Brain className="h-4 w-4" />

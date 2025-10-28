@@ -93,7 +93,24 @@ function transformEvolutionData(
  */
 export function adaptParentDashboardData(
   apiResponse: GetParentDashboardResponse,
-  childrenData: Array<{ id: number; prenom: string; nom: string }>,
+  childrenData: Array<{
+    id: number;
+    prenom: string;
+    nom: string;
+    niveau_id?: number;
+    niveau?: { id: number; libelle: string };
+  }>,
+  childrenResume: Array<{
+    enfantId: string | number;
+    statistiques: {
+      groupes: number;
+      quiz_personnels: number;
+      quiz_groupes: number;
+      quiz_total: number;
+      cours: number;
+      total_contenus: number;
+    };
+  }> = [],
 ) {
   // Build child name map
   const childNameMap = new Map<number, string>();
@@ -136,28 +153,48 @@ export function adaptParentDashboardData(
       )
     : { data: [], childrenConfig: [] };
 
-  // Adapt recent activities
+  // Adapt recent activities - Filter out activities without enfant
   const recentActivitiesData = apiResponse.tableau_activites
-    ? apiResponse.tableau_activites.map((activity) =>
-        formatActivityForComponent(activity, childNameMap),
-      )
+    ? apiResponse.tableau_activites
+        .filter((activity) => activity.enfant !== null)
+        .map((activity) =>
+          formatActivityForComponent(activity, childNameMap),
+        )
     : [];
 
   // Adapt children quick view
-  const childrenQuickViewData = childrenData.map((child) => ({
-    id: String(child.id),
-    name: `${child.prenom} ${child.nom}`,
-    niveau: "À déterminer", // Should come from child's data
-    color: getColorForChild(child.id),
-    averageNote: Math.random() * 10 + 10,
-    weeklyStudyHours: Math.floor(Math.random() * 20),
-    totalQuizzes: apiResponse.counters?.quiz_crees || 0,
-    totalCourses: apiResponse.counters?.cours_crees || 0,
-    totalGroups: apiResponse.counters?.groupes_crees || 0,
-    trend: Math.random() > 0.5 ? ("up" as const) : ("stable" as const),
-    progressToNextMilestone: Math.floor(Math.random() * 100),
-    nextMilestone: "Prochaine étape",
-  }));
+  // Build a map of resume data by enfant ID for easy lookup
+  const resumeMap = new Map<number | string, {
+    groupes: number;
+    quiz_personnels: number;
+    quiz_groupes: number;
+    quiz_total: number;
+    cours: number;
+    total_contenus: number;
+  }>();
+
+  childrenResume.forEach((resume) => {
+    resumeMap.set(resume.enfantId, resume.statistiques);
+  });
+
+  const childrenQuickViewData = childrenData.map((child) => {
+    // Récupérer le niveau depuis l'objet niveau si disponible
+    const niveauLibelle =
+      child.niveau?.libelle || (child.niveau_id ? `Niveau ${child.niveau_id}` : "Non défini");
+
+    // Récupérer les stats du résumé
+    const resumeStats = resumeMap.get(child.id);
+
+    return {
+      id: String(child.id),
+      name: `${child.prenom} ${child.nom}`,
+      niveau: niveauLibelle,
+      color: getColorForChild(child.id),
+      totalQuizzes: resumeStats?.quiz_total || 0,
+      totalCourses: resumeStats?.cours || 0,
+      totalGroups: resumeStats?.groupes || 0,
+    };
+  });
 
   return {
     statsData,

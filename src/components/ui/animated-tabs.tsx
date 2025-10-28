@@ -7,9 +7,10 @@ export interface AnimatedTabsProps {
   tabs: { label: string; icon?: React.ReactNode }[];
   onTabChange?: (label: string) => void;
   activeTab?: string; // Prop optionnelle pour contrôler l'onglet actif depuis le parent
+  activeTabClassName?: string; // Couleur personnalisée pour la tab active
 }
 
-export function AnimatedTabs({ tabs, onTabChange, activeTab: controlledActiveTab }: AnimatedTabsProps) {
+export function AnimatedTabs({ tabs, onTabChange, activeTab: controlledActiveTab, activeTabClassName }: AnimatedTabsProps) {
   const [internalActiveTab, setInternalActiveTab] = useState(tabs[0].label);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -47,7 +48,7 @@ export function AnimatedTabs({ tabs, onTabChange, activeTab: controlledActiveTab
         ref={containerRef}
         className="absolute z-10 w-full overflow-hidden [clip-path:inset(0px_75%_0px_0%_round_17px)] [transition:clip-path_0.25s_ease]"
       >
-        <div className="relative flex w-full justify-center bg-[#2C3E50]">
+        <div className={`relative flex w-full justify-center ${activeTabClassName || "bg-[#2C3E50]"}`}>
           {tabs.map((tab, index) => (
             <button
               key={index}

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useEnfantQuiz } from "@/services/hooks/parent";
+import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import { Enfant, QuizPersonnel, QuizGroupe } from "@/services/controllers/types/common/parent.types";
 import { QuizDetailsModal } from "@/components/pages/user-quizzes/quiz-details-modal";
 import { ParentQuizCard } from "./parent-quiz-card";
+import { CreateEnfantQuizModal } from "./create-enfant-quiz-modal";
 
 type QuizEnfant = QuizPersonnel | QuizGroupe;
 
@@ -24,6 +26,7 @@ interface ParentQuizListProps {
 export function ParentQuizList({ enfant, isEnfantReady }: ParentQuizListProps) {
   const router = useRouter();
   const { data, isLoading, isError } = useEnfantQuiz(isEnfantReady);
+  const { data: matiereData } = useMatieresByNiveau(enfant?.niveau?.id || 0);
 
   // Combiner les quiz personnels et de groupe
   const quizzes: QuizEnfant[] = useMemo(() => {
@@ -32,6 +35,7 @@ export function ParentQuizList({ enfant, isEnfantReady }: ParentQuizListProps) {
   }, [data]);
 
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("quizPage", parseAsInteger.withDefault(1));
@@ -55,8 +59,7 @@ export function ParentQuizList({ enfant, isEnfantReady }: ParentQuizListProps) {
   };
 
   const handleGenerateQuiz = () => {
-    // Rediriger vers la page de génération de quiz pour cet enfant
-    router.push(`/parent/enfants/${enfant.id}/quiz/generate`);
+    setIsCreateModalOpen(true);
   };
 
   if (isLoading) {
@@ -264,6 +267,14 @@ export function ParentQuizList({ enfant, isEnfantReady }: ParentQuizListProps) {
             handleCloseDetails();
           }
         }}
+      />
+
+      {/* Modal de création de quiz */}
+      <CreateEnfantQuizModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        enfant={enfant}
+        matieres={matiereData?.matieres || []}
       />
     </>
   );

@@ -3,6 +3,7 @@ import { getParentDashboard, getEnfants } from "@/services/controllers/parent.co
 import { createQueryKey } from "@/lib/request";
 import { DashboardPeriod } from "@/services/controllers/types/common/dashboard-data.types";
 import { adaptParentDashboardData } from "./dashboard-adapter";
+import { useEnfantsResume } from "./useEnfantsResume";
 
 /**
  * Hook de requête pour récupérer le dashboard du parent avec données transformées.
@@ -29,9 +30,12 @@ export const useParentDashboard = (
     enabled: !!parentId,
   });
 
+  // Récupère les résumés de tous les enfants
+  const enfantsResumeQuery = useEnfantsResume(!!parentId);
+
   // Combine et transforme les données
-  const isLoading = dashboardQuery.isLoading || enfantsQuery.isLoading;
-  const error = dashboardQuery.error || enfantsQuery.error;
+  const isLoading = dashboardQuery.isLoading || enfantsQuery.isLoading || enfantsResumeQuery.isLoading;
+  const error = dashboardQuery.error || enfantsQuery.error || enfantsResumeQuery.error;
 
   let data = null;
   if (
@@ -46,7 +50,10 @@ export const useParentDashboard = (
         id: typeof enfant.id === "string" ? parseInt(enfant.id) : enfant.id,
         prenom: enfant.prenom,
         nom: enfant.nom,
+        niveau_id: enfant.niveau_id,
+        niveau: enfant.niveau,
       })),
+      enfantsResumeQuery.data || [],
     );
   }
 
@@ -54,7 +61,7 @@ export const useParentDashboard = (
     data,
     isLoading,
     error,
-    isFetching: dashboardQuery.isFetching || enfantsQuery.isFetching,
+    isFetching: dashboardQuery.isFetching || enfantsQuery.isFetching || enfantsResumeQuery.isFetching,
     isError: !!error,
   };
 };

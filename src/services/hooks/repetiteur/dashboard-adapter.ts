@@ -101,7 +101,13 @@ function transformEvolutionData(
  */
 export function adaptRepetiteurDashboardData(
   apiResponse: GetRepetiteurDashboardResponse,
-  elevesData: Array<{ id: number | string; prenom: string; nom: string }>,
+  elevesData: Array<{
+    id: number | string;
+    prenom: string;
+    nom: string;
+    niveau_id?: number;
+    niveau?: { id: number; libelle: string };
+  }>,
 ) {
   // Build student name map
   const studentNameMap = new Map<number | string, string>();
@@ -152,20 +158,31 @@ export function adaptRepetiteurDashboardData(
     : [];
 
   // Adapt students quick view
-  const studentsQuickViewData = elevesData.map((eleve) => ({
-    id: String(eleve.id),
-    name: `${eleve.prenom} ${eleve.nom}`,
-    niveau: "À déterminer", // Should come from eleve's data
-    color: getColorForStudent(eleve.id),
-    averageNote: Math.random() * 10 + 10,
-    weeklyStudyHours: Math.floor(Math.random() * 20),
-    totalQuizzes: apiResponse.counters?.quiz_crees || 0,
-    totalCourses: apiResponse.counters?.cours_crees || 0,
-    totalGroups: apiResponse.counters?.groupes_crees || 0,
-    trend: Math.random() > 0.5 ? ("up" as const) : ("stable" as const),
-    progressToNextMilestone: Math.floor(Math.random() * 100),
-    nextMilestone: "Prochaine étape",
-  }));
+  // Note: On utilise les données disponibles depuis l'API GET_ELEVES
+  // Les stats détaillées (moyenne, temps d'étude, compteurs par élève) ne sont pas disponibles dans le dashboard
+  // Il faudrait appeler /api/repetiteur/eleve/resume pour chaque élève pour avoir ces données
+  const studentsQuickViewData = elevesData.map((eleve) => {
+    // Récupérer le niveau depuis l'objet niveau si disponible
+    const niveauLibelle =
+      eleve.niveau?.libelle || (eleve.niveau_id ? `Niveau ${eleve.niveau_id}` : "Non défini");
+
+    return {
+      id: String(eleve.id),
+      name: `${eleve.prenom} ${eleve.nom}`,
+      niveau: niveauLibelle,
+      color: getColorForStudent(eleve.id),
+      // Ces données ne sont pas disponibles dans l'API dashboard actuelle
+      // Pour avoir les vraies valeurs, il faudrait faire une requête GET /api/repetiteur/eleve/resume par élève
+      averageNote: 0, // Non disponible - affichera 0.0/20
+      weeklyStudyHours: 0, // Non disponible
+      totalQuizzes: 0, // Non disponible par élève (le counter est global)
+      totalCourses: 0, // Non disponible par élève
+      totalGroups: 0, // Non disponible par élève
+      trend: "stable" as const, // Non disponible
+      progressToNextMilestone: 0,
+      nextMilestone: undefined,
+    };
+  });
 
   return {
     statsData,

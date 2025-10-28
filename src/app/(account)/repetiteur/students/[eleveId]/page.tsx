@@ -5,17 +5,39 @@ import { useRouter, useParams } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
-import { ArrowLeft, BookOpen, FileText, User, Brain } from "lucide-react";
+import { ArrowLeft, BookOpen, FileText, User, Brain, Plus, X } from "lucide-react";
 import { useEleves, useEleveResume, useSelectionnerEleve } from "@/services/hooks/repetiteur";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useCreateGroupe } from "@/services/hooks/groupes/useCreateGroupe";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
+import { toast } from "@/lib/toast";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RepetiteurCourseList } from "@/components/pages/repetiteur/repetiteur-course-list";
 import { RepetiteurQuizList } from "@/components/pages/repetiteur/repetiteur-quiz-list";
+import { RepetiteurGroupsList } from "@/components/pages/repetiteur/repetiteur-groups-list";
+import { RepetiteurStatistics } from "@/components/pages/repetiteur/repetiteur-statistics";
 import { AladinNotesTab } from "@/components/pages/notes/aladin-notes-tab";
 import { ClasseNotesTab } from "@/components/pages/notes/classe-notes-tab";
 import { ComparisonTab } from "@/components/pages/notes/comparison-tab";
 import { AnimatedTabs as NestedTabs } from "@/components/ui/animated-tabs";
-import { GitCompare } from "lucide-react";
+import { GitCompare, BarChart3, Users } from "lucide-react";
 
 export default function EleveDetailPage() {
   const router = useRouter();
@@ -29,10 +51,15 @@ export default function EleveDetailPage() {
   );
   const [notesTab, setNotesTab] = useState("Notes de Classe");
   const [isEleveReady, setIsEleveReady] = useState(false);
+  const [isOpenGroupModal, setIsOpenGroupModal] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [groupDescription, setGroupDescription] = useState("");
 
   // Récupérer les données de l'élève
   const { data: elevesData, isLoading: isLoadingEleves } = useEleves();
   const { mutate: selectionnerEleve, isPending: isSelecting } = useSelectionnerEleve();
+  const { mutate: createGroupeMutation, isPending: isCreatingGroup } = useCreateGroupe();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   
   const eleves = elevesData?.eleves || [];
   const eleve = eleves.find((e) => e.id.toString() === eleveId);
@@ -72,6 +99,56 @@ export default function EleveDetailPage() {
     router.push("/repetiteur/students");
   };
 
+  const handleCreateGroup = () => {
+    if (!groupName.trim()) {
+      toast({
+        variant: "warning",
+        message: "Le nom du groupe ne peut pas être vide.",
+      });
+      return;
+    }
+
+    const niveauId = eleve?.niveau_id;
+    if (!niveauId) {
+      toast({
+        variant: "error",
+        message: "Impossible de créer le groupe : niveau de l'élève non défini.",
+      });
+      return;
+    }
+
+    createGroupeMutation(
+      {
+        nom: groupName,
+        description: groupDescription,
+        niveau_id: niveauId.toString(),
+      },
+      {
+        onSuccess: () => {
+          setIsOpenGroupModal(false);
+          setGroupName("");
+          setGroupDescription("");
+          toast({
+            variant: "success",
+            message: "Groupe créé avec succès!",
+          });
+        },
+        onError: () => {
+          toast({
+            variant: "error",
+            message: "Erreur lors de la création du groupe.",
+          });
+        },
+      },
+    );
+  };
+
+  const handleCancelGroupModal = () => {
+    setIsOpenGroupModal(false);
+    setGroupName("");
+    setGroupDescription("");
+  };
+
   const tabs = [
     {
       label: "Cours",
@@ -82,21 +159,33 @@ export default function EleveDetailPage() {
       icon: <Brain className="w-4 h-4" />,
     },
     {
+      label: "Groupes",
+      icon: <Users className="w-4 h-4" />,
+    },
+    {
+      label: "Statistiques",
+      icon: <BarChart3 className="w-4 h-4" />,
+    },
+    {
       label: "Notes",
       icon: <FileText className="w-4 h-4" />,
     },
   ];
-  
+
   // Mapper les labels affichés aux valeurs d'URL
   const tabMapping: Record<string, string> = {
     "Cours": "cours",
     "Quiz": "quiz",
+    "Groupes": "groupes",
+    "Statistiques": "statistiques",
     "Notes": "notes"
   };
-  
+
   const reversTabMapping: Record<string, string> = {
     "cours": "Cours",
     "quiz": "Quiz",
+    "groupes": "Groupes",
+    "statistiques": "Statistiques",
     "notes": "Notes"
   };
   
@@ -287,11 +376,31 @@ export default function EleveDetailPage() {
             <RepetiteurQuizList eleve={eleve} isEleveReady={isEleveReady} />
           )}
 
+          {activeTab === "groupes" && (
+            <RepetiteurGroupsList
+              eleve={eleve}
+              isEleveReady={isEleveReady}
+              onCreateGroup={() => setIsOpenGroupModal(true)}
+            />
+          )}
+
+          {activeTab === "statistiques" && (
+            <RepetiteurStatistics
+              eleve={eleve}
+              statistics={resume?.statistiques || {
+                nombre_groupes: 0,
+                nombre_quiz: 0,
+                nombre_cours: 0,
+                moyenne_generale: undefined,
+              }}
+            />
+          )}
+
           {activeTab === "notes" && (
             <div className="space-y-6">
               {/* Sous-onglets pour Notes */}
               <div className="flex justify-center">
-                <NestedTabs 
+                <NestedTabs
                   tabs={[
                     { label: "Notes de Classe", icon: <FileText className="w-4 h-4" /> },
                     { label: "Notes Aladin", icon: <BookOpen className="w-4 h-4" /> },
@@ -308,6 +417,124 @@ export default function EleveDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Modal pour créer un groupe - Desktop */}
+        {isDesktop && (
+          <Dialog open={isOpenGroupModal} onOpenChange={setIsOpenGroupModal}>
+            <DialogContent className="sm:max-w-[500px] bg-white">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-[#548C2F]">
+                  Créer un groupe
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="mt-4 space-y-4">
+                <div>
+                  <Label htmlFor="groupName" className="text-sm text-gray-600">
+                    Nom du groupe*
+                  </Label>
+                  <Input
+                    id="groupName"
+                    placeholder="Nom du groupe*"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    className="mt-1 bg-gray-50 border-gray-200"
+                    disabled={isCreatingGroup}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description" className="text-sm text-gray-600">
+                    Description du groupe
+                  </Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Description du groupe"
+                    value={groupDescription}
+                    onChange={(e) => setGroupDescription(e.target.value)}
+                    rows={4}
+                    className="mt-1 bg-gray-50 border-gray-200 resize-none"
+                    disabled={isCreatingGroup}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6 justify-end">
+                <Button variant="ghost" onClick={handleCancelGroupModal} className="px-6">
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleCreateGroup}
+                  className="bg-[#548C2F] hover:bg-[#4a7829] text-white px-8"
+                  disabled={isCreatingGroup}
+                >
+                  {isCreatingGroup ? <Spinner /> : "Créer"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Modal pour créer un groupe - Mobile */}
+        {!isDesktop && (
+          <Drawer open={isOpenGroupModal} onOpenChange={setIsOpenGroupModal}>
+            <DrawerContent className="bg-white max-h-[90vh]">
+              <DrawerHeader className="text-left">
+                <DrawerTitle className="text-2xl font-bold text-[#548C2F]">
+                  Créer un groupe
+                </DrawerTitle>
+                <DrawerClose className="absolute right-4 top-4">
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </DrawerClose>
+              </DrawerHeader>
+
+              <div className="px-4 pb-4 overflow-y-auto space-y-4">
+                <div>
+                  <Label htmlFor="groupName" className="text-sm text-gray-600">
+                    Nom du groupe*
+                  </Label>
+                  <Input
+                    id="groupName"
+                    placeholder="Nom du groupe*"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    className="mt-1 bg-gray-50 border-gray-200"
+                    disabled={isCreatingGroup}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description" className="text-sm text-gray-600">
+                    Description du groupe
+                  </Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Description du groupe"
+                    value={groupDescription}
+                    onChange={(e) => setGroupDescription(e.target.value)}
+                    rows={4}
+                    className="mt-1 bg-gray-50 border-gray-200 resize-none"
+                    disabled={isCreatingGroup}
+                  />
+                </div>
+              </div>
+
+              <DrawerFooter className="flex-row gap-3 justify-end">
+                <Button variant="ghost" onClick={handleCancelGroupModal} className="flex-1">
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleCreateGroup}
+                  className="bg-[#548C2F] hover:bg-[#4a7829] text-white flex-1"
+                  disabled={isCreatingGroup}
+                >
+                  {isCreatingGroup ? <Spinner /> : "Créer"}
+                </Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        )}
       </div>
     </div>
   );

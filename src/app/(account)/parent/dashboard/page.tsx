@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, Calendar, CalendarDays, CalendarRange } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQueryState, parseAsStringLiteral } from "nuqs";
 import {
   ParentDashboardStats,
   ParentChildrenStudyTimeChart,
@@ -11,192 +12,85 @@ import {
   ParentRecentActivities,
   ParentChildrenQuickView,
 } from "@/components/pages/parent/dashboard";
+import { useParentDashboard } from "@/services/hooks/parent/useParentDashboard";
+import { useSession } from "@/services/hooks/auth/useSession";
+import { DashboardPeriod } from "@/services/controllers/types/common/dashboard-data.types";
+import { AnimatedTabs } from "@/components/ui/animated-tabs";
 
-// Données statiques - À remplacer par les vraies données de l'API
-const mockData = {
-  // Stats globales
-  totalChildren: 3,
-  totalGroups: 4,
-  averageNote: 13.2,
-  totalActivities: 89,
-
-  // Temps d'étude par enfant
-  studyTimeData: [
-    { name: "Amadou", hours: 45, color: "#8b5cf6" },
-    { name: "Fatou", hours: 52, color: "#06b6d4" },
-    { name: "Ibrahima", hours: 30, color: "#f97316" },
-  ],
-
-  // Performance par enfant
-  performanceData: [
-    { name: "Amadou", average: 12.5, color: "#8b5cf6" },
-    { name: "Fatou", average: 14.8, color: "#06b6d4" },
-    { name: "Ibrahima", average: 12.3, color: "#f97316" },
-  ],
-
-  // Évolution des performances (6 derniers mois)
-  evolutionData: [
-    { month: "Juillet", Amadou: 11.2, Fatou: 13.5, Ibrahima: 10.8 },
-    { month: "Août", Amadou: 11.8, Fatou: 14.0, Ibrahima: 11.2 },
-    { month: "Septembre", Amadou: 12.1, Fatou: 14.3, Ibrahima: 11.5 },
-    { month: "Octobre", Amadou: 12.3, Fatou: 14.5, Ibrahima: 11.9 },
-    { month: "Novembre", Amadou: 12.5, Fatou: 14.7, Ibrahima: 12.1 },
-    { month: "Décembre", Amadou: 12.5, Fatou: 14.8, Ibrahima: 12.3 },
-  ],
-
-  // Configuration des enfants pour le graphique
-  childrenConfig: [
-    { name: "Amadou", color: "#8b5cf6" }, // Violet
-    { name: "Fatou", color: "#06b6d4" }, // Cyan
-    { name: "Ibrahima", color: "#f97316" }, // Orange
-  ],
-
-  // Activités récentes
-  recentActivities: [
-    {
-      id: "1",
-      childName: "Fatou",
-      childColor: "#06b6d4",
-      type: "quiz" as const,
-      subject: "Mathématiques",
-      title: "Équations du second degré",
-      date: new Date().toISOString(),
-      score: 16.5,
-    },
-    {
-      id: "2",
-      childName: "Amadou",
-      childColor: "#8b5cf6",
-      type: "cours" as const,
-      subject: "Physique",
-      title: "Les forces et mouvements",
-      date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "3",
-      childName: "Ibrahima",
-      childColor: "#f97316",
-      type: "quiz" as const,
-      subject: "SVT",
-      title: "La reproduction humaine",
-      date: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      score: 13.0,
-    },
-    {
-      id: "4",
-      childName: "Fatou",
-      childColor: "#06b6d4",
-      type: "groupe" as const,
-      title: "Révisions Terminale S",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "5",
-      childName: "Amadou",
-      childColor: "#8b5cf6",
-      type: "quiz" as const,
-      subject: "Anglais",
-      title: "Present Perfect vs Simple Past",
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      score: 11.5,
-    },
-    {
-      id: "6",
-      childName: "Ibrahima",
-      childColor: "#f97316",
-      type: "cours" as const,
-      subject: "Histoire",
-      title: "La première guerre mondiale",
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "7",
-      childName: "Fatou",
-      childColor: "#06b6d4",
-      type: "quiz" as const,
-      subject: "Chimie",
-      title: "Les réactions acido-basiques",
-      date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-      score: 17.0,
-    },
-    {
-      id: "8",
-      childName: "Amadou",
-      childColor: "#8b5cf6",
-      type: "groupe" as const,
-      title: "Groupe Math 1ère S",
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "9",
-      childName: "Ibrahima",
-      childColor: "#f97316",
-      type: "quiz" as const,
-      subject: "Français",
-      title: "Analyse de texte",
-      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-      score: 12.0,
-    },
-    {
-      id: "10",
-      childName: "Fatou",
-      childColor: "#06b6d4",
-      type: "cours" as const,
-      subject: "Philosophie",
-      title: "La conscience",
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ],
-
-  // Vue rapide des enfants
-  childrenQuickView: [
-    {
-      id: "1",
-      name: "Amadou",
-      niveau: "Première S",
-      color: "#8b5cf6",
-      averageNote: 12.5,
-      weeklyStudyHours: 12,
-      totalQuizzes: 28,
-      totalCourses: 15,
-      totalGroups: 3,
-      trend: "up" as const,
-      progressToNextMilestone: 65,
-      nextMilestone: "50 quiz complétés",
-    },
-    {
-      id: "2",
-      name: "Fatou",
-      niveau: "Terminale S",
-      color: "#06b6d4",
-      averageNote: 14.8,
-      weeklyStudyHours: 18,
-      totalQuizzes: 42,
-      totalCourses: 22,
-      totalGroups: 5,
-      trend: "up" as const,
-      progressToNextMilestone: 84,
-      nextMilestone: "100 heures d'étude",
-    },
-    {
-      id: "3",
-      name: "Ibrahima",
-      niveau: "Seconde",
-      color: "#f97316",
-      averageNote: 12.3,
-      weeklyStudyHours: 8,
-      totalQuizzes: 19,
-      totalCourses: 10,
-      totalGroups: 2,
-      trend: "stable" as const,
-      progressToNextMilestone: 38,
-      nextMilestone: "25 quiz complétés",
-    },
-  ],
-};
+const PERIOD_OPTIONS = ["week", "month", "quarter", "semester", "year"] as const;
 
 export default function ParentDashboardPage() {
   const router = useRouter();
+  const { user } = useSession();
+
+  // Utiliser nuqs pour gérer la période dans l'URL
+  const [period, setPeriod] = useQueryState(
+    "period",
+    parseAsStringLiteral(PERIOD_OPTIONS).withDefault("month")
+  );
+
+  // Fetch dashboard data
+  const { data: dashboardData, isLoading, isError, error } = useParentDashboard(
+    user?.id || 0,
+    period,
+  );
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex items-center justify-center h-screen gap-3">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span>Chargement du tableau de bord...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-red-600 mb-4">
+                Erreur lors du chargement
+              </h1>
+              <p className="text-gray-600 mb-6">
+                {error?.message || "Une erreur est survenue"}
+              </p>
+              <Button onClick={() => router.push("/parent/home")}>
+                Retour à l'accueil
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!dashboardData) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-600 mb-4">
+                Aucune donnée disponible
+              </h1>
+              <Button onClick={() => router.push("/parent/home")}>
+                Retour à l'accueil
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -226,37 +120,72 @@ export default function ParentDashboardPage() {
           </div>
         </div>
 
+        {/* Period Selector */}
+        <div className="mb-6 flex justify-center">
+          <AnimatedTabs
+            tabs={[
+              { label: "Semaine", icon: <Calendar className="w-4 h-4" /> },
+              { label: "Mois", icon: <CalendarDays className="w-4 h-4" /> },
+              { label: "Trimestre", icon: <CalendarRange className="w-4 h-4" /> },
+              { label: "Semestre", icon: <CalendarRange className="w-4 h-4" /> },
+              { label: "Année", icon: <CalendarRange className="w-4 h-4" /> },
+            ]}
+            activeTab={
+              period === "week"
+                ? "Semaine"
+                : period === "month"
+                  ? "Mois"
+                  : period === "quarter"
+                    ? "Trimestre"
+                    : period === "semester"
+                      ? "Semestre"
+                      : "Année"
+            }
+            onTabChange={(label) => {
+              const periodMap: Record<string, DashboardPeriod> = {
+                Semaine: "week",
+                Mois: "month",
+                Trimestre: "quarter",
+                Semestre: "semester",
+                Année: "year",
+              };
+              setPeriod(periodMap[label] || "month");
+            }}
+          />
+        </div>
+
         {/* Stats Cards */}
         <div className="mb-6">
-          <ParentDashboardStats
-            totalChildren={mockData.totalChildren}
-            totalGroups={mockData.totalGroups}
-            averageNote={mockData.averageNote}
-            totalActivities={mockData.totalActivities}
-          />
+          <ParentDashboardStats {...dashboardData.statsData} />
         </div>
 
         {/* Charts Section - Comparison */}
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 mb-6">
-          <ParentChildrenStudyTimeChart data={mockData.studyTimeData} />
-          <ParentChildrenPerformanceChart data={mockData.performanceData} />
+          <ParentChildrenStudyTimeChart data={dashboardData.studyTimeData} />
+          <ParentChildrenPerformanceChart
+            data={dashboardData.performanceData}
+          />
         </div>
 
         {/* Evolution Chart */}
         <div className="mb-6">
           <ParentPerformanceEvolutionChart
-            data={mockData.evolutionData}
-            childrenConfig={mockData.childrenConfig}
+            data={dashboardData.evolutionData}
+            childrenConfig={dashboardData.childrenConfig}
           />
         </div>
 
         {/* Recent Activities Table */}
         <div className="mb-6">
-          <ParentRecentActivities activities={mockData.recentActivities} />
+          <ParentRecentActivities
+            activities={dashboardData.recentActivitiesData}
+          />
         </div>
 
         {/* Children Quick View Cards */}
-        <ParentChildrenQuickView children={mockData.childrenQuickView} />
+        <ParentChildrenQuickView
+          children={dashboardData.childrenQuickViewData}
+        />
       </div>
     </div>
   );

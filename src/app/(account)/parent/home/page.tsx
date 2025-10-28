@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
+import { useSession } from "@/services/hooks/auth/useSession";
 
 export default function ParentHomePage() {
   const router = useRouter();
+  const { user } = useSession();
 
   const handleShare = async () => {
     const shareData = {
@@ -97,7 +99,7 @@ export default function ParentHomePage() {
         {/* Message de bienvenue professionnel */}
         <div className="mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-4">
-            Bonjour
+            Bonjour {user?.prenom}
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
             Suivez le niveau de vos enfants, créez vos cours et exercices, et

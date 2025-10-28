@@ -1,15 +1,35 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useEnfantGroupes } from "@/services/hooks/parent";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
-import { Users, BookOpen, FileQuestion, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { Users, BookOpen, FileQuestion, ChevronLeft, ChevronRight, User, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Enfant } from "@/services/controllers/types/common/parent.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useCreateGroupe } from "@/services/hooks/groupes/useCreateGroupe";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
+import { toast } from "@/lib/toast";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -25,10 +45,63 @@ interface ParentGroupsListProps {
   isEnfantReady: boolean;
 }
 
+interface FormContentProps {
+  groupName: string;
+  setGroupName: (value: string) => void;
+  groupDescription: string;
+  setGroupDescription: (value: string) => void;
+  isCreatingGroup: boolean;
+}
+
+const FormContent = ({
+  groupName,
+  setGroupName,
+  groupDescription,
+  setGroupDescription,
+  isCreatingGroup,
+}: FormContentProps) => (
+  <div className="space-y-4">
+    <div>
+      <Label htmlFor="groupName" className="text-sm text-gray-600">
+        Nom du groupe*
+      </Label>
+      <Input
+        id="groupName"
+        placeholder="Nom du groupe*"
+        value={groupName}
+        onChange={(e) => setGroupName(e.target.value)}
+        className="mt-1 bg-gray-50 border-gray-200"
+        disabled={isCreatingGroup}
+      />
+    </div>
+
+    <div>
+      <Label htmlFor="description" className="text-sm text-gray-600">
+        Description du groupe
+      </Label>
+      <Textarea
+        id="description"
+        placeholder="Description du groupe"
+        value={groupDescription}
+        onChange={(e) => setGroupDescription(e.target.value)}
+        rows={4}
+        className="mt-1 bg-gray-50 border-gray-200 resize-none"
+        disabled={isCreatingGroup}
+      />
+    </div>
+  </div>
+);
+
 export function ParentGroupsList({ enfant, isEnfantReady }: ParentGroupsListProps) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [groupDescription, setGroupDescription] = useState("");
+
   const { data, isLoading, isError } = useEnfantGroupes(isEnfantReady);
+  const { mutate: createGroupeMutation, isPending: isCreatingGroup } = useCreateGroupe();
   const groupes = data?.groupes || [];
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("groupesPage", parseAsInteger.withDefault(1));
@@ -54,6 +127,56 @@ export function ParentGroupsList({ enfant, isEnfantReady }: ParentGroupsListProp
   const handleViewGroup = (groupId: number) => {
     // Rediriger vers la page de détail du groupe parent
     router.push(`/parent/groups/${groupId}`);
+  };
+
+  const handleCreateGroup = () => {
+    if (!groupName.trim()) {
+      toast({
+        variant: "warning",
+        message: "Le nom du groupe ne peut pas être vide.",
+      });
+      return;
+    }
+
+    const niveauId = enfant.niveau_id;
+    if (!niveauId) {
+      toast({
+        variant: "error",
+        message: "Impossible de créer le groupe : niveau de l'enfant non défini.",
+      });
+      return;
+    }
+
+    createGroupeMutation(
+      {
+        nom: groupName,
+        description: groupDescription,
+        niveau_id: niveauId.toString(),
+      },
+      {
+        onSuccess: () => {
+          setIsOpen(false);
+          setGroupName("");
+          setGroupDescription("");
+          toast({
+            variant: "success",
+            message: "Groupe créé avec succès!",
+          });
+        },
+        onError: () => {
+          toast({
+            variant: "error",
+            message: "Erreur lors de la création du groupe.",
+          });
+        },
+      },
+    );
+  };
+
+  const handleCancel = () => {
+    setIsOpen(false);
+    setGroupName("");
+    setGroupDescription("");
   };
 
   if (isLoading) {
@@ -110,7 +233,93 @@ export function ParentGroupsList({ enfant, isEnfantReady }: ParentGroupsListProp
               variant="default"
             />
           </div>
+
+          {/* Bouton créer un groupe */}
+          <Button
+            size="lg"
+            onClick={() => setIsOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Créer un groupe
+          </Button>
         </div>
+
+        {/* Modal pour Desktop/Tablette */}
+        {isDesktop && (
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="sm:max-w-[500px] bg-white">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-purple-600">
+                  Créer un groupe
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="mt-4">
+                <FormContent
+                  groupName={groupName}
+                  setGroupName={setGroupName}
+                  groupDescription={groupDescription}
+                  setGroupDescription={setGroupDescription}
+                  isCreatingGroup={isCreatingGroup}
+                />
+              </div>
+
+              <div className="flex gap-3 mt-6 justify-end">
+                <Button variant="ghost" onClick={handleCancel} className="px-6">
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleCreateGroup}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                  disabled={isCreatingGroup}
+                >
+                  {isCreatingGroup ? "Création..." : "Créer"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Drawer pour Mobile */}
+        {!isDesktop && (
+          <Drawer open={isOpen} onOpenChange={setIsOpen}>
+            <DrawerContent className="bg-white max-h-[90vh]">
+              <DrawerHeader className="text-left">
+                <DrawerTitle className="text-2xl font-bold text-purple-600">
+                  Créer un groupe
+                </DrawerTitle>
+                <DrawerClose className="absolute right-4 top-4">
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </DrawerClose>
+              </DrawerHeader>
+
+              <div className="px-4 pb-4 overflow-y-auto">
+                <FormContent
+                  groupName={groupName}
+                  setGroupName={setGroupName}
+                  groupDescription={groupDescription}
+                  setGroupDescription={setGroupDescription}
+                  isCreatingGroup={isCreatingGroup}
+                />
+              </div>
+
+              <DrawerFooter className="flex-row gap-3 justify-end">
+                <Button variant="ghost" onClick={handleCancel} className="flex-1">
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleCreateGroup}
+                  className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
+                  disabled={isCreatingGroup}
+                >
+                  {isCreatingGroup ? "Création..." : "Créer"}
+                </Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        )}
       </div>
     );
   }
@@ -143,6 +352,14 @@ export function ParentGroupsList({ enfant, isEnfantReady }: ParentGroupsListProp
               {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </p>
           </div>
+          <Button
+            size="sm"
+            onClick={() => setIsOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white flex-shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Créer un groupe
+          </Button>
         </div>
 
         {/* Grille des groupes paginés */}
@@ -257,6 +474,82 @@ export function ParentGroupsList({ enfant, isEnfantReady }: ParentGroupsListProp
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
+        )}
+
+        {/* Modal pour Desktop/Tablette */}
+        {isDesktop && (
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="sm:max-w-[500px] bg-white">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-purple-600">
+                  Créer un groupe
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="mt-4">
+                <FormContent
+                  groupName={groupName}
+                  setGroupName={setGroupName}
+                  groupDescription={groupDescription}
+                  setGroupDescription={setGroupDescription}
+                  isCreatingGroup={isCreatingGroup}
+                />
+              </div>
+
+              <div className="flex gap-3 mt-6 justify-end">
+                <Button variant="ghost" onClick={handleCancel} className="px-6">
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleCreateGroup}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                  disabled={isCreatingGroup}
+                >
+                  {isCreatingGroup ? "Création..." : "Créer"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Drawer pour Mobile */}
+        {!isDesktop && (
+          <Drawer open={isOpen} onOpenChange={setIsOpen}>
+            <DrawerContent className="bg-white max-h-[90vh]">
+              <DrawerHeader className="text-left">
+                <DrawerTitle className="text-2xl font-bold text-purple-600">
+                  Créer un groupe
+                </DrawerTitle>
+                <DrawerClose className="absolute right-4 top-4">
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </DrawerClose>
+              </DrawerHeader>
+
+              <div className="px-4 pb-4 overflow-y-auto">
+                <FormContent
+                  groupName={groupName}
+                  setGroupName={setGroupName}
+                  groupDescription={groupDescription}
+                  setGroupDescription={setGroupDescription}
+                  isCreatingGroup={isCreatingGroup}
+                />
+              </div>
+
+              <DrawerFooter className="flex-row gap-3 justify-end">
+                <Button variant="ghost" onClick={handleCancel} className="flex-1">
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleCreateGroup}
+                  className="bg-purple-600 hover:bg-purple-700 text-white flex-1"
+                  disabled={isCreatingGroup}
+                >
+                  {isCreatingGroup ? "Création..." : "Créer"}
+                </Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
         )}
       </div>
     </>

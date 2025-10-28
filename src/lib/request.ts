@@ -80,10 +80,14 @@ export const request = {
    * Exécute une requête GET.
    * @template T Le type de données attendu dans la réponse.
    * @param {string} url L'URL de l'endpoint.
+   * @param {import("axios").AxiosRequestConfig} [config] Configuration optionnelle (permet d'envoyer des paramètres, headers, etc.).
    * @returns {Promise<T>} Une promesse qui se résout avec les données de la réponse.
    */
-  get: async <T>(url: string): Promise<T> => {
-    const response = await api.get<T>(url);
+  get: async <T>(
+    url: string,
+    config?: import("axios").AxiosRequestConfig,
+  ): Promise<T> => {
+    const response = await api.get<T>(url, config);
     return response.data;
   },
 

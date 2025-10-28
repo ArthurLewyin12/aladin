@@ -15,7 +15,6 @@ import {
   RechercherEleveResponse,
   AssocierAutomatiquementResponse,
   GetRepetiteurStatsResponse,
-  GetRepetiteurDashboardResponse,
   GetEleveGroupesResponse,
   GetEleveQuizResponse,
   GetEleveCoursResponse,
@@ -25,6 +24,10 @@ import {
   DefinirNiveauxPayload,
   DefinirNiveauxResponse,
 } from "./types/common/repetiteur.types";
+import {
+  GetRepetiteurDashboardResponse,
+  DashboardPeriod,
+} from "./types/common/dashboard-data.types";
 
 /**
  * Récupère tous les élèves (utilisateurs + manuels) du répétiteur.
@@ -145,16 +148,20 @@ export const getRepetiteurStats = async (
 /**
  * Récupère le dashboard du répétiteur.
  * @param {number} repetiteurId - L'ID du répétiteur.
+ * @param {DashboardPeriod} period - La période d'analyse (week, month, quarter, semester, year). Par défaut: month
  * @returns {Promise<GetRepetiteurDashboardResponse>} Le dashboard.
  */
 export const getRepetiteurDashboard = async (
   repetiteurId: number,
+  period: DashboardPeriod = "month",
 ): Promise<GetRepetiteurDashboardResponse> => {
   const endpoint = RepetiteurEndpoints.GET_DASHBOARD.replace(
     "{id}",
     repetiteurId.toString(),
   );
-  return request.get<GetRepetiteurDashboardResponse>(endpoint);
+  return request.get<GetRepetiteurDashboardResponse>(endpoint, {
+    params: { period },
+  });
 };
 
 /**

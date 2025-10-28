@@ -13,6 +13,7 @@ import {
   RetirerEnfantResponse,
   AssocierAutomatiquementResponse,
 } from "./types/common/parent.types";
+import { GetParentDashboardResponse, DashboardPeriod } from "./types/common/dashboard-data.types";
 
 /**
  * Récupère tous les enfants (utilisateurs + manuels) du parent.
@@ -139,3 +140,67 @@ export const getEnfantResume =
       import("./types/common/parent.types").GetEnfantResumeResponse
     >(ParentEndpoints.GET_ENFANT_RESUME);
   };
+
+/**
+ * Récupère le résumé/statistiques pour chaque enfant du parent.
+ * @returns {Promise<Array>} Les résumés de tous les enfants.
+ */
+export const getEnfantsResume = async (): Promise<
+  Array<{ enfantId: string | number; statistiques: import("./types/common/parent.types").GetEnfantResumeResponse["statistiques"] }>
+> => {
+  try {
+    const enfantsResponse = await getEnfants();
+    const resumes = await Promise.all(
+      enfantsResponse.enfants.map(async (enfant) => {
+        try {
+          // Sélectionner l'enfant d'abord
+          await request.post(ParentEndpoints.SELECTIONNER_ENFANT, {
+            enfant_id: enfant.id,
+            type: enfant.type,
+          });
+          // Puis récupérer son résumé
+          const resumeResponse = await getEnfantResume();
+          return {
+            enfantId: enfant.id,
+            statistiques: resumeResponse.statistiques,
+          };
+        } catch (error) {
+          // En cas d'erreur, retourner les valeurs par défaut
+          return {
+            enfantId: enfant.id,
+            statistiques: {
+              groupes: 0,
+              quiz_personnels: 0,
+              quiz_groupes: 0,
+              quiz_total: 0,
+              cours: 0,
+              total_contenus: 0,
+            },
+          };
+        }
+      }),
+    );
+    return resumes;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Récupère le dashboard du parent avec les statistiques, graphiques et activités récentes.
+ * @param {number} parentId - L'ID du parent.
+ * @param {DashboardPeriod} period - La période d'analyse (week, month, quarter, semester, year). Par défaut: month
+ * @returns {Promise<GetParentDashboardResponse>} Le dashboard du parent.
+ */
+export const getParentDashboard = async (
+  parentId: number,
+  period: DashboardPeriod = "month",
+): Promise<GetParentDashboardResponse> => {
+  const endpoint = ParentEndpoints.GET_DASHBOARD.replace(
+    "{parentId}",
+    parentId.toString(),
+  );
+  return request.get<GetParentDashboardResponse>(endpoint, {
+    params: { period },
+  });
+};

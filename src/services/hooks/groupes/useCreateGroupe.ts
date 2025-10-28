@@ -19,6 +19,10 @@ export const useCreateGroupe = () => {
       toast.success(data.message || "Groupe créé avec succès !");
       // Invalider la requête qui récupère la liste des groupes pour la mettre à jour
       queryClient.invalidateQueries({ queryKey: createQueryKey("groupes") });
+      // Invalider aussi les groupes du parent (parent profil)
+      queryClient.invalidateQueries({ queryKey: createQueryKey("parent", "enfant", "groupes") });
+      // Invalider aussi les groupes du répétiteur (repetiteur profil)
+      queryClient.invalidateQueries({ queryKey: createQueryKey("repetiteur", "eleve", "groupes") });
     },
     onError: (error) => {
       console.error("Erreur lors de la création du groupe", error);

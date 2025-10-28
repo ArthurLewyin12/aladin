@@ -1,13 +1,13 @@
 "use client";
 
-import { Users, Clock, Trophy, Activity, Group } from "lucide-react";
+import { Users, FileQuestion, BookOpen, Group } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface DashboardStatsProps {
   totalChildren: number;
   totalGroups: number;
-  averageNote: number;
-  totalActivities: number;
+  totalQuizzes: number;
+  totalCourses: number;
 }
 
 const CARD_COLORS = [
@@ -20,8 +20,8 @@ const CARD_COLORS = [
 export function ParentDashboardStats({
   totalChildren,
   totalGroups,
-  averageNote,
-  totalActivities,
+  totalQuizzes,
+  totalCourses,
 }: DashboardStatsProps) {
   const stats = [
     {
@@ -31,22 +31,22 @@ export function ParentDashboardStats({
       icon: Users,
     },
     {
-      title: "Nombre de groupes",
+      title: "Groupes créés",
       value: totalGroups,
-      subtitle: "groupes",
+      subtitle: totalGroups > 1 ? "groupes" : "groupe",
       icon: Group,
     },
     {
-      title: "Moyenne générale",
-      value: averageNote.toFixed(1),
-      subtitle: "/20",
-      icon: Trophy,
+      title: "Quiz créés",
+      value: totalQuizzes,
+      subtitle: totalQuizzes > 1 ? "quiz" : "quiz",
+      icon: FileQuestion,
     },
     {
-      title: "Total activités",
-      value: totalActivities,
-      subtitle: "activités",
-      icon: Activity,
+      title: "Cours créés",
+      value: totalCourses,
+      subtitle: totalCourses > 1 ? "cours" : "cours",
+      icon: BookOpen,
     },
   ];
 

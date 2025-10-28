@@ -47,7 +47,7 @@ export function ParentPerformanceEvolutionChart({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+        <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
           <LineChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <XAxis

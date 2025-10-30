@@ -14,14 +14,14 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { useSession } from "@/services/hooks/auth/useSession";
 
-export default function ParentHomePage() {
+export default function TeacherHomePage() {
   const router = useRouter();
   const { user } = useSession();
 
   const handleShare = async () => {
     const shareData = {
       title: "Découvrez Aladin !",
-      text: "J'utilise Aladin pour accompagner mes enfants dans leur apprentissage. Rejoignez-nous sur la plateforme pour offrir à vos enfants un accompagnement pédagogique de qualité.",
+      text: "J'utilise Aladin pour accompagner mes élèves dans leur apprentissage. Rejoignez-nous sur la plateforme pour offrir à vos élèves un accompagnement pédagogique de qualité.",
       url: window.location.origin,
     };
 
@@ -51,8 +51,8 @@ export default function ParentHomePage() {
   const parentActions = [
     {
       id: "dashboard",
-      title: "Je consulte mon tableau de bord",
-      description: "Je suis les progrès de mes enfants",
+      title: "Je vois mon tableau de bord",
+      description: "Suivez les progrès de vos élèves",
       icon: BarChart3,
       handler: () => router.push("/parent/dashboard"),
     },
@@ -64,30 +64,30 @@ export default function ParentHomePage() {
     //   handler: () => router.push("/parent/courses"),
     // },
     {
-      id: "enfants",
-      title: "Je consulte mes enfants",
-      description: "Je gère mes différents enfants",
+      id: "cours",
+      title: "Je consulte mes cours",
+      description: "Gérez vos différents cours",
       icon: Users,
       handler: () => router.push("/parent/enfants"),
     },
+    // {
+    //   id: "notes",
+    //   title: "Je consulte les notes",
+    //   description: "Suivez les notes de vos enfants",
+    //   icon: FileText,
+    //   handler: () => router.push("/parent/notes"),
+    // },
     {
-      id: "notes",
-      title: "Je consulte les notes",
-      description: "Je suis les notes de mes enfants",
-      icon: FileText,
-      handler: () => router.push("/parent/notes"),
-    },
-    {
-      id: "groups",
-      title: "Je gère les  groupes d'étude de  mes enfants",
-      description: "Collaborez avec d'autres parents",
+      id: "classes",
+      title: "Je gère mes classes",
+      description: "gérer efficacement les classes dont vous etes en charge.",
       icon: UsersRound,
       handler: () => router.push("/parent/groups"),
     },
     {
       id: "share",
       title: "Je partage Aladin",
-      description: "J'invite d'autres parents à rejoindre Aladin",
+      description: "Invitez d'autres professeur à rejoindre",
       icon: Share2,
       handler: handleShare,
     },
@@ -98,11 +98,11 @@ export default function ParentHomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Message de bienvenue professionnel */}
         <div className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-600 mb-4">
             Bonjour {user?.prenom}
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
-            Suivez le niveau de vos enfants, créez vos cours et exercices, et
+            Suivez le niveau de vos élèves, créez vos cours et exercices, et
             laissez l'IA vous assister dans l'accompagnement pédagogique.
           </p>
         </div>
@@ -112,8 +112,8 @@ export default function ParentHomePage() {
           {/* Colonne gauche - Illustration */}
           <div className="hidden lg:flex justify-center lg:justify-start order-2 lg:order-1">
             <Image
-              src="/femme_learning.png"
-              alt="Illustration parent"
+              src="/teacher-home.png"
+              alt="Illustration professeur"
               width={500}
               height={450}
               className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-full h-auto"
@@ -132,11 +132,11 @@ export default function ParentHomePage() {
                 <button
                   key={action.id}
                   onClick={action.handler}
-                  className="w-full bg-white hover:bg-purple-50 border-2 border-purple-100 rounded-2xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-purple-200 group"
+                  className="w-full bg-white hover:bg-green-50 border-2 border-green-100 rounded-2xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-green-200 group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-300">
-                      <IconComponent className="w-6 h-6 text-purple-600" />
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors duration-300">
+                      <IconComponent className="w-6 h-6 text-green-600" />
                     </div>
                     <div className="text-left">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5">
@@ -147,7 +147,7 @@ export default function ParentHomePage() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                  <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                 </button>
               );
             })}

@@ -33,18 +33,15 @@ export default function EnfantsPage() {
 
     const payload = {
       enfant_id: enfant.id,
-      type: enfant.type as "utilisateur" | "manuel"
+      type: enfant.type as "utilisateur" | "manuel",
     };
 
     // Sélectionner l'enfant ET rediriger vers son profil
-    selectionnerEnfant(
-      payload,
-      {
-        onSuccess: () => {
-          router.push(`/parent/enfants/${enfant.id}`);
-        },
+    selectionnerEnfant(payload, {
+      onSuccess: () => {
+        router.push(`/parent/enfants/${enfant.id}`);
       },
-    );
+    });
   };
 
   const handleBack = () => {
@@ -69,7 +66,7 @@ export default function EnfantsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Header avec bouton retour et titre */}
           <div
-            className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+            className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
             style={{
               backgroundImage: `url("/bg-2.png")`,
               backgroundSize: "180px 180px",
@@ -148,7 +145,7 @@ export default function EnfantsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Header avec bouton retour et titre */}
         <div
-          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
             backgroundSize: "180px 180px",
@@ -164,7 +161,7 @@ export default function EnfantsPage() {
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-2xl sm:text-3xl">👨‍👩‍👧‍👦</span>
+            {/*<span className="text-2xl sm:text-3xl">👨‍👩‍👧‍👦</span>*/}
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-purple-600 leading-tight">
               Mes enfants
             </h1>

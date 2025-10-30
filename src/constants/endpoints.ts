@@ -197,26 +197,43 @@ export enum RepetiteurEndpoints {
   ASSOCIER_AUTOMATIQUEMENT = "/api/repetiteur/eleves/associer-automatiquement",
   RECHERCHER_ELEVE = "/api/repetiteur/eleves/rechercher",
   RETIRER_ELEVE = "/api/repetiteur/eleves/retirer",
-  
+
   // Sélection d'élève
   SELECTIONNER_ELEVE = "/api/repetiteur/eleves/selectionner",
   GET_ELEVE_ACTIF = "/api/repetiteur/eleve-actif",
-  
+
   // Statistiques et dashboard
   GET_STATS = "/api/repetiteurs/{id}/stats",
   GET_DASHBOARD = "/api/repetiteurs/{id}/dashboard",
-  
+
   // Contenus de l'élève sélectionné
   GET_ELEVE_GROUPES = "/api/repetiteur/eleve/groupes",
   GET_ELEVE_QUIZ = "/api/repetiteur/eleve/quiz",
   GET_ELEVE_COURS = "/api/repetiteur/eleve/cours",
   GET_ELEVE_RESUME = "/api/repetiteur/eleve/resume",
-  
+
   // Relations
   GET_REPETITEURS_ELEVE = "/api/eleve/repetiteurs",
   GET_RELATIONS_STATS = "/api/relations-repetiteur/statistiques",
-  
+
   // Niveaux du répétiteur
   GET_NIVEAUX_CHOISIS = "/api/repetiteur/niveaux/choisis",
   DEFINIR_NIVEAUX = "/api/repetiteur/niveaux/definir",
+}
+
+/**
+ * Endpoints relatifs à la gestion des élèves.
+ */
+export enum EleveEndpoints {
+  CHECK_EMAIL = "/api/eleves/check",
+}
+
+/**
+ * Endpoints relatifs à la gestion du planning d'études.
+ */
+export enum StudyPlanEndpoints {
+  GET_ALL = "/api/study-plans",
+  CREATE = "/api/study-plans",
+  UPDATE = "/api/study-plans/{id}",
+  DELETE = "/api/study-plans/{id}",
 }

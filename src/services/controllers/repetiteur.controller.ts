@@ -23,6 +23,7 @@ import {
   GetNiveauxChoisisResponse,
   DefinirNiveauxPayload,
   DefinirNiveauxResponse,
+  EleveDashboardStats,
 } from "./types/common/repetiteur.types";
 import {
   GetRepetiteurDashboardResponse,
@@ -236,4 +237,59 @@ export const definirNiveaux = async (
     RepetiteurEndpoints.DEFINIR_NIVEAUX,
     payload,
   );
+};
+
+/**
+ * Récupère le résumé/statistiques pour chaque élève du répétiteur.
+ * @returns {Promise<Array>} Les résumés de tous les élèves.
+ */
+export const getElevesResume = async (): Promise<
+  Array<{ eleveId: string | number; statistiques: EleveDashboardStats }>
+> => {
+  try {
+    const elevesResponse = await getEleves();
+    const resumes = await Promise.all(
+      elevesResponse.eleves.map(async (eleve) => {
+        try {
+          // Sélectionner l'élève d'abord
+          await request.post(RepetiteurEndpoints.SELECTIONNER_ELEVE, {
+            eleve_id: eleve.id,
+            type: eleve.type,
+          });
+          // Puis récupérer son résumé
+          const resumeResponse = await getEleveResume();
+          const stats = resumeResponse.statistiques;
+          return {
+            eleveId: eleve.id,
+            statistiques: {
+              nombre_groupes: stats.nombre_groupes || 0,
+              nombre_quiz: stats.nombre_quiz || 0,
+              nombre_cours: stats.nombre_cours || 0,
+              moyenne_generale: stats.moyenne_generale || null,
+              heures_etude_hebdomadaires: stats.heures_etude_hebdomadaires || 0,
+              tendance: stats.tendance || "stable",
+              progression: stats.progression || 0,
+            },
+          };
+        } catch (error) {
+          // En cas d'erreur, retourner les valeurs par défaut
+          return {
+            eleveId: eleve.id,
+            statistiques: {
+              nombre_groupes: 0,
+              nombre_quiz: 0,
+              nombre_cours: 0,
+              moyenne_generale: null,
+              heures_etude_hebdomadaires: 0,
+              tendance: "stable",
+              progression: 0,
+            },
+          };
+        }
+      }),
+    );
+    return resumes;
+  } catch (error) {
+    return [];
+  }
 };

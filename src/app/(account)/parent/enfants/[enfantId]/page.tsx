@@ -4,8 +4,20 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
-import { ArrowLeft, BookOpen, FileQuestion, User, Brain, BarChart3, Users } from "lucide-react";
-import { useEnfants, useEnfantResume, useSelectionnerEnfant } from "@/services/hooks/parent";
+import {
+  ArrowLeft,
+  BookOpen,
+  FileQuestion,
+  User,
+  Brain,
+  BarChart3,
+  Users,
+} from "lucide-react";
+import {
+  useEnfants,
+  useEnfantResume,
+  useSelectionnerEnfant,
+} from "@/services/hooks/parent";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { ParentCourseList } from "@/components/pages/parent/parent-course-list";
@@ -22,7 +34,8 @@ export default function EnfantProfilPage() {
 
   // Récupérer les données de l'enfant
   const { data: enfantsData, isLoading: isLoadingEnfants } = useEnfants();
-  const { mutate: selectionnerEnfant, isPending: isSelecting } = useSelectionnerEnfant();
+  const { mutate: selectionnerEnfant, isPending: isSelecting } =
+    useSelectionnerEnfant();
 
   const enfants = enfantsData?.enfants || [];
   const enfant = enfants.find((e) => e.id.toString() === enfantId);
@@ -35,25 +48,37 @@ export default function EnfantProfilPage() {
 
       if (!isCurrentlyActive && !isSelecting && !isEnfantReady) {
         // Sélectionner l'enfant
-        selectionnerEnfant({
-          enfant_id: enfant.id,
-          type: enfant.type as "utilisateur" | "manuel"
-        }, {
-          onSuccess: async () => {
-            // Attendre un peu que le backend soit à jour
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setIsEnfantReady(true);
-          }
-        });
+        selectionnerEnfant(
+          {
+            enfant_id: enfant.id,
+            type: enfant.type as "utilisateur" | "manuel",
+          },
+          {
+            onSuccess: async () => {
+              // Attendre un peu que le backend soit à jour
+              await new Promise((resolve) => setTimeout(resolve, 500));
+              setIsEnfantReady(true);
+            },
+          },
+        );
       } else if (isCurrentlyActive) {
         // L'enfant est déjà actif
         setIsEnfantReady(true);
       }
     }
-  }, [enfant, enfantActif, enfantId, isLoadingEnfants, isSelecting, isEnfantReady, selectionnerEnfant]);
+  }, [
+    enfant,
+    enfantActif,
+    enfantId,
+    isLoadingEnfants,
+    isSelecting,
+    isEnfantReady,
+    selectionnerEnfant,
+  ]);
 
   // Ne charger les contenus que si l'enfant est prêt
-  const { data: resumeData, isLoading: isLoadingResume } = useEnfantResume(isEnfantReady);
+  const { data: resumeData, isLoading: isLoadingResume } =
+    useEnfantResume(isEnfantReady);
 
   const handleBack = () => {
     router.push("/parent/enfants");
@@ -121,15 +146,6 @@ export default function EnfantProfilPage() {
     );
   }
 
-  const stats = resumeData?.statistiques || {
-    groupes: 0,
-    quiz_personnels: 0,
-    quiz_groupes: 0,
-    quiz_total: 0,
-    cours: 0,
-    total_contenus: 0,
-  };
-
   // L'enfant est considéré comme actif si isEnfantReady est true (car on vient de le sélectionner)
   // ou si l'enfantActif correspond dans le cache
   const isEnfantActif = isEnfantReady || enfantActif?.id === enfant.id;
@@ -139,7 +155,7 @@ export default function EnfantProfilPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Header avec bouton retour et titre */}
         <div
-          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
             backgroundSize: "180px 180px",
@@ -203,19 +219,19 @@ export default function EnfantProfilPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resumeData.statistiques.groupes}
+                    {resumeData.statistiques.nombre_groupes}
                   </p>
                   <p className="text-xs text-gray-600">Groupes</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resumeData.statistiques.quiz_total}
+                    {resumeData.statistiques.nombre_quiz}
                   </p>
                   <p className="text-xs text-gray-600">Quiz</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resumeData.statistiques.cours}
+                    {resumeData.statistiques.nombre_cours}
                   </p>
                   <p className="text-xs text-gray-600">Cours</p>
                 </div>
@@ -266,7 +282,7 @@ export default function EnfantProfilPage() {
           )}
 
           {activeTab === "Statistiques" && (
-            <ParentStatistics enfant={enfant} statistics={stats} />
+            <ParentStatistics enfant={enfant} />
           )}
         </div>
       </div>

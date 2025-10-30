@@ -142,7 +142,7 @@ export default function ParentGenerateQuizPage() {
 
         {/* Header */}
         <div
-          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
             backgroundSize: "180px 180px",
@@ -214,7 +214,8 @@ export default function ParentGenerateQuizPage() {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600 font-medium">
-                    Aucune matière n'est disponible pour le niveau de {enfant.prenom}.
+                    Aucune matière n'est disponible pour le niveau de{" "}
+                    {enfant.prenom}.
                   </p>
                 </div>
               )}

@@ -7,6 +7,7 @@ import {
   GetRepetiteurDashboardResponse,
   RepetiteurActivity,
 } from "@/services/controllers/types/common/dashboard-data.types";
+import { EleveDashboardStats } from "@/services/controllers/types/common/repetiteur.types";
 
 // Couleurs disponibles pour les élèves
 const STUDENT_COLORS = [
@@ -108,6 +109,10 @@ export function adaptRepetiteurDashboardData(
     niveau_id?: number;
     niveau?: { id: number; libelle: string };
   }>,
+  elevesResume: Array<{
+    eleveId: string | number;
+    statistiques: EleveDashboardStats;
+  }> = [],
 ) {
   // Build student name map
   const studentNameMap = new Map<number | string, string>();
@@ -127,17 +132,23 @@ export function adaptRepetiteurDashboardData(
     totalGroups: apiResponse.counters?.groupes_crees || 0,
   };
 
+  // Build a map of resume data by eleve ID for easy lookup
+  const resumeMap = new Map<number | string, EleveDashboardStats>();
+  elevesResume.forEach((resume) => {
+    resumeMap.set(resume.eleveId, resume.statistiques);
+  });
+
   // Adapt study time chart data
   const studyTimeData = elevesData.map((eleve) => ({
     name: `${eleve.prenom} ${eleve.nom}`,
-    hours: Math.floor(Math.random() * 60), // Mock - should come from tracking
+    hours: resumeMap.get(eleve.id)?.heures_etude_hebdomadaires || 0,
     color: getColorForStudent(eleve.id),
   }));
 
   // Adapt performance chart data
   const performanceData = elevesData.map((eleve) => ({
     name: `${eleve.prenom} ${eleve.nom}`,
-    average: Math.random() * 10 + 10, // Mock - should come from notes
+    average: resumeMap.get(eleve.id)?.moyenne_generale || 0,
     color: getColorForStudent(eleve.id),
   }));
 
@@ -158,29 +169,26 @@ export function adaptRepetiteurDashboardData(
     : [];
 
   // Adapt students quick view
-  // Note: On utilise les données disponibles depuis l'API GET_ELEVES
-  // Les stats détaillées (moyenne, temps d'étude, compteurs par élève) ne sont pas disponibles dans le dashboard
-  // Il faudrait appeler /api/repetiteur/eleve/resume pour chaque élève pour avoir ces données
   const studentsQuickViewData = elevesData.map((eleve) => {
-    // Récupérer le niveau depuis l'objet niveau si disponible
     const niveauLibelle =
-      eleve.niveau?.libelle || (eleve.niveau_id ? `Niveau ${eleve.niveau_id}` : "Non défini");
+      eleve.niveau?.libelle ||
+      (eleve.niveau_id ? `Niveau ${eleve.niveau_id}` : "Non défini");
+
+    const resumeStats = resumeMap.get(eleve.id);
 
     return {
       id: String(eleve.id),
       name: `${eleve.prenom} ${eleve.nom}`,
       niveau: niveauLibelle,
       color: getColorForStudent(eleve.id),
-      // Ces données ne sont pas disponibles dans l'API dashboard actuelle
-      // Pour avoir les vraies valeurs, il faudrait faire une requête GET /api/repetiteur/eleve/resume par élève
-      averageNote: 0, // Non disponible - affichera 0.0/20
-      weeklyStudyHours: 0, // Non disponible
-      totalQuizzes: 0, // Non disponible par élève (le counter est global)
-      totalCourses: 0, // Non disponible par élève
-      totalGroups: 0, // Non disponible par élève
-      trend: "stable" as const, // Non disponible
-      progressToNextMilestone: 0,
-      nextMilestone: undefined,
+      averageNote: resumeStats?.moyenne_generale || 0,
+      weeklyStudyHours: resumeStats?.heures_etude_hebdomadaires || 0,
+      totalQuizzes: resumeStats?.nombre_quiz || 0,
+      totalCourses: resumeStats?.nombre_cours || 0,
+      totalGroups: resumeStats?.nombre_groupes || 0,
+      trend: (resumeStats?.tendance as "up" | "down" | "stable") || "stable",
+      progressToNextMilestone: resumeStats?.progression || 0,
+      nextMilestone: undefined, // This is not in the API response
     };
   });
 

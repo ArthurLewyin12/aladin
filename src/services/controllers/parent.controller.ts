@@ -12,6 +12,8 @@ import {
   RetirerEnfantPayload,
   RetirerEnfantResponse,
   AssocierAutomatiquementResponse,
+  GetEnfantResumeResponse,
+  EnfantDashboardStats,
 } from "./types/common/parent.types";
 import { GetParentDashboardResponse, DashboardPeriod } from "./types/common/dashboard-data.types";
 
@@ -135,10 +137,8 @@ export const getEnfantCours =
  * @returns {Promise<GetEnfantResumeResponse>} Le résumé de l'enfant.
  */
 export const getEnfantResume =
-  async (): Promise<import("./types/common/parent.types").GetEnfantResumeResponse> => {
-    return request.get<
-      import("./types/common/parent.types").GetEnfantResumeResponse
-    >(ParentEndpoints.GET_ENFANT_RESUME);
+  async (): Promise<GetEnfantResumeResponse> => {
+    return request.get<GetEnfantResumeResponse>(ParentEndpoints.GET_ENFANT_RESUME);
   };
 
 /**
@@ -146,7 +146,7 @@ export const getEnfantResume =
  * @returns {Promise<Array>} Les résumés de tous les enfants.
  */
 export const getEnfantsResume = async (): Promise<
-  Array<{ enfantId: string | number; statistiques: import("./types/common/parent.types").GetEnfantResumeResponse["statistiques"] }>
+  Array<{ enfantId: string | number; statistiques: EnfantDashboardStats }>
 > => {
   try {
     const enfantsResponse = await getEnfants();
@@ -160,21 +160,31 @@ export const getEnfantsResume = async (): Promise<
           });
           // Puis récupérer son résumé
           const resumeResponse = await getEnfantResume();
+          const stats = resumeResponse.statistiques;
           return {
             enfantId: enfant.id,
-            statistiques: resumeResponse.statistiques,
+            statistiques: {
+              nombre_groupes: stats.nombre_groupes || 0,
+              nombre_quiz: stats.nombre_quiz || 0,
+              nombre_cours: stats.nombre_cours || 0,
+              heures_etude_hebdomadaires: stats.heures_etude_hebdomadaires || 0,
+              tendance: stats.tendance || "stable",
+              progression: stats.progression || 0,
+              moyenne_generale: stats.moyenne_generale || null,
+            },
           };
         } catch (error) {
           // En cas d'erreur, retourner les valeurs par défaut
           return {
             enfantId: enfant.id,
             statistiques: {
-              groupes: 0,
-              quiz_personnels: 0,
-              quiz_groupes: 0,
-              quiz_total: 0,
-              cours: 0,
-              total_contenus: 0,
+              nombre_groupes: 0,
+              nombre_quiz: 0,
+              nombre_cours: 0,
+              heures_etude_hebdomadaires: 0,
+              tendance: "stable",
+              progression: 0,
+              moyenne_generale: null,
             },
           };
         }

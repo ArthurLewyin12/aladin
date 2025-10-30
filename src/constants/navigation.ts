@@ -53,6 +53,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         icon: FileText,
       },
       {
+        label: "Mon planning",
+        path: "/student/planning",
+        icon: ClipboardList,
+      },
+      {
         label: "Mes groupes",
         path: "/student/groups",
         icon: Users,

@@ -18,7 +18,8 @@ import { DefinirNiveauxModal } from "@/components/pages/repetiteur/definir-nivea
 export default function RepetiteurHomePage() {
   const router = useRouter();
   const { user } = useSession();
-  const { data: niveauxData, isLoading: isLoadingNiveaux } = useNiveauxChoisis();
+  const { data: niveauxData, isLoading: isLoadingNiveaux } =
+    useNiveauxChoisis();
   const [showNiveauxModal, setShowNiveauxModal] = useState(false);
 
   // Vérifier si le répétiteur a défini ses niveaux
@@ -65,21 +66,21 @@ export default function RepetiteurHomePage() {
     {
       id: "dashboard",
       title: "Je vois mon tableau de bord",
-      description: "Suivez vos statistiques et activités",
+      description: "Je suis les statistiques et activités",
       icon: BarChart3,
       handler: () => router.push("/repetiteur/dashboard"),
     },
     {
       id: "students",
       title: "Je gère mes élèves",
-      description: "Ajoutez et suivez vos élèves",
+      description: "j'ajoute et je suis mes élèves",
       icon: Users,
       handler: () => router.push("/repetiteur/students"),
     },
     {
       id: "groups",
       title: "Je gère les groupes",
-      description: "Créez des groupes d'étude",
+      description: "j'ai une vue d'ensemble  des groupes d'étude",
       icon: UsersRound,
       handler: () => router.push("/repetiteur/groups"),
     },
@@ -98,66 +99,66 @@ export default function RepetiteurHomePage() {
         open={showNiveauxModal}
         onOpenChange={setShowNiveauxModal}
       />
-      
+
       <div className="min-h-screen w-full relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Message de bienvenue professionnel */}
-        <div className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#548C2F] mb-4">
-            Bonjour {user?.prenom}
-          </h1>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
-            Suivez le niveau de vos élèves , créez vos cours et exercices, et
-            laissez l'IA vous assister dans l'accompagnement pédagogique.
-          </p>
-        </div>
-
-        {/* Section principale avec illustration et actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Colonne gauche - Illustration */}
-          <div className="hidden lg:flex justify-center lg:justify-start order-2 lg:order-1">
-            <Image
-              src="/mathematics-pana.png"
-              alt="Illustration parent"
-              width={500}
-              height={450}
-              className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-full h-auto"
-              priority
-            />
+          {/* Message de bienvenue professionnel */}
+          <div className="mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#548C2F] mb-4">
+              Bonjour {user?.prenom}
+            </h1>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-3xl">
+              Suivez le niveau de vos élèves , créez vos cours et exercices, et
+              laissez l'IA vous assister dans l'accompagnement pédagogique.
+            </p>
           </div>
 
-          {/* Colonne droite - Actions */}
-          <div className="space-y-4 order-1 lg:order-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-              Que souhaitez-vous faire ?
-            </h2>
-            {repetiteurActions.map((action) => {
-              const IconComponent = action.icon;
-              return (
-                <button
-                  key={action.id}
-                  onClick={action.handler}
-                  className="cursor-pointer w-full bg-white hover:bg-[#F0F7EC] border-2 border-[#C8E0B8] rounded-2xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-[#8FB376] group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-[#E3F1D9] rounded-xl flex items-center justify-center group-hover:bg-[#C8E0B8] transition-colors duration-300">
-                      <IconComponent className="w-6 h-6 text-[#548C2F]" />
+          {/* Section principale avec illustration et actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Colonne gauche - Illustration */}
+            <div className="hidden lg:flex justify-center lg:justify-start order-2 lg:order-1">
+              <Image
+                src="/mathematics-pana.png"
+                alt="Illustration parent"
+                width={500}
+                height={450}
+                className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-full h-auto"
+                priority
+              />
+            </div>
+
+            {/* Colonne droite - Actions */}
+            <div className="space-y-4 order-1 lg:order-2">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                Que souhaitez-vous faire ?
+              </h2>
+              {repetiteurActions.map((action) => {
+                const IconComponent = action.icon;
+                return (
+                  <button
+                    key={action.id}
+                    onClick={action.handler}
+                    className="cursor-pointer w-full bg-white hover:bg-[#F0F7EC] border-2 border-[#C8E0B8] rounded-2xl p-5 sm:p-6 flex items-center justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-[#8FB376] group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-[#E3F1D9] rounded-xl flex items-center justify-center group-hover:bg-[#C8E0B8] transition-colors duration-300">
+                        <IconComponent className="w-6 h-6 text-[#548C2F]" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5">
+                          {action.title}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-600">
+                          {action.description}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5">
-                        {action.title}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        {action.description}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-[#548C2F] group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
-                </button>
-              );
-            })}
+                    <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-[#548C2F] group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </>

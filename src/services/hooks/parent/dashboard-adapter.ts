@@ -7,6 +7,7 @@ import {
   GetParentDashboardResponse,
   ParentActivity,
 } from "@/services/controllers/types/common/dashboard-data.types";
+import { EnfantDashboardStats } from "@/services/controllers/types/common/parent.types";
 
 // Couleurs disponibles pour les enfants
 const CHILD_COLORS = [
@@ -102,14 +103,7 @@ export function adaptParentDashboardData(
   }>,
   childrenResume: Array<{
     enfantId: string | number;
-    statistiques: {
-      groupes: number;
-      quiz_personnels: number;
-      quiz_groupes: number;
-      quiz_total: number;
-      cours: number;
-      total_contenus: number;
-    };
+    statistiques: EnfantDashboardStats;
   }> = [],
 ) {
   // Build child name map
@@ -130,17 +124,23 @@ export function adaptParentDashboardData(
     totalCourses: apiResponse.counters?.cours_crees || 0,
   };
 
+  // Build a map of resume data by enfant ID for easy lookup
+  const resumeMap = new Map<number | string, EnfantDashboardStats>();
+  childrenResume.forEach((resume) => {
+    resumeMap.set(resume.enfantId, resume.statistiques);
+  });
+
   // Adapt study time chart data
   const studyTimeData = childrenData.map((child) => ({
     name: `${child.prenom} ${child.nom}`,
-    hours: Math.floor(Math.random() * 60), // Mock - should come from tracking
+    hours: resumeMap.get(child.id)?.heures_etude_hebdomadaires || 0,
     color: getColorForChild(child.id),
   }));
 
   // Adapt performance chart data
   const performanceData = childrenData.map((child) => ({
     name: `${child.prenom} ${child.nom}`,
-    average: Math.random() * 10 + 10, // Mock - should come from notes
+    average: resumeMap.get(child.id)?.moyenne_generale || 0,
     color: getColorForChild(child.id),
   }));
 
@@ -163,20 +163,6 @@ export function adaptParentDashboardData(
     : [];
 
   // Adapt children quick view
-  // Build a map of resume data by enfant ID for easy lookup
-  const resumeMap = new Map<number | string, {
-    groupes: number;
-    quiz_personnels: number;
-    quiz_groupes: number;
-    quiz_total: number;
-    cours: number;
-    total_contenus: number;
-  }>();
-
-  childrenResume.forEach((resume) => {
-    resumeMap.set(resume.enfantId, resume.statistiques);
-  });
-
   const childrenQuickViewData = childrenData.map((child) => {
     // Récupérer le niveau depuis l'objet niveau si disponible
     const niveauLibelle =
@@ -190,9 +176,9 @@ export function adaptParentDashboardData(
       name: `${child.prenom} ${child.nom}`,
       niveau: niveauLibelle,
       color: getColorForChild(child.id),
-      totalQuizzes: resumeStats?.quiz_total || 0,
-      totalCourses: resumeStats?.cours || 0,
-      totalGroups: resumeStats?.groupes || 0,
+      totalQuizzes: resumeStats?.nombre_quiz || 0,
+      totalCourses: resumeStats?.nombre_cours || 0,
+      totalGroups: resumeStats?.nombre_groupes || 0,
     };
   });
 

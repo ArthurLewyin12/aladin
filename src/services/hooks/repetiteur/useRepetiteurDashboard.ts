@@ -3,6 +3,7 @@ import { getRepetiteurDashboard, getEleves } from "@/services/controllers/repeti
 import { createQueryKey } from "@/lib/request";
 import { DashboardPeriod } from "@/services/controllers/types/common/dashboard-data.types";
 import { adaptRepetiteurDashboardData } from "./dashboard-adapter";
+import { useElevesResume } from "./useElevesResume";
 
 /**
  * Hook de requête pour récupérer le dashboard du répétiteur avec données transformées.
@@ -29,16 +30,20 @@ export const useRepetiteurDashboard = (
     enabled: !!repetiteurId,
   });
 
+  // Récupère les résumés de tous les élèves
+  const elevesResumeQuery = useElevesResume(!!repetiteurId);
+
   // Combine et transforme les données
-  const isLoading = dashboardQuery.isLoading || elevesQuery.isLoading;
-  const error = dashboardQuery.error || elevesQuery.error;
+  const isLoading = dashboardQuery.isLoading || elevesQuery.isLoading || elevesResumeQuery.isLoading;
+  const error = dashboardQuery.error || elevesQuery.error || elevesResumeQuery.error;
 
   let data = null;
   if (
     dashboardQuery.data &&
     elevesQuery.data &&
     elevesQuery.data.eleves &&
-    elevesQuery.data.eleves.length > 0
+    elevesQuery.data.eleves.length > 0 &&
+    elevesResumeQuery.data
   ) {
     data = adaptRepetiteurDashboardData(
       dashboardQuery.data,
@@ -49,6 +54,7 @@ export const useRepetiteurDashboard = (
         niveau_id: eleve.niveau_id,
         niveau: eleve.niveau,
       })),
+      elevesResumeQuery.data || [],
     );
   }
 
@@ -56,8 +62,7 @@ export const useRepetiteurDashboard = (
     data,
     isLoading,
     error,
-    isFetching: dashboardQuery.isFetching || elevesQuery.isFetching,
+    isFetching: dashboardQuery.isFetching || elevesQuery.isFetching || elevesResumeQuery.isFetching,
     isError: !!error,
   };
 };
-

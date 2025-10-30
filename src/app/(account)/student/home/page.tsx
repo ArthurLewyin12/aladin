@@ -10,6 +10,7 @@ import {
   Share2,
   Sparkles,
   FileText,
+  CalendarPlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -95,6 +96,18 @@ export default function StudentHomePage() {
       hoverBg: "hover:bg-amber-100",
       iconBg: "bg-gradient-to-br from-amber-500 to-amber-600",
       handler: () => router.push("/student/notes"),
+    },
+    {
+      id: "planning",
+      title: "Mon Planning d'Études",
+      description: "Organise ta semaine d'étude",
+      icon: CalendarPlus,
+      color: "from-orange-400 to-orange-600",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-200",
+      hoverBg: "hover:bg-orange-100",
+      iconBg: "bg-gradient-to-br from-orange-500 to-orange-600",
+      handler: () => router.push("/student/planning"),
     },
     {
       id: "group",

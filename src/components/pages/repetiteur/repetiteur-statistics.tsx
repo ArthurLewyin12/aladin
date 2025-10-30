@@ -31,15 +31,9 @@ import { convertScoreToNote } from "@/lib/quiz-score";
 
 interface RepetiteurStatisticsProps {
   eleve: any;
-  statistics?: {
-    nombre_groupes?: number;
-    nombre_quiz?: number;
-    nombre_cours?: number;
-    moyenne_generale?: number;
-  };
 }
 
-export function RepetiteurStatistics({ eleve, statistics }: RepetiteurStatisticsProps) {
+export function RepetiteurStatistics({ eleve }: RepetiteurStatisticsProps) {
   const { data: dashboardData, isLoading } = useEleveDashboard(eleve.id, "week");
 
   const studyTimeData = useMemo(() => {

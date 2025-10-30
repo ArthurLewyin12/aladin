@@ -38,13 +38,6 @@ export function RepetiteurStudentQuickView({
 }: RepetiteurStudentQuickViewProps) {
   const router = useRouter();
 
-  const getPerformanceBadge = (average: number) => {
-    if (average >= 14) return { label: "Excellent", color: "bg-green-100 text-green-800" };
-    if (average >= 12) return { label: "Très bien", color: "bg-blue-100 text-blue-800" };
-    if (average >= 10) return { label: "Bien", color: "bg-yellow-100 text-yellow-800" };
-    return { label: "À améliorer", color: "bg-red-100 text-red-800" };
-  };
-
   if (students.length === 0) {
     return (
       <div className="space-y-4">
@@ -69,7 +62,6 @@ export function RepetiteurStudentQuickView({
       </h3>
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {students.map((student, index) => {
-          const perfBadge = getPerformanceBadge(student.averageNote);
           const bgColor = CARD_COLORS[index % CARD_COLORS.length];
           const initials = student.name
             .split(" ")
@@ -114,19 +106,6 @@ export function RepetiteurStudentQuickView({
                   {student.trend === "down" && (
                     <TrendingDown className="h-5 w-5 text-red-600" />
                   )}
-                </div>
-
-                {/* Moyenne et badge */}
-                <div className="mb-4">
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-3xl font-bold text-gray-900">
-                      {student.averageNote.toFixed(1)}
-                    </span>
-                    <span className="text-sm text-gray-600">/20</span>
-                  </div>
-                  <Badge className={`${perfBadge.color} border-0`}>
-                    {perfBadge.label}
-                  </Badge>
                 </div>
 
                 {/* Stats */}

@@ -93,7 +93,6 @@ export default function EleveDetailPage() {
 
   // Ne charger les contenus que si l'élève est prêt
   const { data: resumeData, isLoading: isLoadingResume } = useEleveResume(isEleveReady);
-  const resume = resumeData?.resume;
 
   const handleBack = () => {
     router.push("/repetiteur/students");
@@ -305,31 +304,31 @@ export default function EleveDetailPage() {
           </div>
 
           {/* Statistiques si disponibles */}
-          {resume?.statistiques && (
+          {resumeData?.statistiques && (
             <div className="mt-4 pt-4 border-t border-[#C8E0B8]">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-[#548C2F]">
-                    {resume.statistiques.nombre_groupes}
+                    {resumeData.statistiques.nombre_groupes}
                   </p>
                   <p className="text-xs text-gray-600">Groupes</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-[#548C2F]">
-                    {resume.statistiques.nombre_quiz}
+                    {resumeData.statistiques.nombre_quiz}
                   </p>
                   <p className="text-xs text-gray-600">Quiz</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-[#548C2F]">
-                    {resume.statistiques.nombre_cours}
+                    {resumeData.statistiques.nombre_cours}
                   </p>
                   <p className="text-xs text-gray-600">Cours</p>
                 </div>
-                {resume.statistiques.moyenne_generale !== undefined && (
+                {resumeData.statistiques.moyenne_generale != null && (
                   <div className="text-center">
                     <p className="text-2xl font-bold text-[#548C2F]">
-                      {resume.statistiques.moyenne_generale.toFixed(1)}
+                      {resumeData.statistiques.moyenne_generale?.toFixed(1)}
                     </p>
                     <p className="text-xs text-gray-600">Moyenne</p>
                   </div>
@@ -387,12 +386,6 @@ export default function EleveDetailPage() {
           {activeTab === "statistiques" && (
             <RepetiteurStatistics
               eleve={eleve}
-              statistics={resume?.statistiques || {
-                nombre_groupes: 0,
-                nombre_quiz: 0,
-                nombre_cours: 0,
-                moyenne_generale: undefined,
-              }}
             />
           )}
 

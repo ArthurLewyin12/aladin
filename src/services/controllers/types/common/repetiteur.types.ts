@@ -224,18 +224,33 @@ export type GetEleveCoursResponse = {
 };
 
 /**
+ * Statistiques de résumé pour un élève, utilisées dans le dashboard du répétiteur.
+ */
+export type EleveDashboardStats = {
+  nombre_groupes: number;
+  nombre_quiz: number;
+  nombre_cours: number;
+  moyenne_generale: number | null;
+  heures_etude_hebdomadaires: number;
+  tendance: string;
+  progression: number;
+};
+
+/**
  * Réponse GET /api/repetiteur/eleve/resume
  */
 export type GetEleveResumeResponse = {
   success: boolean;
-  resume: {
-    eleve: Eleve;
-    statistiques: {
-      nombre_groupes: number;
-      nombre_quiz: number;
-      nombre_cours: number;
-      moyenne_generale?: number;
-    };
+  period: string;
+  eleve: Eleve;
+  statistiques: {
+    moyenne_generale: number | null;
+    heures_etude_hebdomadaires: number;
+    nombre_quiz: number;
+    nombre_cours: number;
+    nombre_groupes: number;
+    tendance: string;
+    progression: number;
   };
 };
 

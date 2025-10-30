@@ -5,3 +5,5 @@ export * from "./quiz.types";
 export * from "./groupe.types";
 export * from "./note.types";
 export * from "./dashboard-data.types";
+export * from "./eleve.types";
+export * from "./study-plan.types";

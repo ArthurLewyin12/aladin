@@ -36,17 +36,9 @@ import { convertScoreToNote } from "@/lib/quiz-score";
 
 interface ParentStatisticsProps {
   enfant: Enfant;
-  statistics?: {
-    groupes?: number;
-    quiz_personnels?: number;
-    quiz_groupes?: number;
-    quiz_total?: number;
-    cours?: number;
-    total_contenus?: number;
-  };
 }
 
-export function ParentStatistics({ enfant, statistics }: ParentStatisticsProps) {
+export function ParentStatistics({ enfant }: ParentStatisticsProps) {
   const { data: dashboardData, isLoading } = useEleveDashboard(typeof enfant.id === 'string' ? parseInt(enfant.id) : enfant.id, "week");
 
   const studyTimeData = useMemo(() => {

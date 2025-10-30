@@ -146,15 +146,6 @@ export default function EnfantProfilPage() {
     );
   }
 
-  const stats = resumeData?.statistiques || {
-    groupes: 0,
-    quiz_personnels: 0,
-    quiz_groupes: 0,
-    quiz_total: 0,
-    cours: 0,
-    total_contenus: 0,
-  };
-
   // L'enfant est considéré comme actif si isEnfantReady est true (car on vient de le sélectionner)
   // ou si l'enfantActif correspond dans le cache
   const isEnfantActif = isEnfantReady || enfantActif?.id === enfant.id;
@@ -228,19 +219,19 @@ export default function EnfantProfilPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resumeData.statistiques.groupes}
+                    {resumeData.statistiques.nombre_groupes}
                   </p>
                   <p className="text-xs text-gray-600">Groupes</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resumeData.statistiques.quiz_total}
+                    {resumeData.statistiques.nombre_quiz}
                   </p>
                   <p className="text-xs text-gray-600">Quiz</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {resumeData.statistiques.cours}
+                    {resumeData.statistiques.nombre_cours}
                   </p>
                   <p className="text-xs text-gray-600">Cours</p>
                 </div>
@@ -291,7 +282,7 @@ export default function EnfantProfilPage() {
           )}
 
           {activeTab === "Statistiques" && (
-            <ParentStatistics enfant={enfant} statistics={stats} />
+            <ParentStatistics enfant={enfant} />
           )}
         </div>
       </div>

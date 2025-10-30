@@ -251,17 +251,32 @@ export type GetEnfantCoursResponse = {
 };
 
 /**
+ * Statistiques de résumé pour un enfant, utilisées dans le dashboard.
+ */
+export type EnfantDashboardStats = {
+  nombre_groupes: number;
+  nombre_quiz: number;
+  nombre_cours: number;
+  heures_etude_hebdomadaires: number;
+  tendance: string;
+  progression: number;
+  moyenne_generale: number | null;
+};
+
+/**
  * Réponse GET /api/parent/enfant/resume
  */
 export type GetEnfantResumeResponse = {
   success: boolean;
+  period: string;
   enfant: Enfant;
   statistiques: {
-    groupes: number;
-    quiz_personnels: number;
-    quiz_groupes: number;
-    quiz_total: number;
-    cours: number;
-    total_contenus: number;
+    heures_etude_hebdomadaires: number;
+    nombre_quiz: number;
+    nombre_cours: number;
+    nombre_groupes: number;
+    tendance: string;
+    progression: number;
+    moyenne_generale: number | null;
   };
 };

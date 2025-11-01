@@ -201,25 +201,29 @@ export function PlanEditor({
                     <FormItem>
                       <FormLabel>Chapitres</FormLabel>
                       <FormControl>
-                        <MultipleSelector
-                          value={selectedOptions}
-                          onChange={(options) => {
-                            field.onChange(options.map((option) => option.value));
-                          }}
-                          options={chapterOptions}
-                          placeholder={
-                            isLoadingChapitres
-                              ? "Chargement..."
-                              : "Sélectionner un ou plusieurs chapitres"
-                          }
-                          loadingIndicator={
-                            isLoadingChapitres && <p>Chargement...</p>
-                          }
-                          emptyIndicator={
-                            <p>Aucun chapitre trouvé pour cette matière.</p>
-                          }
-                          disabled={isLoadingChapitres || !watchedMatiereId}
-                        />
+                        <div className="max-w-full overflow-hidden">
+                          <MultipleSelector
+                            value={selectedOptions}
+                            onChange={(options) => {
+                              field.onChange(options.map((option) => option.value));
+                            }}
+                            options={chapterOptions}
+                            placeholder={
+                              isLoadingChapitres
+                                ? "Chargement..."
+                                : "Sélectionner un ou plusieurs chapitres"
+                            }
+                            loadingIndicator={
+                              isLoadingChapitres && <p>Chargement...</p>
+                            }
+                            emptyIndicator={
+                              <p>Aucun chapitre trouvé pour cette matière.</p>
+                            }
+                            disabled={isLoadingChapitres || !watchedMatiereId}
+                            className="w-full"
+                            badgeClassName="max-w-[200px] truncate"
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -280,7 +284,12 @@ export function PlanEditor({
           {formFields}
           <DialogFooter>
             {isEditMode && (
-              <Button type="button" variant="destructive" className="mr-auto">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                className="mr-auto"
+              >
                 Supprimer
               </Button>
             )}
@@ -288,10 +297,15 @@ export function PlanEditor({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="border-gray-300 hover:bg-gray-50"
             >
               Annuler
             </Button>
-            <Button type="submit" form="plan-form">
+            <Button
+              type="submit"
+              form="plan-form"
+              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"
+            >
               Enregistrer
             </Button>
           </DialogFooter>
@@ -314,7 +328,12 @@ export function PlanEditor({
         <div className="px-4">{formFields}</div>
         <DrawerFooter>
           {isEditMode && (
-            <Button type="button" variant="destructive" className="mr-auto">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              className="mr-auto"
+            >
               Supprimer
             </Button>
           )}
@@ -322,10 +341,15 @@ export function PlanEditor({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
+            className="border-gray-300 hover:bg-gray-50"
           >
             Annuler
           </Button>
-          <Button type="submit" form="plan-form">
+          <Button
+            type="submit"
+            form="plan-form"
+            className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"
+          >
             Enregistrer
           </Button>
         </DrawerFooter>

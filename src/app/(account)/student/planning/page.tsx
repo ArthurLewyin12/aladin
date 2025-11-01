@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarPlus, BookOpen } from "lucide-react";
+import { ArrowLeft, CalendarPlus, BookOpen, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { WeeklyScheduler } from "@/components/ui/weekly-scheduler";
+import { PlanningCalendarView } from "@/components/ui/planning-calendar-view";
+import { PlanningMobileView } from "@/components/ui/planning-mobile-view";
 import { useStudyPlans } from "@/services/hooks/study-plan/useStudyPlans";
 import { PlanEditor } from "@/components/pages/planning/plan-editor";
 import { useCreateStudyPlan } from "@/services/hooks/study-plan/useCreateStudyPlan";
 import { useUpdateStudyPlan } from "@/services/hooks/study-plan/useUpdateStudyPlan";
 import { useDeleteStudyPlan } from "@/services/hooks/study-plan/useDeleteStudyPlan";
 import { StudyPlan } from "@/services/controllers/types/common";
-
-import { TrendingUp } from "lucide-react";
+import { useMediaQuery } from "@/services/hooks/use-media-query";
 export default function PlanningPage() {
   const router = useRouter();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<StudyPlan | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -86,8 +87,19 @@ export default function PlanningPage() {
       );
     }
 
+    // Use different views based on screen size
+    if (isDesktop) {
+      return (
+        <PlanningCalendarView
+          plans={plans}
+          onSelectPlan={handleOpenEditor}
+          onSelectSlot={handleOpenCreator}
+        />
+      );
+    }
+
     return (
-      <WeeklyScheduler
+      <PlanningMobileView
         plans={plans}
         onSelectPlan={handleOpenEditor}
         onSelectSlot={handleOpenCreator}

@@ -23,6 +23,7 @@ import {
   GraduationCap,
   AlertCircle,
   CheckCircle,
+  Volume2,
 } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useUpdateUserInfo } from "@/services/hooks/auth/useUpdateUserInfo";
@@ -60,6 +61,9 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
+import { useTTSPreferences } from "@/stores/useTTSPreferences";
+import { Switch } from "@/components/ui/switch";
+import { Voices } from "next-tts";
 
 // Schema pour les informations du profil
 const profileSchema = z.object({
@@ -95,6 +99,7 @@ export default function SettingsGeneralPage() {
   const { user } = useSession();
   const { data: niveaux, isLoading: isLoadingNiveaux } = useNiveau();
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const { preferences, setEnabled, setVoice, setVoiceSettings } = useTTSPreferences();
 
   const [selectedNiveau, setSelectedNiveau] = useState<string>("");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -631,7 +636,119 @@ export default function SettingsGeneralPage() {
         </Form>
       </div>
 
-      {/* Section 4: Contacter l'administrateur */}
+      {/* Section 4: Préférences de lecture audio (TTS) */}
+      <div
+        className={cn(
+          "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+          CARD_COLORS[0],
+        )}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <Volume2 className="w-6 h-6 text-gray-900" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Préférences de lecture audio
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Configure la synthèse vocale pour tes cours et quiz
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Activer/Désactiver TTS */}
+          <div className="flex items-center justify-between p-4 bg-white/60 rounded-2xl">
+            <div>
+              <p className="font-medium text-gray-900">Activer la lecture audio</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Permet d'écouter les cours et les questions de quiz
+              </p>
+            </div>
+            <Switch
+              checked={preferences.enabled}
+              onCheckedChange={setEnabled}
+            />
+          </div>
+
+          {/* Choix de la voix */}
+          {preferences.enabled && (
+            <>
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-900">
+                  Voix
+                </label>
+                <Select
+                  value={preferences.voice}
+                  onValueChange={setVoice}
+                >
+                  <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
+                    <SelectValue placeholder="Sélectionne une voix" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={Voices.French.FR.Female.Denise}>
+                      Denise (Femme)
+                    </SelectItem>
+                    <SelectItem value={Voices.French.FR.Female.Eloise}>
+                      Eloise (Femme)
+                    </SelectItem>
+                    <SelectItem value={Voices.French.FR.Male.Henri}>
+                      Henri (Homme)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Vitesse de lecture */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-900">
+                  Vitesse de lecture
+                </label>
+                <Select
+                  value={preferences.voiceSettings.rate}
+                  onValueChange={(value) => setVoiceSettings({ rate: value })}
+                >
+                  <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="-20%">Très lent</SelectItem>
+                    <SelectItem value="-10%">Lent</SelectItem>
+                    <SelectItem value="+0%">Normal</SelectItem>
+                    <SelectItem value="+10%">Rapide</SelectItem>
+                    <SelectItem value="+20%">Très rapide</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Volume */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-900">
+                  Volume
+                </label>
+                <Select
+                  value={preferences.voiceSettings.volume}
+                  onValueChange={(value) => setVoiceSettings({ volume: value })}
+                >
+                  <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="-20%">Faible</SelectItem>
+                    <SelectItem value="-10%">Moyen</SelectItem>
+                    <SelectItem value="+0%">Normal</SelectItem>
+                    <SelectItem value="+10%">Fort</SelectItem>
+                    <SelectItem value="+20%">Très fort</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Section 5: Contacter l'administrateur */}
       <div
         className={cn(
           "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",

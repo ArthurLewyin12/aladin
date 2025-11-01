@@ -12,6 +12,7 @@ import {
 import { MathText } from "@/components/ui/MathText";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { Spinner } from "@/components/ui/spinner";
+import { TTSButton } from "@/components/ui/tts";
 
 export default function SavedCoursePage() {
   const router = useRouter();
@@ -142,9 +143,20 @@ export default function SavedCoursePage() {
               <span className="font-medium">Retour</span>
             </Button>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Cours sauvegardé</span>
+            <div className="flex items-center gap-3">
+              {data && (
+                <TTSButton
+                  text={data.text}
+                  variant="outline"
+                  size="sm"
+                  showLabel
+                  label="Écouter le cours"
+                />
+              )}
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Cours sauvegardé</span>
+              </div>
             </div>
           </div>
         </div>

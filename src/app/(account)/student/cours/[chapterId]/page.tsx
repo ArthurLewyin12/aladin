@@ -15,6 +15,7 @@ import { MathText } from "@/components/ui/MathText";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { useDocumentUpload } from "@/stores/useDocumentUpload";
+import { TTSButton } from "@/components/ui/tts";
 
 const courseLoadingMessages = [
   "Génération de votre cours personnalisé...",
@@ -159,9 +160,20 @@ export default function CoursePage() {
               <span className="font-medium">Retour</span>
             </Button>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Cours personnalisé</span>
+            <div className="flex items-center gap-3">
+              {courseData && (
+                <TTSButton
+                  text={courseData.text}
+                  variant="outline"
+                  size="sm"
+                  showLabel
+                  label="Écouter le cours"
+                />
+              )}
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Cours personnalisé</span>
+              </div>
             </div>
           </div>
         </div>

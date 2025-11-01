@@ -16,6 +16,7 @@ import { useTimeTracking } from "@/stores/useTimeTracking";
 import { calculateQuizScore } from "@/lib/quiz-score";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { QuizReader } from "@/components/ui/tts";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -23,10 +24,9 @@ export default function GroupQuizTakingPage() {
   const [timeLimit, setTimeLimit] = useState<number>(0);
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
-  // Migration vers nuqs pour la persistance URL
   const [currentQuestionIndex, setCurrentQuestionIndex] = useQueryState(
     "q",
-    parseAsInteger.withDefault(0)
+    parseAsInteger.withDefault(0),
   );
   const [userAnswers, setUserAnswers] = useState<
     Record<string | number, string | number>
@@ -48,7 +48,11 @@ export default function GroupQuizTakingPage() {
         const { quiz, data, time } = JSON.parse(storedQuiz);
 
         console.log("=== DEBUG CHARGEMENT QUIZ ===");
-        console.log("Données brutes depuis sessionStorage:", { quiz, data, time });
+        console.log("Données brutes depuis sessionStorage:", {
+          quiz,
+          data,
+          time,
+        });
         console.log("Première question brute:", data[0]);
 
         setQuizDefinition(quiz);
@@ -120,19 +124,25 @@ export default function GroupQuizTakingPage() {
 
     console.log("=== DEBUG GROUP QUIZ SUBMISSION ===");
     console.log("Questions totales:", quizQuestions.length);
-    console.log("Questions avec leurs bonnes réponses:", quizQuestions.map(q => ({
-      id: q.id,
-      question: q.question,
-      bonne_reponse_id: q.bonne_reponse_id,
-      propositions: q.propositions
-    })));
+    console.log(
+      "Questions avec leurs bonnes réponses:",
+      quizQuestions.map((q) => ({
+        id: q.id,
+        question: q.question,
+        bonne_reponse_id: q.bonne_reponse_id,
+        propositions: q.propositions,
+      })),
+    );
     console.log("Réponses utilisateur:", userAnswers);
 
     // Calculer le score avec l'utilitaire centralisé
     const scoreResult = calculateQuizScore(quizQuestions, userAnswers);
 
     console.log("Score calculé:", scoreResult);
-    console.log("Score envoyé au backend (scoreForApi):", scoreResult.scoreForApi);
+    console.log(
+      "Score envoyé au backend (scoreForApi):",
+      scoreResult.scoreForApi,
+    );
 
     const payload: QuizSubmitPayload = { score: scoreResult.scoreForApi };
 
@@ -162,10 +172,7 @@ export default function GroupQuizTakingPage() {
 
       // Sauvegarder le score retourné par le backend (déjà sur 20)
       if (result.note && result.note.note !== undefined) {
-        sessionStorage.setItem(
-          "groupQuizScore",
-          result.note.note.toString(),
-        );
+        sessionStorage.setItem("groupQuizScore", result.note.note.toString());
         console.log("Score sauvegardé dans sessionStorage:", result.note.note);
       } else {
         console.warn("⚠️ Pas de score dans result.note.note!");
@@ -183,12 +190,21 @@ export default function GroupQuizTakingPage() {
       });
       setIsSubmitting(false);
     }
-  }, [quizId, isSubmitting, quizQuestions, userAnswers, submitQuizMutation, router, groupId]);
+  }, [
+    quizId,
+    isSubmitting,
+    quizQuestions,
+    userAnswers,
+    submitQuizMutation,
+    router,
+    groupId,
+  ]);
 
   // Hook pour empêcher la navigation pendant le quiz
   const { ConfirmationDialog, interceptNavigation } = usePreventNavigation({
     when: !isLoading && !isSubmitting && quizQuestions.length > 0,
-    message: "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
+    message:
+      "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
     onConfirm: handleSubmitQuiz,
   });
 
@@ -238,104 +254,114 @@ export default function GroupQuizTakingPage() {
     <>
       <ConfirmationDialog />
       <div className="min-h-screen w-full">
-      {/* Header */}
-      <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToGroup}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white px-4 py-2"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            <span className="text-sm">Retour au groupe</span>
-          </Button>
-          <h1 className="text-orange-600 text-4xl md:text-[3rem]">
-            {quizDefinition?.titre || "Quiz de Groupe"}
-          </h1>
+        {/* Header */}
+        <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToGroup}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white px-4 py-2"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              <span className="text-sm">Retour au groupe</span>
+            </Button>
+            <h1 className="text-orange-600 text-4xl md:text-[3rem]">
+              {quizDefinition?.titre || "Quiz de Groupe"}
+            </h1>
+          </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="w-full mx-auto max-w-4xl px-4 md:px-8 pt-2 pb-8">
-        {currentQuestion && (
-          <div className="max-w-4xl mx-auto mt-24">
-            <div className="space-y-8">
-              {/* Timer et Progress bar */}
-              <div>
-                <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
-                  <span>
-                    Question {currentQuestionIndex + 1}/{quizQuestions.length}
-                  </span>
-                  <span className={`text-lg font-bold ${remainingTime <= 10 ? "text-red-600 animate-pulse" : "text-orange-600"}`}>
-                    ⏱️ {formatTime(remainingTime)}
-                  </span>
-                  <span>{quizDefinition?.matiere?.libelle || ""}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-orange-500 h-2.5 rounded-full"
-                    style={{
-                      width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Question Card */}
-              <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center underline decoration-2 underline-offset-4">
-                  Question {currentQuestionIndex + 1}
-                </h2>
-                <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
-                  {currentQuestion.question}
-                </p>
-              </div>
-
-              {/* Answers */}
-              <div>
-                <RadioGroup
-                  value={userAnswers[currentQuestion.id]?.toString() || ""}
-                  onValueChange={(value) => {
-                    setUserAnswers((prev) => ({
-                      ...prev,
-                      [currentQuestion.id]: value,
-                    }));
-
-                    if (currentQuestionIndex === quizQuestions.length - 1) {
-                      setTimeout(() => handleSubmitQuiz(), 300);
-                    } else {
-                      setTimeout(() => handleNextQuestion(), 300);
-                    }
-                  }}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {currentQuestion.propositions.map((proposition, index) => (
-                      <div
-                        key={proposition.id}
-                        className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
-                      >
-                        <RadioGroupItem
-                          value={proposition.id.toString()}
-                          id={proposition.id.toString()}
-                          className="border-black border-2 flex-shrink-0"
-                        />
-                        <Label
-                          htmlFor={proposition.id.toString()}
-                          className="flex-1 text-base font-medium cursor-pointer"
-                        >
-                          {proposition.text}
-                        </Label>
-                      </div>
-                    ))}
+        {/* Main Content */}
+        <div className="w-full mx-auto max-w-4xl px-4 md:px-8 pt-2 pb-8">
+          {currentQuestion && (
+            <div className="max-w-4xl mx-auto mt-24">
+              <div className="space-y-8">
+                {/* Timer et Progress bar */}
+                <div>
+                  <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
+                    <span>
+                      Question {currentQuestionIndex + 1}/{quizQuestions.length}
+                    </span>
+                    <span
+                      className={`text-lg font-bold ${remainingTime <= 10 ? "text-red-600 animate-pulse" : "text-orange-600"}`}
+                    >
+                      ⏱️ {formatTime(remainingTime)}
+                    </span>
+                    <span>{quizDefinition?.matiere?.libelle || ""}</span>
                   </div>
-                </RadioGroup>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-orange-500 h-2.5 rounded-full"
+                      style={{
+                        width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Question Card */}
+                <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <h2 className="text-3xl font-bold text-gray-800 text-center underline decoration-2 underline-offset-4">
+                      Question {currentQuestionIndex + 1}
+                    </h2>
+                    <QuizReader
+                      question={currentQuestion}
+                      questionIndex={currentQuestionIndex}
+                    />
+                  </div>
+                  <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
+                    {currentQuestion.question}
+                  </p>
+                </div>
+
+                {/* Answers */}
+                <div>
+                  <RadioGroup
+                    value={userAnswers[currentQuestion.id]?.toString() || ""}
+                    onValueChange={(value) => {
+                      setUserAnswers((prev) => ({
+                        ...prev,
+                        [currentQuestion.id]: value,
+                      }));
+
+                      if (currentQuestionIndex === quizQuestions.length - 1) {
+                        setTimeout(() => handleSubmitQuiz(), 300);
+                      } else {
+                        setTimeout(() => handleNextQuestion(), 300);
+                      }
+                    }}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {currentQuestion.propositions.map(
+                        (proposition, index) => (
+                          <div
+                            key={proposition.id}
+                            className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
+                          >
+                            <RadioGroupItem
+                              value={proposition.id.toString()}
+                              id={proposition.id.toString()}
+                              className="border-black border-2 flex-shrink-0"
+                            />
+                            <Label
+                              htmlFor={proposition.id.toString()}
+                              className="flex-1 text-base font-medium cursor-pointer"
+                            >
+                              {proposition.text}
+                            </Label>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </RadioGroup>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

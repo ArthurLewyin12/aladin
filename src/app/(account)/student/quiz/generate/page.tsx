@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FileUpload } from "@/components/ui/file-upload";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { QuizReader } from "@/components/ui/tts";
 
 const quizLoadingMessages = [
   "Génération du quiz en cours...",
@@ -539,9 +540,15 @@ export default function GenerateQuizPage() {
 
                 {/* Question Card */}
                 <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center underline decoration-2 underline-offset-4">
-                    Question {currentQuestionIndex + 1}
-                  </h2>
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <h2 className="text-3xl font-bold text-gray-800 text-center underline decoration-2 underline-offset-4">
+                      Question {currentQuestionIndex + 1}
+                    </h2>
+                    <QuizReader
+                      question={currentQuestion}
+                      questionIndex={currentQuestionIndex}
+                    />
+                  </div>
                   <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
                     {currentQuestion.question}
                   </p>

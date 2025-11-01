@@ -16,6 +16,7 @@ import { useTimeTracking } from "@/stores/useTimeTracking";
 import { calculateQuizScore } from "@/lib/quiz-score";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { QuizReader } from "@/components/ui/tts";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -284,9 +285,15 @@ export default function GroupQuizTakingPage() {
 
               {/* Question Card */}
               <div className="bg-[#F5D3A6] border border-orange-200 rounded-2xl p-8 md:p-10">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center underline decoration-2 underline-offset-4">
-                  Question {currentQuestionIndex + 1}
-                </h2>
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <h2 className="text-3xl font-bold text-gray-800 text-center underline decoration-2 underline-offset-4">
+                    Question {currentQuestionIndex + 1}
+                  </h2>
+                  <QuizReader
+                    question={currentQuestion}
+                    questionIndex={currentQuestionIndex}
+                  />
+                </div>
                 <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
                   {currentQuestion.question}
                 </p>

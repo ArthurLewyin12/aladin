@@ -99,8 +99,8 @@ export default function StudentHomePage() {
     },
     {
       id: "planning",
-      title: "Mon Planning d'Études",
-      description: "Organise ta semaine d'étude",
+      title: "Mon Planning de révision",
+      description: "Organise ta semaine de révision",
       icon: CalendarPlus,
       color: "from-orange-400 to-orange-600",
       bgColor: "bg-orange-50",

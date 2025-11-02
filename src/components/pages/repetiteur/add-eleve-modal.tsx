@@ -36,14 +36,14 @@ import { Loader2, Check } from "lucide-react";
 import { isValidPhoneNumber } from "react-phone-number-input";
 
 const eleveSchema = z.object({
-  email: z.string({ required_error: "L'email est requis" }).email("Email invalide"),
-  numero: z.string({ required_error: "Le numéro de téléphone est requis" }).refine(
+  email: z.string({ message: "L'email est requis" }).email("Email invalide"),
+  numero: z.string({ message: "Le numéro de téléphone est requis" }).refine(
     (val) => val && isValidPhoneNumber(val, "CI"),
     { message: "Numéro de téléphone ivoirien invalide" }
   ),
-  nom: z.string({ required_error: "Le nom est requis" }).min(2, "Le nom doit contenir au moins 2 caractères"),
-  prenom: z.string({ required_error: "Le prénom est requis" }).min(2, "Le prénom doit contenir au moins 2 caractères"),
-  niveau_id: z.number({ required_error: "Veuillez sélectionner un niveau" }).min(1, "Veuillez sélectionner un niveau"),
+  nom: z.string({ message: "Le nom est requis" }).min(2, "Le nom doit contenir au moins 2 caractères"),
+  prenom: z.string({ message: "Le prénom est requis" }).min(2, "Le prénom doit contenir au moins 2 caractères"),
+  niveau_id: z.number({ message: "Veuillez sélectionner un niveau" }).min(1, "Veuillez sélectionner un niveau"),
 });
 
 type EleveFormData = z.infer<typeof eleveSchema>;

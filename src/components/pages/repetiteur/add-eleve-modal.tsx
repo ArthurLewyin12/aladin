@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -32,13 +33,17 @@ import { useAjouterEleveManuel, useNiveauxChoisis } from "@/services/hooks/repet
 import { useCheckEleveByEmail } from "@/services/hooks/eleves/useCheckEleve";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
 import { Loader2, Check } from "lucide-react";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 const eleveSchema = z.object({
-  email: z.string().email("Email invalide"),
-  nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  niveau_id: z.number().min(1, "Veuillez sélectionner un niveau"),
-  numero: z.string().min(9, "Numéro de téléphone invalide"),
+  email: z.string({ required_error: "L'email est requis" }).email("Email invalide"),
+  numero: z.string({ required_error: "Le numéro de téléphone est requis" }).refine(
+    (val) => val && isValidPhoneNumber(val, "CI"),
+    { message: "Numéro de téléphone ivoirien invalide" }
+  ),
+  nom: z.string({ required_error: "Le nom est requis" }).min(2, "Le nom doit contenir au moins 2 caractères"),
+  prenom: z.string({ required_error: "Le prénom est requis" }).min(2, "Le prénom doit contenir au moins 2 caractères"),
+  niveau_id: z.number({ required_error: "Veuillez sélectionner un niveau" }).min(1, "Veuillez sélectionner un niveau"),
 });
 
 type EleveFormData = z.infer<typeof eleveSchema>;
@@ -70,6 +75,7 @@ export const AddEleveModal = ({
   });
 
   const emailValue = watch("email");
+  const numeroValue = watch("numero");
   const { mutate: ajouterEleveManuel, isPending } = useAjouterEleveManuel();
   const { mutate: checkEleve } = useCheckEleveByEmail();
   const { data: niveauxChoisisData } = useNiveauxChoisis();
@@ -79,27 +85,35 @@ export const AddEleveModal = ({
   const niveauxFiltres = niveaux.filter(niveau => niveauxChoisisIds.includes(niveau.id));
   const hasNoNiveaux = niveauxFiltres.length === 0;
 
-  // Vérifier l'email automatiquement lors de la saisie
+  // Vérifier l'email ou le numéro automatiquement lors de la saisie
   useEffect(() => {
-    if (!emailValue || emailValue.length < 5) {
+    // Si aucun critère de recherche n'est rempli
+    if ((!emailValue || emailValue.length < 5) && (!numeroValue || numeroValue.length < 8)) {
       setEleveFound(null);
       return;
     }
 
-    // Vérifier si c'est un email valide
+    // Vérifier si au moins l'email est valide
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailValue)) {
+    const hasValidEmail = emailValue && emailRegex.test(emailValue);
+    const hasValidNumero = numeroValue && numeroValue.length >= 8;
+
+    if (!hasValidEmail && !hasValidNumero) {
       setEleveFound(null);
       return;
     }
 
     setIsCheckingEmail(true);
     const timeoutId = setTimeout(() => {
-      checkEleve(emailValue, {
+      // Priorité à l'email, sinon numéro
+      const searchParam = hasValidEmail ? emailValue : numeroValue;
+
+      checkEleve(searchParam, {
         onSuccess: (response) => {
           if (response.exists && response.eleve) {
             setEleveFound(response.eleve);
             // Auto-remplir les champs
+            setValue("email", response.eleve.email);
             setValue("nom", response.eleve.nom);
             setValue("prenom", response.eleve.prenom);
             setValue("niveau_id", response.eleve.niveau_id);
@@ -117,7 +131,7 @@ export const AddEleveModal = ({
     }, 800); // Debounce de 800ms
 
     return () => clearTimeout(timeoutId);
-  }, [emailValue, checkEleve, setValue]);
+  }, [emailValue, numeroValue, checkEleve, setValue]);
 
   const onSubmit = (data: EleveFormData) => {
     // Toujours utiliser la route d'ajout manuel
@@ -160,6 +174,7 @@ export const AddEleveModal = ({
             {...register("email")}
             placeholder="email@exemple.com"
             className="mt-1 bg-gray-50 border-gray-200"
+            disabled={!!eleveFound}
           />
           {isCheckingEmail && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -174,6 +189,26 @@ export const AddEleveModal = ({
         </div>
         {errors.email && (
           <p className="text-sm text-red-500">{errors.email.message}</p>
+        )}
+      </div>
+
+      {/* Numéro - EN DEUXIÈME */}
+      <div className="space-y-2">
+        <Label htmlFor="numero" className="text-sm text-gray-600">
+          Numéro de téléphone
+        </Label>
+        <PhoneInput
+          id="numero"
+          defaultCountry="CI"
+          countries={["CI"]}
+          value={numeroValue}
+          onChange={(value) => setValue("numero", value || "")}
+          placeholder="07 XX XX XX XX"
+          className="mt-1"
+          disabled={!!eleveFound}
+        />
+        {errors.numero && (
+          <p className="text-sm text-red-500">{errors.numero.message}</p>
         )}
         {eleveFound && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
@@ -247,23 +282,6 @@ export const AddEleveModal = ({
         </Select>
         {errors.niveau_id && (
           <p className="text-sm text-red-500">{errors.niveau_id.message}</p>
-        )}
-      </div>
-
-      {/* Numéro */}
-      <div className="space-y-2">
-        <Label htmlFor="numero" className="text-sm text-gray-600">
-          Numéro de téléphone
-        </Label>
-        <Input
-          id="numero"
-          {...register("numero")}
-          placeholder="77 123 45 67"
-          className="mt-1 bg-gray-50 border-gray-200"
-          disabled={!!eleveFound}
-        />
-        {errors.numero && (
-          <p className="text-sm text-red-500">{errors.numero.message}</p>
         )}
       </div>
 

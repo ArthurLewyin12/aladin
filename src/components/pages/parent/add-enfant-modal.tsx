@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -32,13 +33,17 @@ import { useAjouterEnfantManuel } from "@/services/hooks/parent";
 import { useCheckEleveByEmail } from "@/services/hooks/eleves/useCheckEleve";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
 import { Loader2, Check } from "lucide-react";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 const enfantSchema = z.object({
   email: z.string().email("Email invalide"),
+  numero: z.string().refine(
+    (val) => val && isValidPhoneNumber(val, "CI"),
+    { message: "Numéro de téléphone ivoirien invalide" }
+  ),
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   niveau_id: z.number().min(1, "Veuillez sélectionner un niveau"),
-  numero: z.string().min(9, "Numéro de téléphone invalide"),
 });
 
 type EnfantFormData = z.infer<typeof enfantSchema>;
@@ -70,30 +75,39 @@ export const AddEnfantModal = ({
   });
 
   const emailValue = watch("email");
+  const numeroValue = watch("numero");
   const { mutate: ajouterEnfantManuel, isPending } = useAjouterEnfantManuel();
   const { mutate: checkEleve } = useCheckEleveByEmail();
 
-  // Vérifier l'email automatiquement lors de la saisie
+  // Vérifier l'email ou le numéro automatiquement lors de la saisie
   useEffect(() => {
-    if (!emailValue || emailValue.length < 5) {
+    // Si aucun critère de recherche n'est rempli
+    if ((!emailValue || emailValue.length < 5) && (!numeroValue || numeroValue.length < 8)) {
       setEnfantFound(null);
       return;
     }
 
-    // Vérifier si c'est un email valide
+    // Vérifier si au moins l'email est valide
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailValue)) {
+    const hasValidEmail = emailValue && emailRegex.test(emailValue);
+    const hasValidNumero = numeroValue && numeroValue.length >= 8;
+
+    if (!hasValidEmail && !hasValidNumero) {
       setEnfantFound(null);
       return;
     }
 
     setIsCheckingEmail(true);
     const timeoutId = setTimeout(() => {
-      checkEleve(emailValue, {
+      // Priorité à l'email, sinon numéro
+      const searchParam = hasValidEmail ? emailValue : numeroValue;
+
+      checkEleve(searchParam, {
         onSuccess: (response) => {
           if (response.exists && response.eleve) {
             setEnfantFound(response.eleve);
             // Auto-remplir les champs
+            setValue("email", response.eleve.email);
             setValue("nom", response.eleve.nom);
             setValue("prenom", response.eleve.prenom);
             setValue("niveau_id", response.eleve.niveau_id);
@@ -111,7 +125,7 @@ export const AddEnfantModal = ({
     }, 800); // Debounce de 800ms
 
     return () => clearTimeout(timeoutId);
-  }, [emailValue, checkEleve, setValue]);
+  }, [emailValue, numeroValue, checkEleve, setValue]);
 
   const onSubmit = (data: EnfantFormData) => {
     // Toujours utiliser la route d'ajout manuel
@@ -145,6 +159,7 @@ export const AddEnfantModal = ({
             {...register("email")}
             placeholder="email@exemple.com"
             className="mt-1 bg-gray-50 border-gray-200"
+            disabled={!!enfantFound}
           />
           {isCheckingEmail && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -159,6 +174,26 @@ export const AddEnfantModal = ({
         </div>
         {errors.email && (
           <p className="text-sm text-red-500">{errors.email.message}</p>
+        )}
+      </div>
+
+      {/* Numéro - EN DEUXIÈME */}
+      <div className="space-y-2">
+        <Label htmlFor="numero" className="text-sm text-gray-600">
+          Numéro de téléphonhe
+        </Label>
+        <PhoneInput
+          id="numero"
+          defaultCountry="CI"
+          countries={["CI"]}
+          value={numeroValue}
+          onChange={(value) => setValue("numero", value || "")}
+          placeholder="07 XX XX XX XX"
+          className="mt-1 h-2!"
+          disabled={!!enfantFound}
+        />
+        {errors.numero && (
+          <p className="text-sm text-red-500">{errors.numero.message}</p>
         )}
         {enfantFound && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
@@ -226,23 +261,6 @@ export const AddEnfantModal = ({
         </Select>
         {errors.niveau_id && (
           <p className="text-sm text-red-500">{errors.niveau_id.message}</p>
-        )}
-      </div>
-
-      {/* Numéro */}
-      <div className="space-y-2">
-        <Label htmlFor="numero" className="text-sm text-gray-600">
-          Numéro de téléphone
-        </Label>
-        <Input
-          id="numero"
-          {...register("numero")}
-          placeholder="77 123 45 67"
-          className="mt-1 bg-gray-50 border-gray-200"
-          disabled={!!enfantFound}
-        />
-        {errors.numero && (
-          <p className="text-sm text-red-500">{errors.numero.message}</p>
         )}
       </div>
 

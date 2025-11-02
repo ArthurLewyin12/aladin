@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,14 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAjouterEnfantManuel } from "@/services/hooks/parent";
+import { useCheckEleveByEmail } from "@/services/hooks/eleves/useCheckEleve";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 
 const enfantSchema = z.object({
+  email: z.string().email("Email invalide"),
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   niveau_id: z.number().min(1, "Veuillez sélectionner un niveau"),
-  email: z.string().email("Email invalide"),
   numero: z.string().min(9, "Numéro de téléphone invalide"),
 });
 
@@ -53,23 +55,71 @@ export const AddEnfantModal = ({
   niveaux = [],
 }: AddEnfantModalProps) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [enfantFound, setEnfantFound] = useState<any>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
     reset,
   } = useForm<EnfantFormData>({
     resolver: zodResolver(enfantSchema),
   });
 
-  const { mutate: ajouterEnfant, isPending } = useAjouterEnfantManuel();
+  const emailValue = watch("email");
+  const { mutate: ajouterEnfantManuel, isPending } = useAjouterEnfantManuel();
+  const { mutate: checkEleve } = useCheckEleveByEmail();
+
+  // Vérifier l'email automatiquement lors de la saisie
+  useEffect(() => {
+    if (!emailValue || emailValue.length < 5) {
+      setEnfantFound(null);
+      return;
+    }
+
+    // Vérifier si c'est un email valide
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      setEnfantFound(null);
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    const timeoutId = setTimeout(() => {
+      checkEleve(emailValue, {
+        onSuccess: (response) => {
+          if (response.exists && response.eleve) {
+            setEnfantFound(response.eleve);
+            // Auto-remplir les champs
+            setValue("nom", response.eleve.nom);
+            setValue("prenom", response.eleve.prenom);
+            setValue("niveau_id", response.eleve.niveau_id);
+            setValue("numero", response.eleve.numero || "");
+          } else {
+            setEnfantFound(null);
+          }
+          setIsCheckingEmail(false);
+        },
+        onError: () => {
+          setEnfantFound(null);
+          setIsCheckingEmail(false);
+        },
+      });
+    }, 800); // Debounce de 800ms
+
+    return () => clearTimeout(timeoutId);
+  }, [emailValue, checkEleve, setValue]);
 
   const onSubmit = (data: EnfantFormData) => {
-    ajouterEnfant(data, {
+    // Toujours utiliser la route d'ajout manuel
+    // Les champs sont auto-remplis si un enfant existant a été trouvé
+    ajouterEnfantManuel(data, {
       onSuccess: () => {
         reset();
+        setEnfantFound(null);
         onOpenChange(false);
       },
     });
@@ -77,11 +127,48 @@ export const AddEnfantModal = ({
 
   const handleClose = () => {
     reset();
+    setEnfantFound(null);
     onOpenChange(false);
   };
 
   const FormContent = (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
+      {/* Email - EN PREMIER */}
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm text-gray-600">
+          Email
+        </Label>
+        <div className="relative">
+          <Input
+            id="email"
+            type="email"
+            {...register("email")}
+            placeholder="email@exemple.com"
+            className="mt-1 bg-gray-50 border-gray-200"
+          />
+          {isCheckingEmail && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+            </div>
+          )}
+          {enfantFound && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Check className="w-5 h-5 text-green-600" />
+            </div>
+          )}
+        </div>
+        {errors.email && (
+          <p className="text-sm text-red-500">{errors.email.message}</p>
+        )}
+        {enfantFound && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+            <p className="text-sm text-green-800">
+              ✓ Enfant existant trouvé : {enfantFound.prenom} {enfantFound.nom}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Nom */}
       <div className="space-y-2">
         <Label htmlFor="nom" className="text-sm text-gray-600">
@@ -92,6 +179,7 @@ export const AddEnfantModal = ({
           {...register("nom")}
           placeholder="Nom de famille"
           className="mt-1 bg-gray-50 border-gray-200"
+          disabled={!!enfantFound}
         />
         {errors.nom && (
           <p className="text-sm text-red-500">{errors.nom.message}</p>
@@ -108,6 +196,7 @@ export const AddEnfantModal = ({
           {...register("prenom")}
           placeholder="Prénom"
           className="mt-1 bg-gray-50 border-gray-200"
+          disabled={!!enfantFound}
         />
         {errors.prenom && (
           <p className="text-sm text-red-500">{errors.prenom.message}</p>
@@ -121,6 +210,8 @@ export const AddEnfantModal = ({
         </Label>
         <Select
           onValueChange={(value) => setValue("niveau_id", parseInt(value))}
+          disabled={!!enfantFound}
+          value={enfantFound?.niveau_id?.toString()}
         >
           <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
             <SelectValue placeholder="Sélectionnez un niveau" />
@@ -138,23 +229,6 @@ export const AddEnfantModal = ({
         )}
       </div>
 
-      {/* Email */}
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm text-gray-600">
-          Email
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          {...register("email")}
-          placeholder="email@exemple.com"
-          className="mt-1 bg-gray-50 border-gray-200"
-        />
-        {errors.email && (
-          <p className="text-sm text-red-500">{errors.email.message}</p>
-        )}
-      </div>
-
       {/* Numéro */}
       <div className="space-y-2">
         <Label htmlFor="numero" className="text-sm text-gray-600">
@@ -165,6 +239,7 @@ export const AddEnfantModal = ({
           {...register("numero")}
           placeholder="77 123 45 67"
           className="mt-1 bg-gray-50 border-gray-200"
+          disabled={!!enfantFound}
         />
         {errors.numero && (
           <p className="text-sm text-red-500">{errors.numero.message}</p>
@@ -191,6 +266,11 @@ export const AddEnfantModal = ({
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Ajout en cours...
+            </>
+          ) : enfantFound ? (
+            <>
+              <Check className="w-4 h-4 mr-2" />
+              Ajouter cet enfant
             </>
           ) : (
             "Ajouter l'enfant"

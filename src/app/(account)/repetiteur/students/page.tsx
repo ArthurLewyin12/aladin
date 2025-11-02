@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { Plus, Users, User, ArrowLeft, Search } from "lucide-react";
+import { Plus, Users, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EleveCard } from "@/components/pages/repetiteur/eleve-card";
 import { AddEleveModal } from "@/components/pages/repetiteur/add-eleve-modal";
-import { SearchEleveModal } from "@/components/pages/repetiteur/search-eleve-modal";
 import { useEleves, useSelectionnerEleve } from "@/services/hooks/repetiteur";
 import { useNiveau } from "@/services/hooks/niveaux/useNiveau";
 import { Eleve } from "@/services/controllers/types/common/repetiteur.types";
@@ -17,7 +16,6 @@ import { Eleve } from "@/services/controllers/types/common/repetiteur.types";
 export default function ElevesPage() {
   const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Récupérer les élèves
   const { data: elevesData, isLoading: isLoadingEleves } = useEleves();
@@ -111,24 +109,14 @@ export default function ElevesPage() {
                   Cliquez ci-dessous pour ajouter votre premier élève
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    onClick={() => setIsSearchModalOpen(true)}
-                    className="bg-white hover:bg-gray-50 text-[#548C2F] border-2 border-[#548C2F] px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
-                  >
-                    <Search className="w-4 sm:w-5 h-5 mr-2" />
-                    Rechercher un élève
-                  </Button>
-                  <Button
-                    size="lg"
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="bg-[#548C2F] hover:bg-[#4a7829] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
-                  >
-                    <Plus className="w-4 sm:w-5 h-5 mr-2" />
-                    Ajouter manuellement
-                  </Button>
-                </div>
+                <Button
+                  size="lg"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="bg-[#548C2F] hover:bg-[#4a7829] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+                >
+                  <Plus className="w-4 sm:w-5 h-5 mr-2" />
+                  Ajouter un élève
+                </Button>
               </div>
             </div>
           </div>
@@ -137,11 +125,6 @@ export default function ElevesPage() {
             open={isAddModalOpen}
             onOpenChange={setIsAddModalOpen}
             niveaux={niveaux}
-          />
-
-          <SearchEleveModal
-            open={isSearchModalOpen}
-            onOpenChange={setIsSearchModalOpen}
           />
         </div>
       </div>
@@ -196,26 +179,14 @@ export default function ElevesPage() {
                 enregistré{eleves.length > 1 ? "s" : ""}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                size="lg"
-                onClick={() => setIsSearchModalOpen(true)}
-                className="bg-white hover:bg-gray-50 text-[#548C2F] border-2 border-[#548C2F] px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-2xl shadow-lg transition-all hover:shadow-xl whitespace-nowrap"
-              >
-                <Search className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
-                <span className="hidden sm:inline">Rechercher</span>
-                <span className="sm:hidden">Rechercher</span>
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => setIsAddModalOpen(true)}
-                className="bg-[#548C2F] hover:bg-[#4a7829] text-white px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-2xl shadow-lg transition-all hover:shadow-xl whitespace-nowrap"
-              >
-                <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
-                <span className="hidden sm:inline">Ajouter manuellement</span>
-                <span className="sm:hidden">Ajouter</span>
-              </Button>
-            </div>
+            <Button
+              size="lg"
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-[#548C2F] hover:bg-[#4a7829] text-white px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-2xl shadow-lg transition-all hover:shadow-xl whitespace-nowrap"
+            >
+              <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
+              Ajouter un élève
+            </Button>
           </div>
 
           {/* Grille des élèves */}
@@ -265,17 +236,11 @@ export default function ElevesPage() {
         </div>
       </div>
 
-      {/* Modal d'ajout manuel */}
+      {/* Modal d'ajout d'élève */}
       <AddEleveModal
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
         niveaux={niveaux}
-      />
-
-      {/* Modal de recherche */}
-      <SearchEleveModal
-        open={isSearchModalOpen}
-        onOpenChange={setIsSearchModalOpen}
       />
     </div>
   );

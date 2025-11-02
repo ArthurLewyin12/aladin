@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,14 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAjouterEleveManuel, useNiveauxChoisis } from "@/services/hooks/repetiteur";
+import { useCheckEleveByEmail } from "@/services/hooks/eleves/useCheckEleve";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 
 const eleveSchema = z.object({
+  email: z.string().email("Email invalide"),
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   niveau_id: z.number().min(1, "Veuillez sélectionner un niveau"),
-  email: z.string().email("Email invalide"),
   numero: z.string().min(9, "Numéro de téléphone invalide"),
 });
 
@@ -53,29 +55,77 @@ export const AddEleveModal = ({
   niveaux = [],
 }: AddEleveModalProps) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [eleveFound, setEleveFound] = useState<any>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
     reset,
   } = useForm<EleveFormData>({
     resolver: zodResolver(eleveSchema),
   });
 
-  const { mutate: ajouterEleve, isPending } = useAjouterEleveManuel();
+  const emailValue = watch("email");
+  const { mutate: ajouterEleveManuel, isPending } = useAjouterEleveManuel();
+  const { mutate: checkEleve } = useCheckEleveByEmail();
   const { data: niveauxChoisisData } = useNiveauxChoisis();
-  
+
   // Filtrer les niveaux pour ne garder que ceux choisis par le répétiteur
   const niveauxChoisisIds = niveauxChoisisData?.niveaux?.map((n: { id: number }) => n.id) || [];
   const niveauxFiltres = niveaux.filter(niveau => niveauxChoisisIds.includes(niveau.id));
   const hasNoNiveaux = niveauxFiltres.length === 0;
 
+  // Vérifier l'email automatiquement lors de la saisie
+  useEffect(() => {
+    if (!emailValue || emailValue.length < 5) {
+      setEleveFound(null);
+      return;
+    }
+
+    // Vérifier si c'est un email valide
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      setEleveFound(null);
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    const timeoutId = setTimeout(() => {
+      checkEleve(emailValue, {
+        onSuccess: (response) => {
+          if (response.exists && response.eleve) {
+            setEleveFound(response.eleve);
+            // Auto-remplir les champs
+            setValue("nom", response.eleve.nom);
+            setValue("prenom", response.eleve.prenom);
+            setValue("niveau_id", response.eleve.niveau_id);
+            setValue("numero", response.eleve.numero || "");
+          } else {
+            setEleveFound(null);
+          }
+          setIsCheckingEmail(false);
+        },
+        onError: () => {
+          setEleveFound(null);
+          setIsCheckingEmail(false);
+        },
+      });
+    }, 800); // Debounce de 800ms
+
+    return () => clearTimeout(timeoutId);
+  }, [emailValue, checkEleve, setValue]);
+
   const onSubmit = (data: EleveFormData) => {
-    ajouterEleve(data, {
+    // Toujours utiliser la route d'ajout manuel
+    // Les champs sont auto-remplis si un élève existant a été trouvé
+    ajouterEleveManuel(data, {
       onSuccess: () => {
         reset();
+        setEleveFound(null);
         onOpenChange(false);
       },
     });
@@ -83,6 +133,7 @@ export const AddEleveModal = ({
 
   const handleClose = () => {
     reset();
+    setEleveFound(null);
     onOpenChange(false);
   };
 
@@ -96,7 +147,43 @@ export const AddEleveModal = ({
           </p>
         </div>
       )}
-      
+
+      {/* Email - EN PREMIER */}
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm text-gray-600">
+          Email
+        </Label>
+        <div className="relative">
+          <Input
+            id="email"
+            type="email"
+            {...register("email")}
+            placeholder="email@exemple.com"
+            className="mt-1 bg-gray-50 border-gray-200"
+          />
+          {isCheckingEmail && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+            </div>
+          )}
+          {eleveFound && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Check className="w-5 h-5 text-green-600" />
+            </div>
+          )}
+        </div>
+        {errors.email && (
+          <p className="text-sm text-red-500">{errors.email.message}</p>
+        )}
+        {eleveFound && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+            <p className="text-sm text-green-800">
+              ✓ Élève existant trouvé : {eleveFound.prenom} {eleveFound.nom}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Nom */}
       <div className="space-y-2">
         <Label htmlFor="nom" className="text-sm text-gray-600">
@@ -107,6 +194,7 @@ export const AddEleveModal = ({
           {...register("nom")}
           placeholder="Nom de famille"
           className="mt-1 bg-gray-50 border-gray-200"
+          disabled={!!eleveFound}
         />
         {errors.nom && (
           <p className="text-sm text-red-500">{errors.nom.message}</p>
@@ -123,6 +211,7 @@ export const AddEleveModal = ({
           {...register("prenom")}
           placeholder="Prénom"
           className="mt-1 bg-gray-50 border-gray-200"
+          disabled={!!eleveFound}
         />
         {errors.prenom && (
           <p className="text-sm text-red-500">{errors.prenom.message}</p>
@@ -136,43 +225,28 @@ export const AddEleveModal = ({
         </Label>
         <Select
           onValueChange={(value) => setValue("niveau_id", parseInt(value))}
+          disabled={!!eleveFound}
+          value={eleveFound?.niveau_id?.toString()}
         >
           <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
             <SelectValue placeholder="Sélectionnez un niveau" />
           </SelectTrigger>
-                  <SelectContent>
-                    {niveauxFiltres.length > 0 ? (
-                      niveauxFiltres.map((niveau) => (
-                        <SelectItem key={niveau.id} value={niveau.id.toString()}>
-                          {niveau.libelle}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="p-2 text-sm text-gray-500 text-center">
-                        Aucun niveau disponible
-                      </div>
-                    )}
-                  </SelectContent>
+          <SelectContent>
+            {niveauxFiltres.length > 0 ? (
+              niveauxFiltres.map((niveau) => (
+                <SelectItem key={niveau.id} value={niveau.id.toString()}>
+                  {niveau.libelle}
+                </SelectItem>
+              ))
+            ) : (
+              <div className="p-2 text-sm text-gray-500 text-center">
+                Aucun niveau disponible
+              </div>
+            )}
+          </SelectContent>
         </Select>
         {errors.niveau_id && (
           <p className="text-sm text-red-500">{errors.niveau_id.message}</p>
-        )}
-      </div>
-
-      {/* Email */}
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm text-gray-600">
-          Email
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          {...register("email")}
-          placeholder="email@exemple.com"
-          className="mt-1 bg-gray-50 border-gray-200"
-        />
-        {errors.email && (
-          <p className="text-sm text-red-500">{errors.email.message}</p>
         )}
       </div>
 
@@ -186,6 +260,7 @@ export const AddEleveModal = ({
           {...register("numero")}
           placeholder="77 123 45 67"
           className="mt-1 bg-gray-50 border-gray-200"
+          disabled={!!eleveFound}
         />
         {errors.numero && (
           <p className="text-sm text-red-500">{errors.numero.message}</p>
@@ -215,6 +290,11 @@ export const AddEleveModal = ({
             </>
           ) : hasNoNiveaux ? (
             "Configurez vos niveaux d'abord"
+          ) : eleveFound ? (
+            <>
+              <Check className="w-4 h-4 mr-2" />
+              Ajouter cet élève
+            </>
           ) : (
             "Ajouter l'élève"
           )}

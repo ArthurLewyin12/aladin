@@ -33,6 +33,13 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
       return;
     }
 
+    // Vérifier si l'utilisateur est actif
+    if (!user.is_active) {
+      router.push("/login");
+      setIsChecking(true);
+      return;
+    }
+
     const userRole = user.statut as UserRole;
 
     // Si des rôles spécifiques sont requis, vérifier

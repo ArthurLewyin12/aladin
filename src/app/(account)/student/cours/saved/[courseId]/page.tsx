@@ -13,6 +13,7 @@ import { MathText } from "@/components/ui/MathText";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { Spinner } from "@/components/ui/spinner";
 import { TTSButton } from "@/components/ui/tts";
+import { TTSDebug } from "@/components/debug/TTSDebug";
 
 export default function SavedCoursePage() {
   const router = useRouter();
@@ -129,6 +130,9 @@ export default function SavedCoursePage() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+      {/* Debug Component - Temporaire pour tester le Web Speech API */}
+      <TTSDebug />
+
       {/* Header Sticky */}
       <div className="sticky top-0 z-20 backdrop-blur-md bg-white/80 border-b border-gray-200">
         <div className="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">

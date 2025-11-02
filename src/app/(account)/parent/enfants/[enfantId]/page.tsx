@@ -281,9 +281,7 @@ export default function EnfantProfilPage() {
             <ParentGroupsList enfant={enfant} isEnfantReady={isEnfantReady} />
           )}
 
-          {activeTab === "Statistiques" && (
-            <ParentStatistics enfant={enfant} />
-          )}
+          {activeTab === "Statistiques" && <ParentStatistics enfant={enfant} />}
         </div>
       </div>
     </div>

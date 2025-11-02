@@ -19,7 +19,7 @@ import { useSession } from "@/services/hooks/auth/useSession";
 import { Spinner } from "@/components/ui/spinner";
 
 import { useRouter } from "next/navigation";
-
+import { getHomePathForRole } from "@/constants/navigation";
 import Link from "next/link";
 
 const loginSchema = z.object({
@@ -43,9 +43,21 @@ export default function AladinLoginForm() {
   function onSubmit(values: z.infer<typeof loginSchema>) {
     mutate(values, {
       onSuccess: (data) => {
+        // Check if user account is active
+        if (!data.user.is_active) {
+          toast({
+            variant: "error",
+            title: "Compte inactif",
+            message: "Votre compte n'est pas actif. Veuillez contacter l'administrateur.",
+          });
+          return;
+        }
+
         login(data.user);
         toast({ variant: "success", message: "Connexion réussie !" });
-        router.push("/student/home");
+        // Redirect based on user role
+        const homePath = getHomePathForRole(data.user.statut);
+        router.push(homePath);
       },
       onError: (error: any) => {
         console.error("Login error", error);

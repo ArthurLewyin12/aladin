@@ -154,7 +154,7 @@ export function PlanEditor({
                   field.onChange(value);
                   form.setValue("chapitre_ids", []); // Reset chapters on subject change
                 }}
-                value={field.value}
+                value={field.value || undefined}
                 disabled={isLoadingMatieres}
               >
                 <FormControl>
@@ -200,31 +200,29 @@ export function PlanEditor({
                   <TooltipTrigger asChild>
                     <FormItem>
                       <FormLabel>Chapitres</FormLabel>
-                      <FormControl>
-                        <div className="max-w-full overflow-hidden">
-                          <MultipleSelector
-                            value={selectedOptions}
-                            onChange={(options) => {
-                              field.onChange(options.map((option) => option.value));
-                            }}
-                            options={chapterOptions}
-                            placeholder={
-                              isLoadingChapitres
-                                ? "Chargement..."
-                                : "Sélectionner un ou plusieurs chapitres"
-                            }
-                            loadingIndicator={
-                              isLoadingChapitres && <p>Chargement...</p>
-                            }
-                            emptyIndicator={
-                              <p>Aucun chapitre trouvé pour cette matière.</p>
-                            }
-                            disabled={isLoadingChapitres || !watchedMatiereId}
-                            className="w-full"
-                            badgeClassName="max-w-[200px] truncate"
-                          />
-                        </div>
-                      </FormControl>
+                      <div className="max-w-full overflow-hidden">
+                        <MultipleSelector
+                          value={selectedOptions}
+                          onChange={(options) => {
+                            field.onChange(options.map((option) => option.value));
+                          }}
+                          options={chapterOptions}
+                          placeholder={
+                            isLoadingChapitres
+                              ? "Chargement..."
+                              : "Sélectionner un ou plusieurs chapitres"
+                          }
+                          loadingIndicator={
+                            isLoadingChapitres && <p>Chargement...</p>
+                          }
+                          emptyIndicator={
+                            <p>Aucun chapitre trouvé pour cette matière.</p>
+                          }
+                          disabled={isLoadingChapitres || !watchedMatiereId}
+                          className="w-full"
+                          badgeClassName="max-w-[200px] truncate"
+                        />
+                      </div>
                       <FormMessage />
                     </FormItem>
                   </TooltipTrigger>

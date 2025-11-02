@@ -94,7 +94,6 @@ export function MathText({ text, className = "" }: MathTextProps) {
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"
-        integrity="sha512-fHwaWebuwA7NSF5Qg/af4UeDx9XqUpYpOGgubo3yWu+b2IQR4UeQwbb42Ti7gVAjNtVoI/I9TEoYeu9omvcC6g=="
         crossOrigin="anonymous"
       />
       <div ref={containerRef} className={`math-text ${className}`} />

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarPlus, BookOpen, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,41 +8,24 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PlanningCalendarView } from "@/components/ui/planning-calendar-view";
 import { PlanningMobileView } from "@/components/ui/planning-mobile-view";
 import { useStudyPlans } from "@/services/hooks/study-plan/useStudyPlans";
-import { PlanEditor } from "@/components/pages/planning/plan-editor";
-import { useCreateStudyPlan } from "@/services/hooks/study-plan/useCreateStudyPlan";
-import { useUpdateStudyPlan } from "@/services/hooks/study-plan/useUpdateStudyPlan";
-import { useDeleteStudyPlan } from "@/services/hooks/study-plan/useDeleteStudyPlan";
 import { StudyPlan } from "@/services/controllers/types/common";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
+
 export default function PlanningPage() {
   const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<StudyPlan | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<{
-    day: number;
-    time: string;
-  } | null>(null);
-
   const { data, isLoading, isError, error } = useStudyPlans();
-  const createPlanMutation = useCreateStudyPlan();
-  const updatePlanMutation = useUpdateStudyPlan();
-  const deletePlanMutation = useDeleteStudyPlan();
 
   const handleBack = () => {
     router.push("/student/home");
   };
 
   const handleOpenCreator = (day: number, time: string) => {
-    setSelectedPlan(null);
-    setSelectedSlot({ day, time });
-    setIsEditorOpen(true);
+    router.push(`/student/planning/editor?day=${day}&time=${time}`);
   };
 
   const handleOpenEditor = (plan: StudyPlan) => {
-    setSelectedSlot(null);
-    setSelectedPlan(plan);
-    setIsEditorOpen(true);
+    router.push(`/student/planning/editor?id=${plan.id}`);
   };
 
   const renderContent = () => {
@@ -133,16 +115,6 @@ export default function PlanningPage() {
       </div>
 
       {renderContent()}
-
-      <PlanEditor
-        open={isEditorOpen}
-        onOpenChange={setIsEditorOpen}
-        plan={selectedPlan}
-        slotInfo={selectedSlot}
-        onCreate={createPlanMutation.mutate}
-        onUpdate={updatePlanMutation.mutate}
-        onDelete={deletePlanMutation.mutate}
-      />
     </div>
   );
 }

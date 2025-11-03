@@ -42,9 +42,8 @@ import {
 import { StudyPlan } from "@/services/controllers/types/common";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieres";
-import { MultipleSelector, Option } from "@/components/ui/multiple-select";
+import { MultipleSelect, TTag } from "@/components/ui/multiple-selects";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 const planSchema = z.object({
   matiere_id: z.string().min(1, "La matière est requise."),
   chapitre_ids: z.array(z.string()).min(1, "Au moins un chapitre est requis."),
@@ -184,54 +183,52 @@ export function PlanEditor({
           control={form.control}
           name="chapitre_ids"
           render={({ field }) => {
-            const chapterOptions: Option[] =
+            const chapterTags: TTag[] =
               chapitresData?.map((chap) => ({
-                value: String(chap.id),
-                label: chap.libelle,
+                key: String(chap.id),
+                name: chap.libelle,
               })) || [];
 
-            const selectedOptions = chapterOptions.filter((option) =>
-              field.value?.includes(option.value),
+            const selectedTags = chapterTags.filter((tag) =>
+              field.value?.includes(tag.key),
             );
 
             return (
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <FormItem>
-                      <FormLabel>Chapitres</FormLabel>
-                      <div className="max-w-full overflow-hidden">
-                        <MultipleSelector
-                          value={selectedOptions}
-                          onChange={(options) => {
-                            field.onChange(options.map((option) => option.value));
-                          }}
-                          options={chapterOptions}
-                          placeholder={
-                            isLoadingChapitres
-                              ? "Chargement..."
-                              : "Sélectionner un ou plusieurs chapitres"
-                          }
-                          loadingIndicator={
-                            isLoadingChapitres && <p>Chargement...</p>
-                          }
-                          emptyIndicator={
-                            <p>Aucun chapitre trouvé pour cette matière.</p>
-                          }
-                          disabled={isLoadingChapitres || !watchedMatiereId}
-                          className="w-full"
-                          badgeClassName="max-w-[200px] truncate"
-                        />
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {!watchedMatiereId && "Veuillez sélectionner une matière d'abord."}
-                    {isLoadingChapitres && "Chargement des chapitres..."}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <FormItem>
+                <FormLabel>Chapitres</FormLabel>
+                <div className="text-xs text-blue-500 mb-2">
+                  Debug: {isLoadingChapitres ? 'Loading' : 'Not loading'} |
+                  Matiere: {watchedMatiereId || 'none'} |
+                  Chapters: {chapterTags.length}
+                </div>
+                {!watchedMatiereId ? (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-gray-600">
+                    Veuillez sélectionner une matière d'abord.
+                  </div>
+                ) : isLoadingChapitres ? (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-gray-600">
+                    Chargement des chapitres...
+                  </div>
+                ) : chapterTags.length === 0 ? (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
+                    Aucun chapitre trouvé pour cette matière.
+                  </div>
+                ) : (
+                  <div className="border-2 border-green-500 p-2">
+                    <div className="text-xs text-green-600 mb-2">MultipleSelect should appear below:</div>
+                    <MultipleSelect
+                      key={`${watchedMatiereId}-${selectedTags.map(t => t.key).join(',')}`}
+                      tags={chapterTags}
+                      defaultValue={selectedTags}
+                      onChange={(tags) => {
+                        field.onChange(tags.map((tag) => tag.key));
+                      }}
+                      showLabel={false}
+                    />
+                  </div>
+                )}
+                <FormMessage />
+              </FormItem>
             );
           }}
         />

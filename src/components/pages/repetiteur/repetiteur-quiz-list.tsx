@@ -24,7 +24,13 @@ interface RepetiteurQuizListProps {
 export function RepetiteurQuizList({ eleve, isEleveReady }: RepetiteurQuizListProps) {
   const router = useRouter();
   const { data, isLoading, isError } = useEleveQuiz(isEleveReady);
-  const quizzes: Quiz[] = (data?.quiz as Quiz[]) || [];
+
+  // Combiner les quiz personnels et de groupe (comme chez le parent)
+  const quizzes: Quiz[] = useMemo(() => {
+    if (!data) return [];
+    return [...(data.quiz_personnels || []), ...(data.quiz_groupes || [])];
+  }, [data]);
+
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
 
   // Pagination avec nuqs

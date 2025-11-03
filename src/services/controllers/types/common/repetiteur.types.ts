@@ -212,7 +212,14 @@ export type GetEleveGroupesResponse = {
  */
 export type GetEleveQuizResponse = {
   success: boolean;
-  quiz: any[];
+  eleve: Eleve;
+  quiz_personnels: any[];
+  quiz_groupes: any[];
+  count: {
+    personnels: number;
+    groupes: number;
+    total: number;
+  };
 };
 
 /**

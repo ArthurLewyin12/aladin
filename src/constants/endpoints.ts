@@ -237,3 +237,44 @@ export enum StudyPlanEndpoints {
   UPDATE = "/api/study-plans/{id}",
   DELETE = "/api/study-plans/{id}",
 }
+
+/**
+ * Endpoints relatifs à la gestion des professeurs.
+ */
+export enum ProfesseurEndpoints {
+  // Matières enseignées
+  GET_SUBJECTS = "/api/prof/subjects",
+  SET_SUBJECTS = "/api/prof/subjects",
+
+  // Classes - CRUD
+  GET_CLASSES = "/api/prof/classes",
+  CREATE_CLASS = "/api/prof/classes",
+  GET_CLASS = "/api/prof/classes/{classe_id}",
+  UPDATE_CLASS = "/api/prof/classes/{classe_id}",
+  DEACTIVATE_CLASS = "/api/prof/classes/{classe_id}/deactivate",
+  REACTIVATE_CLASS = "/api/prof/classes/{classe_id}/reactivate",
+
+  // Gestion des élèves
+  ADD_MEMBER = "/api/prof/classes/{classe_id}/members/add",
+  DEACTIVATE_MEMBER = "/api/prof/classes/{classe_id}/members/{member_id}/deactivate",
+  REACTIVATE_MEMBER = "/api/prof/classes/{classe_id}/members/{member_id}/reactivate",
+
+  // Quiz de classe
+  CREATE_MANUAL_QUIZ = "/api/prof/classes/{classe_id}/quizzes/manual",
+  GENERATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/generate",
+  UPDATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}",
+  ACTIVATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/activate",
+  DEACTIVATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/deactivate",
+  GET_QUIZ_NOTES = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/notes",
+
+  // Cours de classe
+  CREATE_MANUAL_COURSE = "/api/prof/classes/{classe_id}/courses/manual",
+  GENERATE_COURSE = "/api/prof/classes/{classe_id}/courses/generate",
+  UPDATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}",
+  ACTIVATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}/activate",
+  DEACTIVATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}/deactivate",
+
+  // Notes et évaluations
+  SAVE_GRADES = "/api/prof/classes/{classe_id}/grades",
+  CREATE_CLASS_EVALUATION = "/api/prof/classes/{classe_id}/class-evaluation",
+}

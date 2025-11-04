@@ -1,0 +1,503 @@
+import { request } from "@/lib/request";
+import { ProfesseurEndpoints, EleveEndpoints } from "@/constants/endpoints";
+import {
+  GetSubjectsResponse,
+  SetSubjectsPayload,
+  SetSubjectsResponse,
+  GetClassesResponse,
+  CreateClassePayload,
+  CreateClasseResponse,
+  GetClasseResponse,
+  UpdateClassePayload,
+  UpdateClasseResponse,
+  DeactivateClasseResponse,
+  ReactivateClasseResponse,
+  CheckEleveResponse,
+  AddMemberPayload,
+  AddMemberResponse,
+  DeactivateMemberResponse,
+  ReactivateMemberResponse,
+  CreateManualQuizPayload,
+  CreateManualQuizResponse,
+  GenerateQuizPayload,
+  GenerateQuizResponse,
+  UpdateQuizPayload,
+  UpdateQuizResponse,
+  ActivateQuizResponse,
+  DeactivateQuizResponse,
+  GetQuizNotesResponse,
+  CreateManualCoursePayload,
+  CreateManualCourseResponse,
+  GenerateCoursePayload,
+  GenerateCourseResponse,
+  UpdateCoursePayload,
+  UpdateCourseResponse,
+  ActivateCourseResponse,
+  DeactivateCourseResponse,
+  SaveGradesPayload,
+  SaveGradesResponse,
+  CreateClassEvaluationPayload,
+  CreateClassEvaluationResponse,
+} from "./types/common/professeur.types";
+
+/**
+ * ===============================
+ * MATIÈRES ENSEIGNÉES
+ * ===============================
+ */
+
+/**
+ * Récupère les matières enseignées par le professeur.
+ * @returns {Promise<GetSubjectsResponse>} Liste des matières avec compteur et maximum.
+ */
+export const getSubjects = async (): Promise<GetSubjectsResponse> => {
+  return request.get<GetSubjectsResponse>(ProfesseurEndpoints.GET_SUBJECTS);
+};
+
+/**
+ * Définit les matières enseignées par le professeur.
+ * @param {SetSubjectsPayload} payload - Liste des IDs de matières (max 3).
+ * @returns {Promise<SetSubjectsResponse>} Confirmation et liste mise à jour.
+ */
+export const setSubjects = async (
+  payload: SetSubjectsPayload,
+): Promise<SetSubjectsResponse> => {
+  return request.post<SetSubjectsResponse>(
+    ProfesseurEndpoints.SET_SUBJECTS,
+    payload,
+  );
+};
+
+/**
+ * ===============================
+ * CLASSES - CRUD
+ * ===============================
+ */
+
+/**
+ * Récupère toutes les classes du professeur.
+ * @returns {Promise<GetClassesResponse>} Liste des classes.
+ */
+export const getClasses = async (): Promise<GetClassesResponse> => {
+  return request.get<GetClassesResponse>(ProfesseurEndpoints.GET_CLASSES);
+};
+
+/**
+ * Crée une nouvelle classe.
+ * @param {CreateClassePayload} payload - Données de la classe (nom, description, niveau, matières).
+ * @returns {Promise<CreateClasseResponse>} Confirmation et données de la classe créée.
+ */
+export const createClasse = async (
+  payload: CreateClassePayload,
+): Promise<CreateClasseResponse> => {
+  return request.post<CreateClasseResponse>(
+    ProfesseurEndpoints.CREATE_CLASS,
+    payload,
+  );
+};
+
+/**
+ * Récupère les détails d'une classe spécifique.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<GetClasseResponse>} Détails de la classe avec ses membres.
+ */
+export const getClasse = async (
+  classeId: number,
+): Promise<GetClasseResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_CLASS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.get<GetClasseResponse>(endpoint);
+};
+
+/**
+ * Met à jour une classe existante.
+ * @param {number} classeId - ID de la classe.
+ * @param {UpdateClassePayload} payload - Données à mettre à jour.
+ * @returns {Promise<UpdateClasseResponse>} Confirmation et données mises à jour.
+ */
+export const updateClasse = async (
+  classeId: number,
+  payload: UpdateClassePayload,
+): Promise<UpdateClasseResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_CLASS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.put<UpdateClasseResponse>(endpoint, payload);
+};
+
+/**
+ * Désactive une classe.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<DeactivateClasseResponse>} Message de confirmation.
+ */
+export const deactivateClasse = async (
+  classeId: number,
+): Promise<DeactivateClasseResponse> => {
+  const endpoint = ProfesseurEndpoints.DEACTIVATE_CLASS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<DeactivateClasseResponse>(endpoint);
+};
+
+/**
+ * Réactive une classe.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<ReactivateClasseResponse>} Message de confirmation.
+ */
+export const reactivateClasse = async (
+  classeId: number,
+): Promise<ReactivateClasseResponse> => {
+  const endpoint = ProfesseurEndpoints.REACTIVATE_CLASS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<ReactivateClasseResponse>(endpoint);
+};
+
+/**
+ * ===============================
+ * GESTION DES ÉLÈVES
+ * ===============================
+ */
+
+/**
+ * Vérifie si un email correspond à un élève existant.
+ * @param {string} email - Email de l'élève.
+ * @returns {Promise<CheckEleveResponse>} Informations sur l'élève si existant.
+ */
+export const checkEleve = async (
+  email: string,
+): Promise<CheckEleveResponse> => {
+  const endpoint = `${EleveEndpoints.CHECK_EMAIL}?email=${encodeURIComponent(email)}`;
+  return request.get<CheckEleveResponse>(endpoint);
+};
+
+/**
+ * Ajoute un élève à une classe (utilisateur existant ou création manuelle).
+ * @param {number} classeId - ID de la classe.
+ * @param {AddMemberPayload} payload - Données de l'élève.
+ * @returns {Promise<AddMemberResponse>} Confirmation et données du membre ajouté.
+ */
+export const addMember = async (
+  classeId: number,
+  payload: AddMemberPayload,
+): Promise<AddMemberResponse> => {
+  const endpoint = ProfesseurEndpoints.ADD_MEMBER.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<AddMemberResponse>(endpoint, payload);
+};
+
+/**
+ * Désactive un membre d'une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} memberId - ID du membre.
+ * @returns {Promise<DeactivateMemberResponse>} Message de confirmation.
+ */
+export const deactivateMember = async (
+  classeId: number,
+  memberId: number,
+): Promise<DeactivateMemberResponse> => {
+  const endpoint = ProfesseurEndpoints.DEACTIVATE_MEMBER.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{member_id}", memberId.toString());
+  return request.post<DeactivateMemberResponse>(endpoint);
+};
+
+/**
+ * Réactive un membre d'une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} memberId - ID du membre.
+ * @returns {Promise<ReactivateMemberResponse>} Message de confirmation.
+ */
+export const reactivateMember = async (
+  classeId: number,
+  memberId: number,
+): Promise<ReactivateMemberResponse> => {
+  const endpoint = ProfesseurEndpoints.REACTIVATE_MEMBER.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{member_id}", memberId.toString());
+  return request.post<ReactivateMemberResponse>(endpoint);
+};
+
+/**
+ * ===============================
+ * QUIZ DE CLASSE
+ * ===============================
+ */
+
+/**
+ * Crée un quiz manuel pour une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {CreateManualQuizPayload} payload - Données du quiz.
+ * @returns {Promise<CreateManualQuizResponse>} Confirmation et données du quiz créé.
+ */
+export const createManualQuiz = async (
+  classeId: number,
+  payload: CreateManualQuizPayload,
+): Promise<CreateManualQuizResponse> => {
+  const endpoint = ProfesseurEndpoints.CREATE_MANUAL_QUIZ.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<CreateManualQuizResponse>(endpoint, payload);
+};
+
+/**
+ * Génère un quiz avec IA pour une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {GenerateQuizPayload} payload - Paramètres de génération (avec fichier optionnel).
+ * @returns {Promise<GenerateQuizResponse>} Confirmation et données du quiz généré.
+ */
+export const generateQuiz = async (
+  classeId: number,
+  payload: GenerateQuizPayload,
+): Promise<GenerateQuizResponse> => {
+  const endpoint = ProfesseurEndpoints.GENERATE_QUIZ.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+
+  // Si un fichier est présent, utiliser FormData
+  if (payload.document_file) {
+    return request.postFormData<GenerateQuizResponse>(endpoint, {
+      chapter_id: payload.chapter_id,
+      difficulty: payload.difficulty,
+      title: payload.title,
+      nombre_questions: payload.nombre_questions,
+      temps: payload.temps,
+      document_file: payload.document_file,
+    });
+  } else {
+    // Sinon, envoi JSON classique
+    return request.post<GenerateQuizResponse>(endpoint, {
+      chapter_id: payload.chapter_id,
+      difficulty: payload.difficulty,
+      title: payload.title,
+      nombre_questions: payload.nombre_questions,
+      temps: payload.temps,
+    });
+  }
+};
+
+/**
+ * Met à jour un quiz de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} quizId - ID du quiz.
+ * @param {UpdateQuizPayload} payload - Données à mettre à jour.
+ * @returns {Promise<UpdateQuizResponse>} Confirmation et données mises à jour.
+ */
+export const updateQuiz = async (
+  classeId: number,
+  quizId: number,
+  payload: UpdateQuizPayload,
+): Promise<UpdateQuizResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_QUIZ.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{quiz_id}", quizId.toString());
+  return request.put<UpdateQuizResponse>(endpoint, payload);
+};
+
+/**
+ * Active un quiz de classe (envoie notifications aux élèves).
+ * @param {number} classeId - ID de la classe.
+ * @param {number} quizId - ID du quiz.
+ * @returns {Promise<ActivateQuizResponse>} Message de confirmation.
+ */
+export const activateQuiz = async (
+  classeId: number,
+  quizId: number,
+): Promise<ActivateQuizResponse> => {
+  const endpoint = ProfesseurEndpoints.ACTIVATE_QUIZ.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{quiz_id}", quizId.toString());
+  return request.post<ActivateQuizResponse>(endpoint);
+};
+
+/**
+ * Désactive un quiz de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} quizId - ID du quiz.
+ * @returns {Promise<DeactivateQuizResponse>} Message de confirmation.
+ */
+export const deactivateQuiz = async (
+  classeId: number,
+  quizId: number,
+): Promise<DeactivateQuizResponse> => {
+  const endpoint = ProfesseurEndpoints.DEACTIVATE_QUIZ.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{quiz_id}", quizId.toString());
+  return request.post<DeactivateQuizResponse>(endpoint);
+};
+
+/**
+ * Récupère les notes d'un quiz de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} quizId - ID du quiz.
+ * @returns {Promise<GetQuizNotesResponse>} Détails du quiz avec les notes.
+ */
+export const getQuizNotes = async (
+  classeId: number,
+  quizId: number,
+): Promise<GetQuizNotesResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_QUIZ_NOTES.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{quiz_id}", quizId.toString());
+  return request.get<GetQuizNotesResponse>(endpoint);
+};
+
+/**
+ * ===============================
+ * COURS DE CLASSE
+ * ===============================
+ */
+
+/**
+ * Crée un cours manuel pour une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {CreateManualCoursePayload} payload - Données du cours.
+ * @returns {Promise<CreateManualCourseResponse>} Confirmation et données du cours créé.
+ */
+export const createManualCourse = async (
+  classeId: number,
+  payload: CreateManualCoursePayload,
+): Promise<CreateManualCourseResponse> => {
+  const endpoint = ProfesseurEndpoints.CREATE_MANUAL_COURSE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<CreateManualCourseResponse>(endpoint, payload);
+};
+
+/**
+ * Génère un cours avec IA pour une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {GenerateCoursePayload} payload - Paramètres de génération (avec fichier optionnel).
+ * @returns {Promise<GenerateCourseResponse>} Confirmation et données du cours généré.
+ */
+export const generateCourse = async (
+  classeId: number,
+  payload: GenerateCoursePayload,
+): Promise<GenerateCourseResponse> => {
+  const endpoint = ProfesseurEndpoints.GENERATE_COURSE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+
+  // Si un fichier est présent, utiliser FormData
+  if (payload.document_file) {
+    return request.postFormData<GenerateCourseResponse>(endpoint, {
+      chapter_id: payload.chapter_id,
+      document_file: payload.document_file,
+    });
+  } else {
+    // Sinon, envoi JSON classique
+    return request.post<GenerateCourseResponse>(endpoint, {
+      chapter_id: payload.chapter_id,
+    });
+  }
+};
+
+/**
+ * Met à jour un cours de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} coursId - ID du cours.
+ * @param {UpdateCoursePayload} payload - Données à mettre à jour.
+ * @returns {Promise<UpdateCourseResponse>} Confirmation et données mises à jour.
+ */
+export const updateCourse = async (
+  classeId: number,
+  coursId: number,
+  payload: UpdateCoursePayload,
+): Promise<UpdateCourseResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_COURSE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{cours_id}", coursId.toString());
+  return request.put<UpdateCourseResponse>(endpoint, payload);
+};
+
+/**
+ * Active un cours de classe (envoie notifications aux élèves).
+ * @param {number} classeId - ID de la classe.
+ * @param {number} coursId - ID du cours.
+ * @returns {Promise<ActivateCourseResponse>} Message de confirmation.
+ */
+export const activateCourse = async (
+  classeId: number,
+  coursId: number,
+): Promise<ActivateCourseResponse> => {
+  const endpoint = ProfesseurEndpoints.ACTIVATE_COURSE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{cours_id}", coursId.toString());
+  return request.post<ActivateCourseResponse>(endpoint);
+};
+
+/**
+ * Désactive un cours de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} coursId - ID du cours.
+ * @returns {Promise<DeactivateCourseResponse>} Message de confirmation.
+ */
+export const deactivateCourse = async (
+  classeId: number,
+  coursId: number,
+): Promise<DeactivateCourseResponse> => {
+  const endpoint = ProfesseurEndpoints.DEACTIVATE_COURSE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{cours_id}", coursId.toString());
+  return request.post<DeactivateCourseResponse>(endpoint);
+};
+
+/**
+ * ===============================
+ * NOTES ET ÉVALUATIONS
+ * ===============================
+ */
+
+/**
+ * Enregistre les notes d'un quiz en masse.
+ * @param {number} classeId - ID de la classe.
+ * @param {SaveGradesPayload} payload - Données des notes.
+ * @returns {Promise<SaveGradesResponse>} Confirmation et liste des notes créées.
+ */
+export const saveGrades = async (
+  classeId: number,
+  payload: SaveGradesPayload,
+): Promise<SaveGradesResponse> => {
+  const endpoint = ProfesseurEndpoints.SAVE_GRADES.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<SaveGradesResponse>(endpoint, payload);
+};
+
+/**
+ * Crée une évaluation de classe (devoir, contrôle, etc.).
+ * @param {number} classeId - ID de la classe.
+ * @param {CreateClassEvaluationPayload} payload - Données de l'évaluation.
+ * @returns {Promise<CreateClassEvaluationResponse>} Confirmation et liste des notes créées.
+ */
+export const createClassEvaluation = async (
+  classeId: number,
+  payload: CreateClassEvaluationPayload,
+): Promise<CreateClassEvaluationResponse> => {
+  const endpoint = ProfesseurEndpoints.CREATE_CLASS_EVALUATION.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<CreateClassEvaluationResponse>(endpoint, payload);
+};

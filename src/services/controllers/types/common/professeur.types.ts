@@ -1,0 +1,335 @@
+import { AuditFields } from "@/constants/audit.types";
+import { Matiere } from "./matiere.types";
+import { Niveau } from "./niveau.types";
+import { AuthUser } from "./user.type";
+import { QuizDefinition } from "./quiz.types";
+import { Course } from "./cours.type";
+
+/**
+ * Types pour les matières enseignées
+ */
+export type MatiereEnseignee = {
+  id: number;
+  libelle: string;
+  niveau_id: number;
+  niveau: Niveau;
+};
+
+export type GetSubjectsResponse = {
+  matieres: MatiereEnseignee[];
+  count: number;
+  max: number;
+};
+
+export type SetSubjectsPayload = {
+  matiere_ids: number[];
+};
+
+export type SetSubjectsResponse = {
+  message: string;
+  matieres: MatiereEnseignee[];
+};
+
+/**
+ * Types pour les classes
+ */
+export type Classe = {
+  id: number;
+  nom: string;
+  description: string;
+  professeur_id: number;
+  niveau_id: number;
+  matiere_ids: number[];
+  is_active: boolean;
+} & AuditFields;
+
+export type ClasseMember = {
+  id: number;
+  eleve_id: number;
+  classe_id: number;
+  is_active: boolean;
+  eleve: {
+    id: number;
+    nom: string;
+    prenom: string;
+    email: string;
+    numero?: string;
+    parent_mail?: string;
+    parent_numero?: string;
+    niveau_id?: number;
+    type: "utilisateur" | "manuel";
+    user_id?: number;
+    is_active?: boolean;
+  };
+};
+
+export type GetClassesResponse = Classe[];
+
+export type CreateClassePayload = {
+  nom: string;
+  description?: string;
+  niveau_id: number;
+  matiere_ids: number[];
+};
+
+export type CreateClasseResponse = {
+  message: string;
+  classe: Classe;
+};
+
+export type GetClasseResponse = Classe & {
+  members: ClasseMember[];
+};
+
+export type UpdateClassePayload = {
+  nom?: string;
+  description?: string;
+  niveau_id?: number;
+  matiere_ids?: number[];
+};
+
+export type UpdateClasseResponse = {
+  message: string;
+  classe: Classe;
+};
+
+export type DeactivateClasseResponse = {
+  message: string;
+};
+
+export type ReactivateClasseResponse = {
+  message: string;
+};
+
+/**
+ * Types pour la gestion des élèves
+ */
+export type CheckEleveResponse = {
+  exists: boolean;
+  eleve?: {
+    nom: string;
+    prenom: string;
+    email: string;
+    niveau_id: number;
+    niveau: Niveau;
+    numero?: string;
+    parent_mail?: string;
+    parent_numero?: string;
+    type: "utilisateur" | "manuel";
+    user_id?: number;
+    is_active?: boolean;
+  };
+};
+
+export type AddMemberPayload = {
+  email: string;
+  nom?: string;
+  prenom?: string;
+  niveau_id?: number;
+  numero?: string;
+  parent_mail?: string;
+  parent_numero?: string;
+};
+
+export type AddMemberResponse = {
+  message: string;
+  eleve: ClasseMember;
+};
+
+export type DeactivateMemberResponse = {
+  message: string;
+};
+
+export type ReactivateMemberResponse = {
+  message: string;
+};
+
+/**
+ * Types pour les quiz de classe
+ */
+export type CreateManualQuizPayload = {
+  titre: string;
+  difficulte: string;
+  temps: number;
+  matiere_id: number;
+  chapitres_ids: number[];
+  data: {
+    qcm: Array<{
+      question: string;
+      reponses: Array<{
+        texte: string;
+        correct: boolean;
+      }>;
+    }>;
+    questions_approfondissement: Array<{
+      question: string;
+      reponse: string;
+    }>;
+  };
+};
+
+export type CreateManualQuizResponse = {
+  message: string;
+  quiz: QuizDefinition & { classe_id: number };
+};
+
+export type GenerateQuizPayload = {
+  chapter_id: number;
+  difficulty: string;
+  title: string;
+  nombre_questions: number;
+  temps: number;
+  document_file?: File;
+};
+
+export type GenerateQuizResponse = {
+  message: string;
+  quiz: QuizDefinition & { classe_id: number };
+};
+
+export type UpdateQuizPayload = {
+  titre?: string;
+  data?: {
+    qcm: Array<{
+      question: string;
+      reponses: Array<{
+        texte: string;
+        correct: boolean;
+      }>;
+    }>;
+    questions_approfondissement: Array<{
+      question: string;
+      reponse: string;
+    }>;
+  };
+  temps?: number;
+};
+
+export type UpdateQuizResponse = {
+  message: string;
+  quiz: QuizDefinition;
+};
+
+export type ActivateQuizResponse = {
+  message: string;
+};
+
+export type DeactivateQuizResponse = {
+  message: string;
+};
+
+export type GetQuizNotesResponse = {
+  quiz: {
+    id: number;
+    titre: string;
+    nombre_questions: number;
+    notes: Array<{
+      id: number;
+      note: number;
+      user: {
+        id: number;
+        nom: string;
+        prenom: string;
+        mail: string;
+      };
+      created_at: string;
+    }>;
+  };
+};
+
+/**
+ * Types pour les cours de classe
+ */
+export type CreateManualCoursePayload = {
+  titre: string;
+  chapitre_id: number;
+  text: string;
+  questions: Array<{
+    question: string;
+    reponse: string;
+  }>;
+};
+
+export type CreateManualCourseResponse = {
+  message: string;
+  cours: Course & { classe_id: number };
+};
+
+export type GenerateCoursePayload = {
+  chapter_id: number;
+  document_file?: File;
+};
+
+export type GenerateCourseResponse = {
+  message: string;
+  cours: Course & { classe_id: number };
+};
+
+export type UpdateCoursePayload = {
+  text?: string;
+  questions?: Array<{
+    question: string;
+    reponse: string;
+  }>;
+};
+
+export type UpdateCourseResponse = {
+  message: string;
+  cours: Course;
+};
+
+export type ActivateCourseResponse = {
+  message: string;
+};
+
+export type DeactivateCourseResponse = {
+  message: string;
+};
+
+/**
+ * Types pour les notes et évaluations
+ */
+export type SaveGradesPayload = {
+  quiz_id: number;
+  grades: Array<{
+    user_id: number;
+    note: number;
+  }>;
+};
+
+export type SaveGradesResponse = {
+  message: string;
+  notes: Array<{
+    id: number;
+    user_id: number;
+    note: number;
+    quiz_id: number;
+    created_at: string;
+  }>;
+};
+
+export type CreateClassEvaluationPayload = {
+  type_evaluation: string;
+  matiere_id: number;
+  chapitres_ids: number[];
+  date_evaluation: string;
+  commentaire?: string;
+  grades: Array<{
+    user_id: number;
+    note: number;
+  }>;
+};
+
+export type CreateClassEvaluationResponse = {
+  message: string;
+  notes: Array<{
+    id: number;
+    user_id: number;
+    note: number;
+    type_evaluation: string;
+    matiere_id: number;
+    chapitres_ids: number[];
+    date_evaluation: string;
+    created_at: string;
+  }>;
+};

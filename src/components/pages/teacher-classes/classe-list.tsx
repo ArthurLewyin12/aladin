@@ -1,0 +1,185 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useClasses } from "@/services/hooks/professeur/useClasses";
+import { useDeactivateClasse } from "@/services/hooks/professeur/useDeactivateClasse";
+import { useReactivateClasse } from "@/services/hooks/professeur/useReactivateClasse";
+import { ClasseCard } from "./classe-card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { parseAsInteger, useQueryState } from "nuqs";
+
+const ITEMS_PER_PAGE = 6;
+
+const CARD_COLORS = [
+  "bg-[#D4F4DD]", // Vert clair
+  "bg-[#E8F8E8]", // Vert très clair
+  "bg-[#C8E6C9]", // Vert menthe
+  "bg-[#DCEDC8]", // Vert lime clair
+];
+
+interface ClasseListProps {
+  onCreateClasse: () => void;
+}
+
+export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
+  const router = useRouter();
+  const { data: classes, isLoading, isError } = useClasses();
+  const { mutate: deactivateClasseMutation } = useDeactivateClasse();
+  const { mutate: reactivateClasseMutation } = useReactivateClasse();
+
+  // Pagination avec nuqs
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+
+  const enrichedClasses = useMemo(() => {
+    if (!classes) return [];
+
+    return classes.map((classe, index) => ({
+      ...classe,
+      cardColor: CARD_COLORS[index % CARD_COLORS.length],
+    }));
+  }, [classes]);
+
+  // Calculer les classes paginées
+  const { paginatedClasses, totalPages } = useMemo(() => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedClasses: enrichedClasses.slice(startIndex, endIndex),
+      totalPages: Math.ceil(enrichedClasses.length / ITEMS_PER_PAGE),
+    };
+  }, [enrichedClasses, page]);
+
+  const handleViewDetails = (classeId: number) => {
+    router.push(`/teacher/classes/${classeId}`);
+  };
+
+  const handleDeactivate = (classeId: number) => {
+    deactivateClasseMutation(classeId);
+  };
+
+  const handleReactivate = (classeId: number) => {
+    reactivateClasseMutation(classeId);
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-500">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-red-500">
+          Erreur lors du chargement des classes
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header avec bouton de création */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+            Mes Classes
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">
+            {enrichedClasses.length} classe{enrichedClasses.length > 1 ? "s" : ""}
+            {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
+          </p>
+        </div>
+        <Button
+          size="lg"
+          onClick={onCreateClasse}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+        >
+          <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
+          <span className="hidden sm:inline">Nouvelle classe</span>
+          <span className="sm:hidden">Créer</span>
+        </Button>
+      </div>
+
+      {/* Grille des classes paginées */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {paginatedClasses.map((classe) => (
+          <ClasseCard
+            key={classe.id}
+            classe={classe}
+            cardColor={classe.cardColor}
+            onViewDetails={handleViewDetails}
+            onDeactivate={handleDeactivate}
+            onReactivate={handleReactivate}
+          />
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={page === 1}
+            className="rounded-full"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+
+          <div className="flex items-center gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === page ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => {
+                    setPage(pageNum);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className={`rounded-full ${
+                    pageNum === page
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : ""
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              ),
+            )}
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={page === totalPages}
+            className="rounded-full"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};

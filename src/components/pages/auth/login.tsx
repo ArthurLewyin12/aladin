@@ -43,16 +43,6 @@ export default function AladinLoginForm() {
   function onSubmit(values: z.infer<typeof loginSchema>) {
     mutate(values, {
       onSuccess: (data) => {
-        // Check if user account is active
-        if (!data.user.is_active) {
-          toast({
-            variant: "error",
-            title: "Compte inactif",
-            message: "Votre compte n'est pas actif. Veuillez contacter l'administrateur.",
-          });
-          return;
-        }
-
         login(data.user);
         toast({ variant: "success", message: "Connexion réussie !" });
         // Redirect based on user role

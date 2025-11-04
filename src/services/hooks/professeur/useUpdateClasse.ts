@@ -28,6 +28,10 @@ export const useUpdateClasse = () => {
       queryClient.invalidateQueries({
         queryKey: createQueryKey("professeur", "classes"),
       });
+      // Invalider aussi la version avec détails
+      queryClient.invalidateQueries({
+        queryKey: createQueryKey("professeur", "classes", "with-details"),
+      });
       queryClient.invalidateQueries({
         queryKey: createQueryKey("professeur", "classes", variables.classeId.toString()),
       });

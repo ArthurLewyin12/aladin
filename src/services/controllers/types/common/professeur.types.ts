@@ -77,8 +77,48 @@ export type CreateClasseResponse = {
   classe: Classe;
 };
 
+// Type pour la réponse brute de l'API (structure réelle)
+export type GetClasseRawResponse = {
+  classe: Classe;
+  niveau?: {
+    id: number;
+    libelle: string;
+    created_at?: string;
+    updated_at?: string;
+  };
+  matieres?: Array<{
+    id: number;
+    libelle: string;
+    niveau_id?: number;
+  }>;
+  eleves?: Array<{
+    id: number;
+    eleve_id: number;
+    classe_id: number;
+    is_active: boolean;
+    eleve: {
+      id: number;
+      nom: string;
+      prenom: string;
+      email: string;
+      numero?: string;
+      parent_mail?: string;
+      parent_numero?: string;
+      niveau_id?: number;
+      type: "utilisateur" | "manuel";
+      user_id?: number;
+      is_active?: boolean;
+    };
+  }>;
+  quizzes?: any[];
+};
+
+// Type pour la réponse normalisée (format attendu par les composants)
 export type GetClasseResponse = Classe & {
   members: ClasseMember[];
+  niveau?: Niveau;
+  quizzes?: any[];
+  matieres?: Matiere[];
 };
 
 export type UpdateClassePayload = {

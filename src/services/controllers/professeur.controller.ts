@@ -1,5 +1,6 @@
 import { request } from "@/lib/request";
 import { ProfesseurEndpoints, EleveEndpoints } from "@/constants/endpoints";
+import { PromiseExecutor } from "@/lib/promise-executor";
 import {
   GetSubjectsResponse,
   SetSubjectsPayload,
@@ -8,6 +9,7 @@ import {
   CreateClassePayload,
   CreateClasseResponse,
   GetClasseResponse,
+  GetClasseRawResponse,
   UpdateClassePayload,
   UpdateClasseResponse,
   DeactivateClasseResponse,
@@ -83,6 +85,60 @@ export const getClasses = async (): Promise<GetClassesResponse> => {
 };
 
 /**
+ * Récupère toutes les classes du professeur avec leurs détails (membres) en parallèle.
+ * Utilise PromiseExecutor pour paralléliser les appels API.
+ * @returns {Promise<GetClasseResponse[]>} Liste des classes avec leurs membres.
+ */
+export const getClassesWithDetails = async (): Promise<GetClasseResponse[]> => {
+  // Récupérer la liste des classes
+  const classes = await getClasses();
+
+  // Si aucune classe, retourner un tableau vide
+  if (!classes || classes.length === 0) {
+    return [];
+  }
+
+  // Filtrer les classes sans ID valide
+  const validClasses = classes.filter((classe) => classe && classe.id != null);
+
+  if (validClasses.length === 0) {
+    return [];
+  }
+
+  // Créer un PromiseExecutor pour paralléliser les appels
+  const executor = new PromiseExecutor();
+
+  // Ajouter chaque appel pour récupérer les détails d'une classe
+  // Gérer les erreurs individuellement pour ne pas faire échouer toutes les requêtes
+  validClasses.forEach((classe) => {
+    executor.add(
+      `classe_${classe.id}`,
+      getClasse(classe.id).catch((error) => {
+        console.error(`Erreur lors de la récupération de la classe ${classe.id}:`, error);
+        // Retourner la classe de base sans détails en cas d'erreur
+        return {
+          ...classe,
+          members: [],
+        } as GetClasseResponse;
+      }),
+    );
+  });
+
+  // Exécuter tous les appels en parallèle
+  const results = await executor.execute();
+
+  // Reconstruire le tableau dans l'ordre initial avec les détails
+  // Filtrer les valeurs undefined/null
+  return validClasses
+    .map((classe) => {
+      const detail = results[`classe_${classe.id}`];
+      // Si on a des détails, les utiliser, sinon retourner la classe de base avec members vide
+      return detail || { ...classe, members: [] };
+    })
+    .filter((classe): classe is GetClasseResponse => classe != null && classe.id != null);
+};
+
+/**
  * Crée une nouvelle classe.
  * @param {CreateClassePayload} payload - Données de la classe (nom, description, niveau, matières).
  * @returns {Promise<CreateClasseResponse>} Confirmation et données de la classe créée.
@@ -108,7 +164,37 @@ export const getClasse = async (
     "{classe_id}",
     classeId.toString(),
   );
-  return request.get<GetClasseResponse>(endpoint);
+  const rawResponse = await request.get<GetClasseRawResponse>(endpoint);
+
+  // Transformer la réponse brute en format normalisé
+  // Si la réponse a déjà la structure attendue (avec members), la retourner telle quelle
+  if ("members" in rawResponse && Array.isArray((rawResponse as any).members)) {
+    return rawResponse as unknown as GetClasseResponse;
+  }
+
+  // Sinon, transformer la structure avec eleves en members
+  const normalizedResponse: GetClasseResponse = {
+    ...rawResponse.classe,
+    members: rawResponse.eleves?.map((eleve) => ({
+      id: eleve.id,
+      eleve_id: eleve.eleve_id,
+      classe_id: eleve.classe_id,
+      is_active: eleve.is_active,
+      eleve: eleve.eleve,
+    })) || [],
+    niveau: rawResponse.niveau
+      ? {
+          ...rawResponse.niveau,
+          matieres: [],
+          created_at: rawResponse.niveau.created_at || ' ',
+          updated_at: rawResponse.niveau.updated_at || ' ',
+        }
+      : undefined,
+    quizzes: rawResponse.quizzes || [],
+    matieres: rawResponse.matieres?.filter(m => m.niveau_id !== undefined).map(m => ({ ...m, niveau_id: m.niveau_id as number, created_at: ' ', updated_at: ' ' })) || [],
+  };
+
+  return normalizedResponse;
 };
 
 /**

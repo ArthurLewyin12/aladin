@@ -24,6 +24,10 @@ export const useCreateClasse = () => {
       queryClient.invalidateQueries({
         queryKey: createQueryKey("professeur", "classes"),
       });
+      // Invalider aussi la version avec détails
+      queryClient.invalidateQueries({
+        queryKey: createQueryKey("professeur", "classes", "with-details"),
+      });
     },
     onError: (error: any) => {
       console.error("Erreur lors de la création de la classe", error);

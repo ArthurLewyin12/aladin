@@ -154,7 +154,16 @@ export const hasAccessToRoute = (userRole: UserRole, path: string): boolean => {
   if (!navigation) return false;
 
   // Vérifier si le chemin correspond au rôle de l'utilisateur
-  const rolePrefix = `/${userRole === "eleve" ? "student" : userRole}`;
+  let rolePrefix: string;
+  if (userRole === "eleve") {
+    rolePrefix = "/student";
+  } else if (userRole === "professeur") {
+    rolePrefix = "/teacher";
+  } else {
+    rolePrefix = `/${userRole}`;
+  }
+
+  console.log('🔍 hasAccessToRoute check:', { userRole, path, rolePrefix, result: path.startsWith(rolePrefix) });
   return path.startsWith(rolePrefix);
 };
 

@@ -48,46 +48,32 @@ export default function TeacherHomePage() {
     }
   };
 
-  const parentActions = [
+  const teacherActions = [
     {
       id: "dashboard",
-      title: "Je vois mon tableau de bord",
+      title: "Je consulte mon tableau de bord",
       description: "Suivez les progrès de vos élèves",
       icon: BarChart3,
-      handler: () => router.push("/parent/dashboard"),
+      handler: () => router.push("/teacher/dashboard"),
     },
-    // {
-    //   id: "courses",
-    //   title: "Je vois mes cours",
-    //   description: "Accédez aux cours et ressources",
-    //   icon: BookOpen,
-    //   handler: () => router.push("/parent/courses"),
-    // },
     {
-      id: "cours",
+      id: "courses",
       title: "Je consulte mes cours",
-      description: "Gérez vos différents cours",
-      icon: Users,
-      handler: () => router.push("/parent/enfants"),
+      description: "Gérez vos cours de classe",
+      icon: BookOpen,
+      handler: () => router.push("/teacher/courses"),
     },
-    // {
-    //   id: "notes",
-    //   title: "Je consulte les notes",
-    //   description: "Suivez les notes de vos enfants",
-    //   icon: FileText,
-    //   handler: () => router.push("/parent/notes"),
-    // },
     {
       id: "classes",
       title: "Je gère mes classes",
-      description: "gérer efficacement les classes dont vous etes en charge.",
+      description: "Gérer efficacement les classes dont vous êtes en charge",
       icon: UsersRound,
-      handler: () => router.push("/parent/groups"),
+      handler: () => router.push("/teacher/classes"),
     },
     {
       id: "share",
       title: "Je partage Aladin",
-      description: "Invitez d'autres professeur à rejoindre",
+      description: "Invitez d'autres professeurs à rejoindre",
       icon: Share2,
       handler: handleShare,
     },
@@ -126,7 +112,7 @@ export default function TeacherHomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
               Que souhaitez-vous faire ?
             </h2>
-            {parentActions.map((action) => {
+            {teacherActions.map((action) => {
               const IconComponent = action.icon;
               return (
                 <button

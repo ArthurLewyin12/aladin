@@ -22,43 +22,54 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    console.log('🔒 RoleGuard - Start check', {
+      isLoading,
+      hasUser: !!user,
+      pathname,
+      userRole: user?.statut,
+      isActive: user?.is_active,
+      allowedRoles
+    });
+
     if (isLoading) {
+      console.log('🔒 RoleGuard - Still loading, waiting...');
       setIsChecking(true);
       return;
     }
 
     // Si pas d'utilisateur, laisser AuthGuard gérer la redirection
     if (!user) {
+      console.log('🔒 RoleGuard - No user, letting AuthGuard handle');
       setIsChecking(false);
       return;
     }
 
-    // Vérifier si l'utilisateur est actif
-    if (!user.is_active) {
-      router.push("/login");
-      setIsChecking(true);
-      return;
-    }
-
     const userRole = user.statut as UserRole;
+    console.log('🔒 RoleGuard - User role:', userRole);
 
     // Si des rôles spécifiques sont requis, vérifier
     if (allowedRoles && !allowedRoles.includes(userRole)) {
       const homePath = getHomePathForRole(userRole);
+      console.log('🔒 RoleGuard - Role not allowed, redirecting to:', homePath);
       router.push(homePath);
       setIsChecking(true); // Garder le loader pendant la redirection
       return;
     }
 
     // Vérifier si l'utilisateur a accès à cette route
-    if (!hasAccessToRoute(userRole, pathname)) {
+    const hasAccess = hasAccessToRoute(userRole, pathname);
+    console.log('🔒 RoleGuard - Access check:', { userRole, pathname, hasAccess });
+
+    if (!hasAccess) {
       const homePath = getHomePathForRole(userRole);
+      console.log('🔒 RoleGuard - No access, redirecting to:', homePath);
       router.push(homePath);
       setIsChecking(true); // Garder le loader pendant la redirection
       return;
     }
 
     // Tout est OK, on peut afficher le contenu
+    console.log('🔒 RoleGuard - Access granted, rendering content');
     setIsChecking(false);
   }, [user, isLoading, pathname, allowedRoles, router]);
 

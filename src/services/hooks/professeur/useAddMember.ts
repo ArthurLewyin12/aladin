@@ -28,6 +28,10 @@ export const useAddMember = () => {
       queryClient.invalidateQueries({
         queryKey: createQueryKey("professeur", "classes", variables.classeId.toString()),
       });
+      // Invalider aussi la liste avec détails pour mettre à jour les avatars
+      queryClient.invalidateQueries({
+        queryKey: createQueryKey("professeur", "classes", "with-details"),
+      });
     },
     onError: (error: any) => {
       console.error("Erreur lors de l'ajout de l'élève", error);

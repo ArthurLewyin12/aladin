@@ -1,22 +1,23 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useClasses } from "@/services/hooks/professeur/useClasses";
-import { useDeactivateClasse } from "@/services/hooks/professeur/useDeactivateClasse";
-import { useReactivateClasse } from "@/services/hooks/professeur/useReactivateClasse";
-import { ClasseCard } from "./classe-card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useClassesWithDetails } from '@/services/hooks/professeur/useClassesWithDetails';
+import { useDeactivateClasse } from '@/services/hooks/professeur/useDeactivateClasse';
+import { useReactivateClasse } from '@/services/hooks/professeur/useReactivateClasse';
+import { ClasseCard } from './classe-card';
+import { AddStudentModal } from './add-student-modal';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { parseAsInteger, useQueryState } from 'nuqs';
 
 const ITEMS_PER_PAGE = 6;
 
 const CARD_COLORS = [
-  "bg-[#D4F4DD]", // Vert clair
-  "bg-[#E8F8E8]", // Vert très clair
-  "bg-[#C8E6C9]", // Vert menthe
-  "bg-[#DCEDC8]", // Vert lime clair
+  'bg-[#D4F4DD]', // Vert clair
+  'bg-[#E8F8E8]', // Vert très clair
+  'bg-[#C8E6C9]', // Vert menthe
+  'bg-[#DCEDC8]', // Vert lime clair
 ];
 
 interface ClasseListProps {
@@ -25,20 +26,38 @@ interface ClasseListProps {
 
 export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
   const router = useRouter();
-  const { data: classes, isLoading, isError } = useClasses();
+  const { data: classes, isLoading, isError } = useClassesWithDetails();
   const { mutate: deactivateClasseMutation } = useDeactivateClasse();
   const { mutate: reactivateClasseMutation } = useReactivateClasse();
 
+  const [isAddStudentModalOpen, setAddStudentModalOpen] = useState(false);
+  const [selectedClasseId, setSelectedClasseId] = useState<number | null>(null);
+
   // Pagination avec nuqs
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
 
   const enrichedClasses = useMemo(() => {
     if (!classes) return [];
 
-    return classes.map((classe, index) => ({
-      ...classe,
-      cardColor: CARD_COLORS[index % CARD_COLORS.length],
-    }));
+    // Filtrer les classes sans ID valide et éviter les doublons
+    const seenIds = new Set<number>();
+    return classes
+      .filter(classe => {
+        if (!classe || classe.id == null) {
+          console.warn('Classe sans ID valide ignorée:', classe);
+          return false;
+        }
+        if (seenIds.has(classe.id)) {
+          console.warn(`Classe dupliquée avec l'ID ${classe.id} ignorée`);
+          return false;
+        }
+        seenIds.add(classe.id);
+        return true;
+      })
+      .map((classe, index) => ({
+        ...classe,
+        cardColor: CARD_COLORS[index % CARD_COLORS.length],
+      }));
   }, [classes]);
 
   // Calculer les classes paginées
@@ -55,6 +74,10 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
     router.push(`/teacher/classes/${classeId}`);
   };
 
+  const handleOpen = (classeId: number) => {
+    router.push(`/teacher/classes/${classeId}`);
+  };
+
   const handleDeactivate = (classeId: number) => {
     deactivateClasseMutation(classeId);
   };
@@ -63,17 +86,22 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
     reactivateClasseMutation(classeId);
   };
 
+  const handleAddStudent = (classeId: number) => {
+    setSelectedClasseId(classeId);
+    setAddStudentModalOpen(true);
+  };
+
   const handleNextPage = () => {
     if (page < totalPages) {
       setPage(page + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handlePrevPage = () => {
     if (page > 1) {
       setPage(page - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -104,7 +132,7 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
             Mes Classes
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {enrichedClasses.length} classe{enrichedClasses.length > 1 ? "s" : ""}
+            {enrichedClasses.length} classe{enrichedClasses.length > 1 ? 's' : ''}
             {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
           </p>
         </div>
@@ -121,14 +149,16 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
 
       {/* Grille des classes paginées */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {paginatedClasses.map((classe) => (
+        {paginatedClasses.map(classe => (
           <ClasseCard
-            key={classe.id}
+            key={`classe-${classe.id}`}
             classe={classe}
             cardColor={classe.cardColor}
             onViewDetails={handleViewDetails}
+            onOpen={handleOpen}
             onDeactivate={handleDeactivate}
             onReactivate={handleReactivate}
+            onAddStudent={handleAddStudent}
           />
         ))}
       </div>
@@ -147,26 +177,24 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
           </Button>
 
           <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-              (pageNum) => (
-                <Button
-                  key={pageNum}
-                  variant={pageNum === page ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => {
-                    setPage(pageNum);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className={`rounded-full ${
-                    pageNum === page
-                      ? "bg-green-600 hover:bg-green-700 text-white"
-                      : ""
-                  }`}
-                >
-                  {pageNum}
-                </Button>
-              ),
-            )}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+              <Button
+                key={pageNum}
+                variant={pageNum === page ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => {
+                  setPage(pageNum);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`rounded-full ${
+                  pageNum === page
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : ''
+                }`}
+              >
+                {pageNum}
+              </Button>
+            ))}
           </div>
 
           <Button
@@ -179,6 +207,16 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
             <ChevronRight className="w-5 h-5" />
           </Button>
         </div>
+      )}
+
+      {/* Modal pour ajouter un élève */}
+      {selectedClasseId && (
+        <AddStudentModal
+          classeId={selectedClasseId}
+          classeName={enrichedClasses.find(c => c.id === selectedClasseId)?.nom || ''}
+          isOpen={isAddStudentModalOpen}
+          onClose={() => setAddStudentModalOpen(false)}
+        />
       )}
     </div>
   );

@@ -6,11 +6,13 @@ import { useState } from "react";
 import { useClasse } from "@/services/hooks/professeur/useClasse";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Brain, BookText, Upload, Users, MessageSquarePlus } from "lucide-react";
+import { ArrowLeft, Brain, BookText, Upload, Users, MessageSquarePlus, PlusIcon, FileQuestion } from "lucide-react";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { QuizAISection } from "@/components/pages/teacher-classes/quiz-ai-section";
 import { SendMessageModal } from "@/components/pages/teacher-classes/send-message-modal";
 import { StudentSection } from "@/components/pages/teacher-classes/student-section";
+import { EmptyState } from "@/components/ui/empty-state";
+import Link from "next/link";
 
 const ClasseDetailPage = () => {
   const params = useParams();
@@ -104,7 +106,7 @@ const ClasseDetailPage = () => {
               <QuizAISection classeDetails={classeDetails} />
             )}
             {activeTab === "Quiz manuelle" && (
-              <div>Contenu pour Quiz manuelle</div>
+              <ManualQuizSection classeId={classeId} classeName={classeDetails.nom} />
             )}
             {activeTab === "Document téléchargé" && (
               <div>Contenu pour Document téléchargé</div>
@@ -122,6 +124,54 @@ const ClasseDetailPage = () => {
         classeId={classeId}
       />
     </>
+  );
+};
+
+
+interface ManualQuizSectionProps {
+  classeId: number;
+  classeName: string;
+}
+
+const ManualQuizSection = ({ classeId, classeName }: ManualQuizSectionProps) => {
+  return (
+    <div className="space-y-6">
+      <div className="px-4 sm:px-0">
+        <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
+          <div className="relative w-full max-w-2xl">
+            <EmptyState
+              title="Aucun quiz manuel pour le moment"
+              description="Crée ton premier quiz manuel pour proposer des exercices sur mesure à tes élèves."
+              icons={[<FileQuestion key="file" size={20} />]}
+              size="default"
+              theme="light"
+              variant="default"
+              className="mx-auto max-w-[50rem]"
+            />
+          </div>
+
+          <div className="text-center px-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              Quiz manuels
+            </h2>
+            <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
+              Crée des quiz personnalisés adaptés à {classeName}.
+            </p>
+
+            <Button
+              asChild
+              size="lg"
+              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+            >
+              <Link href={`/teacher/classes/${classeId}/quiz/manual`}>
+                <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Créer un quiz manuel
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

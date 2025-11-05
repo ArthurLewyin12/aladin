@@ -22,10 +22,14 @@ interface PlanningCalendarViewProps {
   className?: string;
 }
 
-const timeSlots = Array.from({ length: 14 }, (_, i) => {
-  const hour = 7 + i;
-  return `${String(hour).padStart(2, "0")}:00`;
-});
+// Générer les créneaux de 06h à 23h (même jour) + 00h à 05h (lendemain)
+const timeSlots = [
+  ...Array.from({ length: 18 }, (_, i) => {
+    const hour = 6 + i; // 6h à 23h
+    return `${String(hour).padStart(2, "0")}:00`;
+  }),
+  "00:00", // Minuit
+];
 
 const subjectColors: Record<number, string> = {
   0: "bg-blue-50 border-l-4 border-l-blue-500 text-blue-900 hover:bg-blue-100",
@@ -64,8 +68,15 @@ export function PlanningCalendarView({
 
   const getRowFromTime = (time: string) => {
     const [hour, minute] = time.split(":").map(Number);
-    const totalMinutesFromStart = (hour - 7) * 60 + minute;
-    return Math.floor(totalMinutesFromStart / 60) + 2;
+    
+    // Gérer les heures après minuit (0h-5h) comme étant à la fin de la journée
+    let adjustedHour = hour;
+    if (hour >= 0 && hour < 6) {
+      adjustedHour = hour + 24; // 0h devient 24h, 1h devient 25h, etc.
+    }
+    
+    const totalMinutesFromStart = (adjustedHour - 6) * 60 + minute;
+    return totalMinutesFromStart / 60 + 2; // Retourner la position exacte avec décimales
   };
 
   const getCurrentTimeRow = () => {
@@ -73,9 +84,15 @@ export function PlanningCalendarView({
     const hours = now.getHours();
     const minutes = now.getMinutes();
 
-    if (hours < 7 || hours >= 21) return null;
+    // Gérer les heures après minuit (0h-5h)
+    let adjustedHours = hours;
+    if (hours >= 0 && hours < 6) {
+      adjustedHours = hours + 24;
+    }
 
-    const totalMinutesFromStart = (hours - 7) * 60 + minutes;
+    if (adjustedHours < 6 || adjustedHours >= 24) return null;
+
+    const totalMinutesFromStart = (adjustedHours - 6) * 60 + minutes;
     const row = totalMinutesFromStart / 60 + 2;
     return row;
   };
@@ -213,7 +230,7 @@ export function PlanningCalendarView({
                         )}
                         style={{
                           gridColumn: gridColumn,
-                          gridRow: `${gridRowStart} / span ${rowSpan}`,
+                          gridRow: `${gridRowStart} / ${gridRowEnd}`,
                         }}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}

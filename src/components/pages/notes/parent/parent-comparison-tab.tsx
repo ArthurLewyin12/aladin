@@ -113,21 +113,37 @@ export function ParentComparisonTab({ enfantId }: ParentComparisonTabProps) {
 
     if (sortedAladinNotes.length === 0) return [];
 
+    // Grouper les notes par date pour éviter les doublons sur le graphique
+    const notesByDate = new Map<string, NoteQuiz[]>();
+    sortedAladinNotes.forEach((note) => {
+      if (!notesByDate.has(note.date)) {
+        notesByDate.set(note.date, []);
+      }
+      notesByDate.get(note.date)!.push(note);
+    });
+
     const aladinMatieresCumulatives = new Map<string, number[]>();
     const dataPoints: Array<{ date: string; [key: string]: string | number }> =
       [];
 
-    sortedAladinNotes.forEach((note) => {
-      const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
+    // Parcourir les dates uniques
+    Array.from(notesByDate.keys()).forEach((date) => {
+      const notesForDate = notesByDate.get(date)!;
 
-      if (!aladinMatieresCumulatives.has(note.matiere!)) {
-        aladinMatieresCumulatives.set(note.matiere!, []);
-      }
+      // Traiter toutes les notes de cette date
+      notesForDate.forEach((note) => {
+        const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
 
-      aladinMatieresCumulatives.get(note.matiere!)!.push(noteSur20);
+        if (!aladinMatieresCumulatives.has(note.matiere!)) {
+          aladinMatieresCumulatives.set(note.matiere!, []);
+        }
 
+        aladinMatieresCumulatives.get(note.matiere!)!.push(noteSur20);
+      });
+
+      // Créer UN SEUL point de données pour cette date
       const dataPoint: { date: string; [key: string]: string | number } = {
-        date: note.date,
+        date: date,
       };
 
       aladinMatieresCumulatives.forEach((notes, matiere) => {

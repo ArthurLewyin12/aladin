@@ -22,13 +22,16 @@ export function QuizList() {
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-  // Calculer les quiz paginés
+  // Trier les quiz par ID décroissant (plus récents en premier) et calculer la pagination
   const { paginatedQuizzes, totalPages } = useMemo(() => {
+    // Trier par ID décroissant (les plus récents en premier)
+    const sortedQuizzes = [...quizzes].sort((a, b) => b.id - a.id);
+    
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return {
-      paginatedQuizzes: quizzes.slice(startIndex, endIndex),
-      totalPages: Math.ceil(quizzes.length / ITEMS_PER_PAGE),
+      paginatedQuizzes: sortedQuizzes.slice(startIndex, endIndex),
+      totalPages: Math.ceil(sortedQuizzes.length / ITEMS_PER_PAGE),
     };
   }, [quizzes, page]);
 

@@ -22,13 +22,16 @@ export function CourseList() {
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-  // Calculer les cours paginés
+  // Trier les cours par ID décroissant (plus récents en premier) et calculer la pagination
   const { paginatedCourses, totalPages } = useMemo(() => {
+    // Trier par ID décroissant (les plus récents en premier)
+    const sortedCourses = [...courses].sort((a, b) => b.id - a.id);
+    
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return {
-      paginatedCourses: courses.slice(startIndex, endIndex),
-      totalPages: Math.ceil(courses.length / ITEMS_PER_PAGE),
+      paginatedCourses: sortedCourses.slice(startIndex, endIndex),
+      totalPages: Math.ceil(sortedCourses.length / ITEMS_PER_PAGE),
     };
   }, [courses, page]);
 

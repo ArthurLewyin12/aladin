@@ -110,14 +110,14 @@ export type GetClasseRawResponse = {
       is_active?: boolean;
     };
   }>;
-  quizzes?: any[];
+  quizzes?: ClasseQuiz[];
 };
 
 // Type pour la réponse normalisée (format attendu par les composants)
 export type GetClasseResponse = Classe & {
   members: ClasseMember[];
   niveau?: Niveau;
-  quizzes?: any[];
+  quizzes?: ClasseQuiz[];
   matieres?: Matiere[];
 };
 
@@ -187,6 +187,33 @@ export type ReactivateMemberResponse = {
 /**
  * Types pour les quiz de classe
  */
+export type ClasseQuiz = {
+  id: number;
+  titre: string;
+  difficulte: string;
+  temps: number;
+  matiere_id: number;
+  chapitres_ids: number[];
+  classe_id: number;
+  is_active: boolean;
+  type?: "manual" | "ai"; // Type du quiz: manuel ou généré par IA
+  data?: {
+    qcm: Array<{
+      question: string;
+      reponses: Array<{
+        texte: string;
+        correct: boolean;
+      }>;
+    }>;
+    questions_approfondissement: Array<{
+      question: string;
+      reponse: string;
+    }>;
+  };
+  created_at: string;
+  updated_at?: string;
+};
+
 export type CreateManualQuizPayload = {
   titre: string;
   difficulte: string;

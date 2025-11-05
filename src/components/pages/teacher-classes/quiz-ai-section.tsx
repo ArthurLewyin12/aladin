@@ -30,15 +30,22 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
 
   const { quizzes = [], matieres = [] } = classeDetails;
 
-  // Calculer les quiz paginés
+  // TODO: Filtrer uniquement les quiz générés par IA une fois que le backend ajoute le champ 'type'
+  // Pour le moment, on affiche tous les quiz
+  const aiQuizzes = quizzes;
+
+  // Trier les quiz par ID décroissant (plus récents en premier) et calculer la pagination
   const { paginatedQuizzes, totalPages } = useMemo(() => {
+    // Trier par ID décroissant (les plus récents en premier)
+    const sortedQuizzes = [...aiQuizzes].sort((a, b) => b.id - a.id);
+    
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return {
-      paginatedQuizzes: quizzes.slice(startIndex, endIndex),
-      totalPages: Math.ceil(quizzes.length / ITEMS_PER_PAGE),
+      paginatedQuizzes: sortedQuizzes.slice(startIndex, endIndex),
+      totalPages: Math.ceil(sortedQuizzes.length / ITEMS_PER_PAGE),
     };
-  }, [quizzes, page]);
+  }, [aiQuizzes, page]);
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -57,15 +64,15 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
   return (
     <div className="space-y-6">
       {/* En-tête Quiz avec titre et bouton */}
-      {quizzes.length > 0 && (
+      {aiQuizzes.length > 0 && (
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm mb-6">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
               Quiz de la classe
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              {quizzes.length} quiz{" "}
-              {quizzes.length > 1 ? "disponibles" : "disponible"}
+              {aiQuizzes.length} quiz{" "}
+              {aiQuizzes.length > 1 ? "disponibles" : "disponible"}
             </p>
           </div>
           <Button
@@ -80,7 +87,7 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
       )}
 
       {/* Contenu principal */}
-      {quizzes.length === 0 ? (
+      {aiQuizzes.length === 0 ? (
         /* État vide - Pas de quiz */
         <div className="px-4 sm:px-0">
           <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
@@ -119,9 +126,9 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
       ) : (
         <div className="space-y-6">
           {/* Compteur avec pagination */}
-          {quizzes.length > 0 && (
+          {aiQuizzes.length > 0 && (
             <div className="text-sm text-gray-600">
-              {quizzes.length} quiz{quizzes.length > 1 ? "s" : ""}
+              {aiQuizzes.length} quiz{aiQuizzes.length > 1 ? "s" : ""}
               {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </div>
           )}
@@ -131,13 +138,14 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
             {paginatedQuizzes.map((quiz, index) => {
               const subject =
                 matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
+              const numberOfQuestions = quiz.data?.qcm?.length || 0;
 
               return (
                 <QuizCard
                   key={quiz.id}
                   title={quiz.titre}
                   subject={subject}
-                  numberOfQuestions={quiz.nombre_questions}
+                  numberOfQuestions={numberOfQuestions}
                   duration={quiz.temps}
                   quizId={quiz.id.toString()}
                   isActive={quiz.is_active}

@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, User, Mail, GraduationCap } from "lucide-react";
+import { PlusIcon, User, Mail, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Users } from "lucide-react";
@@ -15,6 +15,9 @@ import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 import { useQueryClient } from "@tanstack/react-query";
 import { StudentCard } from "./student-card";
+import { parseAsInteger, useQueryState } from "nuqs";
+
+const ITEMS_PER_PAGE = 9;
 
 interface StudentSectionProps {
   classeDetails: GetClasseResponse;
@@ -24,11 +27,27 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
   const router = useRouter();
   const [isAddStudentModalOpen, setAddStudentModalOpen] = useState(false);
 
+  // Pagination avec nuqs
+  const [page, setPage] = useQueryState("studentPage", parseAsInteger.withDefault(1));
+
   const { members = [], niveau } = classeDetails;
 
   const queryClient = useQueryClient();
   const { mutate: deactivateMember } = useDeactivateMember();
   const { mutate: reactivateMember } = useReactivateMember();
+
+  // Trier les membres par date (plus récents en premier) et calculer la pagination
+  const { paginatedMembers, totalPages } = useMemo(() => {
+    // Trier par ID décroissant (les plus récents en premier)
+    const sortedMembers = [...members].sort((a, b) => b.id - a.id);
+    
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedMembers: sortedMembers.slice(startIndex, endIndex),
+      totalPages: Math.ceil(sortedMembers.length / ITEMS_PER_PAGE),
+    };
+  }, [members, page]);
 
   const handleDeactivateMember = (memberId: number) => {
     deactivateMember(
@@ -76,6 +95,20 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
     );
   };
 
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête Membres avec titre et bouton */}
@@ -87,6 +120,7 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
               {members.length} élève{members.length > 1 ? "s" : ""}
+              {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </p>
           </div>
           <Button
@@ -138,17 +172,68 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {members.map((member) => (
-            <StudentCard
-              key={member.id}
-              member={member}
-              niveau={niveau}
-              onDeactivate={handleDeactivateMember}
-              onReactivate={handleReactivateMember}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedMembers.map((member, index) => (
+              <StudentCard
+                key={member.id}
+                member={member}
+                niveau={niveau}
+                index={(page - 1) * ITEMS_PER_PAGE + index}
+                onDeactivate={handleDeactivateMember}
+                onReactivate={handleReactivateMember}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePrevPage}
+                disabled={page === 1}
+                className="rounded-full"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (pageNum) => (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === page ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => {
+                        setPage(pageNum);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className={`rounded-full ${
+                        pageNum === page
+                          ? "bg-green-600 hover:bg-green-700 text-white"
+                          : ""
+                      }`}
+                    >
+                      {pageNum}
+                    </Button>
+                  ),
+                )}
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+                className="rounded-full"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       <AddStudentModal

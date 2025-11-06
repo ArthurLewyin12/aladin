@@ -57,9 +57,7 @@ export default function SavedCoursePage() {
     if (!data || !data.text) return "";
     const conclusionIndex = data.text.indexOf("CONCLUSION");
     if (conclusionIndex !== -1) {
-      return data.text
-        .substring(conclusionIndex + "CONCLUSION".length)
-        .trim();
+      return data.text.substring(conclusionIndex + "CONCLUSION".length).trim();
     }
     // Fallback: take first 3 non-title lines
     return parsedContent
@@ -171,14 +169,16 @@ export default function SavedCoursePage() {
         <main className="w-full mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Course Content Card */}
           <article className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-10 lg:p-14 mb-6">
-            <div className={`
+            <div
+              className={`
               prose prose-base sm:prose-base md:prose-lg lg:prose-lg max-w-none
               prose-headings:scroll-mt-28 prose-headings:font-semibold prose-headings:text-orange-600
               prose-p:my-3 prose-p:leading-7 prose-p:text-gray-800
               prose-strong:text-orange-700 prose-strong:font-semibold
               prose-ul:my-4 prose-li:my-1
               prose-ol:my-4 prose-ol:list-decimal
-            `}>
+            `}
+            >
               {parsedContent.map((line) => (
                 <div key={line.id}>
                   {line.type === "title" ? (

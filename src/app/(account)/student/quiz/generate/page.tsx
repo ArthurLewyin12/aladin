@@ -544,10 +544,10 @@ export default function GenerateQuizPage() {
                     <h2 className="text-3xl font-bold text-gray-800 text-center underline decoration-2 underline-offset-4">
                       Question {currentQuestionIndex + 1}
                     </h2>
-                    <QuizReader
+                    {/* <QuizReader
                       question={currentQuestion}
                       questionIndex={currentQuestionIndex}
-                    />
+                    /> */}
                   </div>
                   <p className="text-2xl md:text-3xl text-gray-900 text-center leading-relaxed">
                     {currentQuestion.question}

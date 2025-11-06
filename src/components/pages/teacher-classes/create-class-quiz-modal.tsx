@@ -58,12 +58,7 @@ const quizFormSchema = z.object({
   chapter_id: z.string().min(1, "Le chapitre est requis."),
   difficulty: z.string().min(1, "La difficulté est requise."),
   nombre_questions: z.string().min(1, "Le nombre de questions est requis."),
-  temps: z
-    .string()
-    .min(1, "Le temps est requis.")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 30, {
-      message: "Le temps doit être d'au moins 30 secondes.",
-    }),
+  temps: z.string().min(1, "Le temps par question est requis."),
 });
 
 type QuizFormValues = z.infer<typeof quizFormSchema>;
@@ -101,7 +96,7 @@ export const CreateClassQuizModal = ({
       chapter_id: undefined,
       difficulty: undefined,
       nombre_questions: "10",
-      temps: "30",
+      temps: "60",
     },
   });
 
@@ -120,7 +115,7 @@ export const CreateClassQuizModal = ({
           title: data.title,
           difficulty: data.difficulty as "Facile" | "Moyen" | "Difficile",
           nombre_questions: Number(data.nombre_questions),
-          temps: Number(data.temps),
+          temps: Number(data.temps) * Number(data.nombre_questions),
           chapter_id: Number(data.chapter_id),
           document_file: selectedFile || undefined,
         },
@@ -165,7 +160,10 @@ export const CreateClassQuizModal = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm text-gray-600">Matière</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
                       <SelectValue placeholder="Sélectionner une matière" />
@@ -173,7 +171,10 @@ export const CreateClassQuizModal = ({
                   </FormControl>
                   <SelectContent>
                     {matieres.map((matiere) => (
-                      <SelectItem key={matiere.id} value={matiere.id.toString()}>
+                      <SelectItem
+                        key={matiere.id}
+                        value={matiere.id.toString()}
+                      >
                         {matiere.libelle}
                       </SelectItem>
                     ))}
@@ -189,7 +190,9 @@ export const CreateClassQuizModal = ({
             name="chapter_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm text-gray-600">Chapitre</FormLabel>
+                <FormLabel className="text-sm text-gray-600">
+                  Chapitre
+                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
@@ -273,7 +276,10 @@ export const CreateClassQuizModal = ({
                 <FormLabel className="text-sm text-gray-600">
                   Difficulté
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
                       <SelectValue placeholder="Difficulté" />
@@ -313,21 +319,49 @@ export const CreateClassQuizModal = ({
           <FormField
             control={form.control}
             name="temps"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm text-gray-600">
-                  Temps (sec)
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    className="mt-1 bg-gray-50 border-gray-200"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const nombreQuestions = form.watch("nombre_questions");
+              const tempsParQuestion = field.value;
+              const durationTotal =
+                Number(tempsParQuestion) * Number(nombreQuestions || 0);
+              const minutes = Math.floor(durationTotal / 60);
+              const seconds = durationTotal % 60;
+
+              const displayDuration = () => {
+                if (durationTotal < 60) {
+                  return `${durationTotal} sec`;
+                } else if (seconds === 0) {
+                  return `${minutes} min`;
+                } else {
+                  return `${minutes} min ${seconds} sec`;
+                }
+              };
+
+              return (
+                <FormItem>
+                  <FormLabel className="text-sm text-gray-600">
+                    Temps par question
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="mt-1 bg-gray-50 border-gray-200">
+                        <SelectValue placeholder="Sélectionner la durée" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="30">30 secondes</SelectItem>
+                      <SelectItem value="60">60 secondes (1 min)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {nombreQuestions && tempsParQuestion && durationTotal > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      💡 Durée totale du quiz : {displayDuration()}
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
       </form>

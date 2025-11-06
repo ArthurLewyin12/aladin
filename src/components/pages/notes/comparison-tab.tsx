@@ -72,13 +72,16 @@ export function ComparisonTab() {
     const aladinMoyennes = new Map<string, number>();
     aladinByMatiere.forEach((notes, matiere) => {
       const moyenne = notes.reduce((acc, n) => acc + n, 0) / notes.length;
-      aladinMoyennes.set(matiere, moyenne);
+      // Arrondir à 1 décimale pour éviter les décimales trop longues
+      aladinMoyennes.set(matiere, Math.round(moyenne * 10) / 10);
     });
 
     const classeByMatiere = new Map(
       classeStatsData.data.moyennes_par_matiere.map((item) => [
         item.matiere.libelle,
-        parseFloat(item.moyenne as any),
+        typeof item.moyenne === "number"
+          ? item.moyenne
+          : parseFloat(String(item.moyenne)),
       ]),
     );
 
@@ -88,11 +91,13 @@ export function ComparisonTab() {
       ...classeByMatiere.keys(),
     ]);
 
-    return Array.from(allMatieres).map((matiere) => ({
+    const result = Array.from(allMatieres).map((matiere) => ({
       matiere,
       note_aladin: aladinMoyennes.get(matiere) ?? null, // Changed || 0 to ?? null
       note_classe: classeByMatiere.get(matiere) ?? null, // Changed || 0 to ?? null
     }));
+
+    return result;
   }, [aladinData, classeStatsData]);
 
   // Préparer les données pour le line chart (évolution temporelle par matière)
@@ -176,14 +181,15 @@ export function ComparisonTab() {
     dataPoints.forEach((point) => {
       aladinMatieresCumulatives.forEach((_, matiere) => {
         const moyenneClasse = classeMoyennesParMatiere.get(matiere);
-        if (moyenneClasse !== undefined) {
-          const actualMoyenneClasse: number = parseFloat(moyenneClasse as any);
+        if (moyenneClasse !== undefined && moyenneClasse !== null) {
+          const actualMoyenneClasse: number =
+            typeof moyenneClasse === "number"
+              ? moyenneClasse
+              : parseFloat(String(moyenneClasse));
           point[`${matiere} (Classe)`] =
             Math.round(actualMoyenneClasse * 10) / 10;
-        } else {
-          // If no class average for this subject, ensure it's not added or is null
-          point[`${matiere} (Classe)`] = 0; // Changed from undefined to 0
         }
+        // Ne pas ajouter la clé si pas de moyenne de classe pour éviter d'afficher 0 sur le graphe
       });
     });
 
@@ -215,12 +221,14 @@ export function ComparisonTab() {
 
     const ecart = moyenneAladin - moyenneClasse;
 
-    return {
+    const stats = {
       moyenneAladin: Math.round(moyenneAladin * 10) / 10,
       moyenneClasse: Math.round(moyenneClasse * 10) / 10,
       ecart: Math.round(ecart * 10) / 10,
       meilleurPlateforme: moyenneAladin > moyenneClasse ? "Aladin" : "Classe",
     };
+
+    return stats;
   }, [aladinData, classeStatsData]);
 
   if (aladinLoading || classeLoading) {

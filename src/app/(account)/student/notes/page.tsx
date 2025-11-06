@@ -64,8 +64,7 @@ export default function NotesPage() {
         <div className="text-center mb-8 sm:mb-12 px-2">
           <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto leading-relaxed">
             Consulte tes notes de quiz Aladin, ajoute tes notes de classe et
-            compare ta progression sur les deux plateformes pour mieux suivre
-            ton évolution.
+            suis ton évolution.
           </p>
         </div>
 

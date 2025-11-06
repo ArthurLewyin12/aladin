@@ -53,9 +53,10 @@ export default function AladinLoginForm() {
         console.error("Login error", error);
 
         // Extract error message from API response
-        const errorMessage = error?.response?.data?.message ||
-                            error?.message ||
-                            "Vos identifiants sont incorrects. Veuillez réessayer.";
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Vos identifiants sont incorrects. Veuillez réessayer.";
 
         toast({
           variant: "error",

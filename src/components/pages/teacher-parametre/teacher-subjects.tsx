@@ -1,25 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSubjects } from "@/services/hooks/professeur/useSubjects";
+import {
+  useSubjects,
+  useSubjectsGeneric,
+} from "@/services/hooks/professeur/useSubjects";
 import { useSetSubjects } from "@/services/hooks/professeur/useSetSubjects";
-import { useNiveaux } from "@/services/hooks/niveaux/useNiveaux";
-import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieresByNiveau";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function TeacherSubjects() {
-  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
   const [selectedMatieres, setSelectedMatieres] = useState<number[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -27,14 +20,10 @@ export default function TeacherSubjects() {
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
   const { mutate: setSubjectsMutation } = useSetSubjects();
 
-  // Récupérer les niveaux
-  const { data: niveauxData } = useNiveaux();
-  const niveaux = niveauxData?.niveaux || [];
-
-  // Récupérer les matières du niveau sélectionné
-  const { data: matieresData, isLoading: isLoadingMatieres } =
-    useMatieresByNiveau(selectedNiveau ? parseInt(selectedNiveau) : null);
-  const matieres = matieresData?.matieres || [];
+  // Récupérer toutes les matières disponibles (sans filtrage par niveau)
+  const { data: matieresGenericData, isLoading: isLoadingMatieres } =
+    useSubjectsGeneric();
+  const matieres = matieresGenericData?.matieres || [];
 
   const subjectsResponse = subjectsData || { matieres: [], count: 0, max: 3 };
   const currentSubjectIds = subjectsResponse.matieres.map((m) => m.id);
@@ -47,9 +36,7 @@ export default function TeacherSubjects() {
 
   const toggleMatiere = (matiereId: number) => {
     if (selectedMatieres.includes(matiereId)) {
-      setSelectedMatieres(
-        selectedMatieres.filter((id) => id !== matiereId)
-      );
+      setSelectedMatieres(selectedMatieres.filter((id) => id !== matiereId));
     } else {
       if (selectedMatieres.length >= maxSubjects) {
         toast({
@@ -81,7 +68,7 @@ export default function TeacherSubjects() {
         onError: () => {
           setIsSaving(false);
         },
-      }
+      },
     );
   };
 
@@ -136,68 +123,47 @@ export default function TeacherSubjects() {
         </div>
       )}
 
-      {/* Sélecteur de niveau */}
+      {/* Liste de toutes les matières disponibles */}
       <div>
-        <Label htmlFor="niveau" className="text-sm font-semibold text-gray-700">
-          Sélectionner un niveau
+        <Label className="text-sm font-semibold text-gray-700">
+          Sélectionnez vos matières
         </Label>
-        <Select value={selectedNiveau} onValueChange={setSelectedNiveau}>
-          <SelectTrigger className="mt-2 w-full bg-gray-50 border-gray-200">
-            <SelectValue placeholder="Choisir un niveau" />
-          </SelectTrigger>
-          <SelectContent>
-            {niveaux.map((niveau) => (
-              <SelectItem key={niveau.id} value={niveau.id.toString()}>
-                {niveau.libelle}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Liste des matières du niveau sélectionné */}
-      {selectedNiveau && (
-        <div>
-          <Label className="text-sm font-semibold text-gray-700">
-            Matières disponibles pour {niveaux.find(n => n.id.toString() === selectedNiveau)?.libelle}
-          </Label>
-          {isLoadingMatieres ? (
-            <div className="flex justify-center py-4">
-              <Spinner size="sm" />
-            </div>
-          ) : matieres.length > 0 ? (
-            <div className="mt-2 space-y-2 max-h-64 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
-              {matieres.map((matiere) => (
-                <div
-                  key={matiere.id}
-                  className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded transition-colors"
+        {isLoadingMatieres ? (
+          <div className="flex justify-center py-8">
+            <Spinner size="sm" />
+          </div>
+        ) : matieres.length > 0 ? (
+          <div className="mt-2 space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 rounded-lg border border-gray-200">
+            {matieres.map((matiere) => (
+              <div
+                key={matiere.id}
+                className="flex items-center space-x-3 p-3 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-green-200"
+              >
+                <Checkbox
+                  id={`matiere-${matiere.id}`}
+                  checked={selectedMatieres.includes(matiere.id)}
+                  onCheckedChange={() => toggleMatiere(matiere.id)}
+                  disabled={
+                    isSaving ||
+                    (selectedMatieres.length >= maxSubjects &&
+                      !selectedMatieres.includes(matiere.id))
+                  }
+                />
+                <label
+                  htmlFor={`matiere-${matiere.id}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer flex-1"
                 >
-                  <Checkbox
-                    id={`matiere-${matiere.id}`}
-                    checked={selectedMatieres.includes(matiere.id)}
-                    onCheckedChange={() => toggleMatiere(matiere.id)}
-                    disabled={
-                      isSaving ||
-                      (selectedMatieres.length >= maxSubjects &&
-                        !selectedMatieres.includes(matiere.id))
-                    }
-                  />
-                  <label
-                    htmlFor={`matiere-${matiere.id}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer flex-1"
-                  >
-                    {matiere.libelle}
-                  </label>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 mt-2 p-3 bg-gray-50 rounded-lg">
-              Aucune matière disponible pour ce niveau
-            </p>
-          )}
-        </div>
-      )}
+                  {matiere.libelle}
+                </label>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 mt-2 p-3 bg-gray-50 rounded-lg">
+            Aucune matière disponible
+          </p>
+        )}
+      </div>
 
       {/* Boutons d'action */}
       <div className="flex gap-3 pt-4">
@@ -228,9 +194,11 @@ export default function TeacherSubjects() {
       </div>
 
       {/* Message d'information */}
-      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-xs text-blue-700">
-          <span className="font-semibold">Important:</span> Vous devez définir vos matières avant de pouvoir créer des classes. Les matières sélectionnées ici doivent correspondre au niveau de vos classes.
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-700">
+          <span className="font-semibold">💡 Info:</span> Sélectionnez les
+          matières que vous enseignez. Vous pourrez ensuite créer des classes et
+          y associer ces matières selon le niveau de vos élèves.
         </p>
       </div>
     </div>

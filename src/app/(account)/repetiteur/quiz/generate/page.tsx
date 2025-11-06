@@ -63,8 +63,8 @@ export default function RepetiteurGenerateQuizPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [userAnswers, setUserAnswers] = useState<
@@ -73,19 +73,19 @@ export default function RepetiteurGenerateQuizPage() {
 
   const router = useRouter();
   const { startTracking, stopTracking } = useTimeTracking();
-  
+
   // Récupérer l'ID de l'élève depuis l'URL (fallback si cache pas à jour)
   const [eleveIdFromUrl] = useQueryState("eleveId", parseAsInteger);
-  
+
   // Récupérer l'élève actif
   const { data: elevesData, isLoading: isLoadingEleves } = useEleves();
   const eleveActif = elevesData?.eleve_actif;
-  
+
   // Si pas d'élève actif mais qu'on a un ID dans l'URL, trouver cet élève
-  const eleveDansUrl = eleveIdFromUrl 
-    ? elevesData?.eleves?.find(e => e.id === eleveIdFromUrl)
+  const eleveDansUrl = eleveIdFromUrl
+    ? elevesData?.eleves?.find((e) => e.id === eleveIdFromUrl)
     : null;
-  
+
   // Utiliser l'élève actif en priorité, sinon celui de l'URL
   const eleveUtilise = eleveActif || eleveDansUrl;
 
@@ -106,7 +106,9 @@ export default function RepetiteurGenerateQuizPage() {
   }, [step, activeQuizId, selectedChapitreId, selectedDifficulty]);
 
   const { data: matieresData, isLoading: isLoadingMatieres } =
-    useMatieresByNiveau(eleveUtilise?.niveau?.id || eleveUtilise?.niveau_id || 0);
+    useMatieresByNiveau(
+      eleveUtilise?.niveau?.id || eleveUtilise?.niveau_id || 0,
+    );
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
 
@@ -143,7 +145,7 @@ export default function RepetiteurGenerateQuizPage() {
     const payload: QuizGeneratePayload = {
       chapter_id: selectedChapitreId,
       difficulty: selectedDifficulty as "Facile" | "Moyen" | "Difficile",
-      document_file: selectedFile || undefined,
+      // document_file: selectedFile || undefined,
     };
 
     try {
@@ -160,8 +162,8 @@ export default function RepetiteurGenerateQuizPage() {
       setQuizQuestions(result.questions);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
-      setUseDocument(false);
-      setSelectedFile(null);
+      // setUseDocument(false);
+      // setSelectedFile(null);
       setStep("quiz");
     } catch (error: any) {
       console.error("Erreur lors de la génération du quiz", error);
@@ -257,7 +259,7 @@ export default function RepetiteurGenerateQuizPage() {
     setSelectedChapitreId(null);
     setSelectedDifficulty(null);
   };
-  
+
   // Hook pour empêcher la navigation pendant le quiz
   const { ConfirmationDialog, interceptNavigation } = usePreventNavigation({
     when: step === "quiz" && quizQuestions.length > 0,
@@ -339,7 +341,11 @@ export default function RepetiteurGenerateQuizPage() {
                   handleConfigBack();
                 } else if (step === "quiz") {
                   // Intercepter la navigation pendant le quiz
-                  if (!interceptNavigation(`/repetiteur/students/${eleveUtilise?.id}`)) {
+                  if (
+                    !interceptNavigation(
+                      `/repetiteur/students/${eleveUtilise?.id}`,
+                    )
+                  ) {
                     return;
                   }
                   setStep("config");
@@ -505,8 +511,8 @@ export default function RepetiteurGenerateQuizPage() {
                 </RadioGroup>
               </div>
 
-              {/* Checkbox et FileUpload pour document optionnel */}
-              {chapitres.length > 0 && (
+              {/* Checkbox et FileUpload pour document optionnel - MASQUÉ POUR LES RÉPÉTITEURS */}
+              {/* {chapitres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-300">
                   <div className="bg-green-50 rounded-lg p-4 border-2 border-green-300">
                     <div className="flex items-start space-x-3 mb-4">
@@ -549,7 +555,7 @@ export default function RepetiteurGenerateQuizPage() {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div className="text-center pt-4">
                 <Button

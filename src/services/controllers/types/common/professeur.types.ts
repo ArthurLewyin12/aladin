@@ -30,6 +30,16 @@ export type SetSubjectsResponse = {
   matieres: MatiereEnseignee[];
 };
 
+export type MatiereGeneric = {
+  id: number;
+  libelle: string;
+};
+
+export type GetSubjectsGenericResponse = {
+  matieres: MatiereGeneric[];
+  count: number;
+};
+
 /**
  * Types pour les classes
  */

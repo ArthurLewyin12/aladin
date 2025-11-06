@@ -32,30 +32,32 @@ export default function RepetiteurRevisionPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const router = useRouter();
   const { setPendingDocument } = useDocumentUpload();
-  
+
   // Récupérer l'ID de l'élève depuis l'URL (fallback si cache pas à jour)
   const [eleveIdFromUrl] = useQueryState("eleveId", parseAsInteger);
-  
+
   // Récupérer l'élève actif
   const { data: elevesData, isLoading: isLoadingEleves } = useEleves();
   const eleveActif = elevesData?.eleve_actif;
-  
+
   // Si pas d'élève actif mais qu'on a un ID dans l'URL, trouver cet élève
-  const eleveDansUrl = eleveIdFromUrl 
-    ? elevesData?.eleves?.find(e => e.id === eleveIdFromUrl)
+  const eleveDansUrl = eleveIdFromUrl
+    ? elevesData?.eleves?.find((e) => e.id === eleveIdFromUrl)
     : null;
-  
+
   // Utiliser l'élève actif en priorité, sinon celui de l'URL
   const eleveUtilise = eleveActif || eleveDansUrl;
 
   // Fetching data with hooks en utilisant le niveau de l'élève utilisé
   const { data: matieresData, isLoading: isLoadingMatieres } =
-    useMatieresByNiveau(eleveUtilise?.niveau?.id || eleveUtilise?.niveau_id || 0);
+    useMatieresByNiveau(
+      eleveUtilise?.niveau?.id || eleveUtilise?.niveau_id || 0,
+    );
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
 
@@ -87,7 +89,8 @@ export default function RepetiteurRevisionPage() {
   const handleStart = () => {
     if (selectedChapitreId) {
       // Stocker le document dans le store Zustand si présent
-      setPendingDocument(selectedFile);
+      // setPendingDocument(selectedFile);
+      setPendingDocument(null);
       // Rediriger vers la page de génération du répétiteur
       router.push(`/repetiteur/cours/${selectedChapitreId}`);
     }
@@ -278,8 +281,8 @@ export default function RepetiteurRevisionPage() {
                   ))}
                 </RadioGroup>
 
-                {/* Option document */}
-                <div className="border-t pt-6">
+                {/* Option document - MASQUÉ POUR LES RÉPÉTITEURS */}
+                {/* <div className="border-t pt-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <Checkbox
                       id="use-document"
@@ -306,7 +309,7 @@ export default function RepetiteurRevisionPage() {
                       selectedFile={selectedFile}
                     />
                   )}
-                </div>
+                </div> */}
               </>
             )}
 
@@ -325,4 +328,3 @@ export default function RepetiteurRevisionPage() {
     </div>
   );
 }
-

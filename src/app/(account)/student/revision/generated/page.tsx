@@ -30,8 +30,8 @@ export default function RevisionPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const router = useRouter();
   const { user } = useSession();
@@ -71,7 +71,8 @@ export default function RevisionPage() {
   const handleStart = () => {
     if (selectedChapitreId) {
       // Stocker le document dans le store Zustand si présent
-      setPendingDocument(selectedFile);
+      // setPendingDocument(selectedFile);
+      setPendingDocument(null);
       router.push(`/student/cours/${selectedChapitreId}`);
     }
   };
@@ -220,8 +221,8 @@ export default function RevisionPage() {
                 </div>
               )}
 
-              {/* Checkbox et FileUpload pour document optionnel */}
-              {chapitres.length > 0 && (
+              {/* Checkbox et FileUpload pour document optionnel - MASQUÉ POUR LES ÉLÈVES */}
+              {/* {chapitres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-300">
                   <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
                     <div className="flex items-start space-x-3 mb-4">
@@ -263,7 +264,7 @@ export default function RevisionPage() {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div className="text-center mt-8">
                 <Button

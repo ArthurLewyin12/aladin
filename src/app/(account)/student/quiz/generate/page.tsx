@@ -70,6 +70,8 @@ export default function GenerateQuizPage() {
   const [userAnswers, setUserAnswers] = useState<
     Record<string | number, string | number>
   >({});
+  const [questionTimeRemaining, setQuestionTimeRemaining] =
+    useState<number>(60);
 
   const router = useRouter();
   const { user } = useSession();
@@ -243,6 +245,51 @@ export default function GenerateQuizPage() {
         message: "Impossible de soumettre le quiz. Veuillez réessayer.",
       });
     }
+  };
+
+  // Timer countdown pour chaque question (60s)
+  useEffect(() => {
+    if (step !== "quiz" || !currentQuestion || submitQuizMutation.isPending)
+      return;
+
+    const timer = setInterval(() => {
+      setQuestionTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Auto-passer à la question suivante ou soumettre si c'est la dernière
+          if (currentQuestionIndex === quizQuestions.length - 1) {
+            handleSubmitQuiz(userAnswers);
+          } else {
+            handleNextQuestion();
+          }
+          return 60; // Reset pour la prochaine question
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [
+    step,
+    currentQuestion,
+    currentQuestionIndex,
+    quizQuestions.length,
+    submitQuizMutation.isPending,
+    userAnswers,
+  ]);
+
+  // Réinitialiser le timer quand on change de question
+  useEffect(() => {
+    if (step === "quiz" && currentQuestion) {
+      setQuestionTimeRemaining(60);
+    }
+  }, [currentQuestionIndex, step, currentQuestion]);
+
+  // Fonction pour formater le temps restant
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const handleSubjectNext = () => {
@@ -520,11 +567,16 @@ export default function GenerateQuizPage() {
           {step === "quiz" && currentQuestion && (
             <div className="max-w-4xl mx-auto mt-24">
               <div className="space-y-8">
-                {/* Progress bar */}
+                {/* Timer et Progress bar */}
                 <div>
                   <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
                     <span>
                       Question {currentQuestionIndex + 1}/{quizQuestions.length}
+                    </span>
+                    <span
+                      className={`text-lg font-bold ${questionTimeRemaining <= 10 ? "text-red-600 animate-pulse" : "text-orange-600"}`}
+                    >
+                      ⏱️ {formatTime(questionTimeRemaining)}
                     </span>
                     <span>{selectedMatiereName}</span>
                   </div>

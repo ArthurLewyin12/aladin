@@ -64,7 +64,7 @@ export default function StudentHomePage() {
     {
       id: "course",
       title: "Je révise un cours",
-      description: "Explore les cours personnalisés",
+      description: "Explore tes cours personnalisés",
       icon: BookOpen,
       color: "from-emerald-400 to-emerald-600",
       bgColor: "bg-emerald-50",
@@ -88,7 +88,7 @@ export default function StudentHomePage() {
     {
       id: "notes",
       title: "Je consulte mes notes",
-      description: "Conslute tes notes de classe",
+      description: "Suis l'évolution de tes notes de classe/Aladin",
       icon: FileText,
       color: "from-amber-400 to-amber-600",
       bgColor: "bg-amber-50",
@@ -112,7 +112,7 @@ export default function StudentHomePage() {
     {
       id: "group",
       title: "Je crée un groupe d'étude",
-      description: "Apprends en collaborant avec d'autres",
+      description: "Apprends en collaborant avec tes amis",
       icon: Users,
       color: "from-orange-400 to-orange-600",
       bgColor: "bg-orange-50",
@@ -147,8 +147,8 @@ export default function StudentHomePage() {
             </h1>
           </div>
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 leading-relaxed max-w-3xl">
-            Je suis là pour t'aider à apprendre à ton rythme et t'accompagner
-            tout au long de ton parcours.
+            Je suis Aladin ,je vais t'aider à apprendre à ton rythme et
+            t'accompagner tout le long de ton parcours scolaire.
           </p>
         </div>
 

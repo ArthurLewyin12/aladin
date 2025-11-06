@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis, Legend } from "recharts";
 import {
   Card,
@@ -8,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   ChartConfig,
   ChartContainer,
@@ -43,6 +45,8 @@ export function NotesEvolutionLineChart({
   data,
   matieres,
 }: NotesEvolutionLineChartProps) {
+  const [filter, setFilter] = useState<"aladin" | "cours" | "both">("both");
+
   if (!data || data.length === 0) {
     return (
       <Card className="rounded-2xl">
@@ -56,15 +60,22 @@ export function NotesEvolutionLineChart({
 
   // Extraire automatiquement les matières depuis toutes les données (pas juste la première ligne)
   const allKeys = new Set<string>();
-  data.forEach(point => {
-    Object.keys(point).forEach(key => {
+  data.forEach((point) => {
+    Object.keys(point).forEach((key) => {
       if (key !== "date") {
         allKeys.add(key);
       }
     });
   });
 
-  const displayMatieres = matieres || Array.from(allKeys);
+  let displayMatieres = matieres || Array.from(allKeys);
+
+  // Appliquer le filtre
+  if (filter === "aladin") {
+    displayMatieres = displayMatieres.filter((m) => m.includes("(Aladin)"));
+  } else if (filter === "cours") {
+    displayMatieres = displayMatieres.filter((m) => m.includes("(Classe)"));
+  }
 
   // Si aucune matière trouvée, afficher un message
   if (displayMatieres.length === 0) {
@@ -92,8 +103,42 @@ export function NotesEvolutionLineChart({
       <CardHeader>
         <CardTitle>Évolution Temporelle par Matière</CardTitle>
         <CardDescription>
-          Progression de tes notes Aladin par matière au fil du temps
+          Progression de tes notes par matière au fil du temps
         </CardDescription>
+
+        {/* Filtre pour choisir l'affichage */}
+        <div className="flex gap-2 mt-4 flex-wrap">
+          <Button
+            variant={filter === "aladin" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilter("aladin")}
+            className={
+              filter === "aladin" ? "bg-blue-500 hover:bg-blue-600" : ""
+            }
+          >
+            Notes Aladin
+          </Button>
+          <Button
+            variant={filter === "cours" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilter("cours")}
+            className={
+              filter === "cours" ? "bg-green-500 hover:bg-green-600" : ""
+            }
+          >
+            Notes Cours
+          </Button>
+          <Button
+            variant={filter === "both" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilter("both")}
+            className={
+              filter === "both" ? "bg-orange-500 hover:bg-orange-600" : ""
+            }
+          >
+            Aladin vs Cours
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -129,12 +174,18 @@ export function NotesEvolutionLineChart({
             {displayMatieres.map((matiere, index) => {
               // Déterminer si c'est Aladin ou Classe
               const isClasse = matiere.includes("(Classe)");
-              const baseMatiere = matiere.replace(" (Aladin)", "").replace(" (Classe)", "");
+              const baseMatiere = matiere
+                .replace(" (Aladin)", "")
+                .replace(" (Classe)", "");
 
               // Utiliser la même couleur de base pour une matière, peu importe si Aladin ou Classe
-              const matiereIndex = Array.from(new Set(displayMatieres.map(m =>
-                m.replace(" (Aladin)", "").replace(" (Classe)", "")
-              ))).indexOf(baseMatiere);
+              const matiereIndex = Array.from(
+                new Set(
+                  displayMatieres.map((m) =>
+                    m.replace(" (Aladin)", "").replace(" (Classe)", ""),
+                  ),
+                ),
+              ).indexOf(baseMatiere);
 
               const color = COLORS[matiereIndex % COLORS.length];
 

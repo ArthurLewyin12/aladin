@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from "date-fns";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isToday,
+} from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   Tooltip,
@@ -68,15 +74,15 @@ export function PlanningCalendarView({
 
   const getRowFromTime = (time: string) => {
     const [hour, minute] = time.split(":").map(Number);
-    
+
     // Gérer les heures après minuit (0h-5h) comme étant à la fin de la journée
     let adjustedHour = hour;
     if (hour >= 0 && hour < 6) {
       adjustedHour = hour + 24; // 0h devient 24h, 1h devient 25h, etc.
     }
-    
+
     const totalMinutesFromStart = (adjustedHour - 6) * 60 + minute;
-    return totalMinutesFromStart / 60 + 2; // Retourner la position exacte avec décimales
+    return totalMinutesFromStart / 60 + 2;
   };
 
   const getCurrentTimeRow = () => {
@@ -102,7 +108,12 @@ export function PlanningCalendarView({
 
   return (
     <TooltipProvider>
-      <div className={cn("bg-white rounded-2xl border shadow-sm overflow-hidden", className)}>
+      <div
+        className={cn(
+          "bg-white rounded-2xl border shadow-sm overflow-hidden",
+          className,
+        )}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gray-50/50">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -130,13 +141,21 @@ export function PlanningCalendarView({
               <div className="h-12 bg-gray-50/50 border-b" />
               {weekDays.map((day, index) => {
                 const isCurrentDay = isToday(day);
-                const dayOfWeek = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"][index];
+                const dayOfWeek = [
+                  "Lun",
+                  "Mar",
+                  "Mer",
+                  "Jeu",
+                  "Ven",
+                  "Sam",
+                  "Dim",
+                ][index];
                 return (
                   <motion.div
                     key={day.toString()}
                     className={cn(
                       "h-12 flex flex-col items-center justify-center border-l border-b bg-gray-50/50 text-sm font-medium transition-colors",
-                      isCurrentDay && "bg-orange-50"
+                      isCurrentDay && "bg-orange-50",
                     )}
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -147,7 +166,7 @@ export function PlanningCalendarView({
                       className={cn(
                         "text-base font-semibold mt-0.5",
                         isCurrentDay &&
-                          "flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 text-white"
+                          "flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 text-white",
                       )}
                     >
                       {format(day, "d")}
@@ -175,7 +194,7 @@ export function PlanningCalendarView({
                       className={cn(
                         "h-20 border-l border-b relative cursor-pointer transition-colors group",
                         dayIndex === todayIndex && "bg-orange-50/20",
-                        "hover:bg-gray-50"
+                        "hover:bg-gray-50",
                       )}
                       style={{
                         gridColumn: dayIndex + 2,
@@ -212,8 +231,10 @@ export function PlanningCalendarView({
               {plans.map((plan) => {
                 // weekday: 1=Monday, 7=Sunday
                 const gridColumn = plan.weekday === 7 ? 8 : plan.weekday + 1;
-                const gridRowStart = getRowFromTime(plan.start_time);
-                const gridRowEnd = getRowFromTime(plan.end_time);
+                const gridRowStart = Math.floor(
+                  getRowFromTime(plan.start_time),
+                );
+                const gridRowEnd = Math.ceil(getRowFromTime(plan.end_time));
                 const rowSpan = gridRowEnd - gridRowStart;
 
                 const colorClasses = getColorForSubject(plan.matiere.id);
@@ -226,7 +247,7 @@ export function PlanningCalendarView({
                         onClick={() => onSelectPlan?.(plan)}
                         className={cn(
                           "m-1 p-3 rounded-lg cursor-pointer shadow-sm overflow-hidden transition-all z-20",
-                          colorClasses
+                          colorClasses,
                         )}
                         style={{
                           gridColumn: gridColumn,
@@ -267,7 +288,9 @@ export function PlanningCalendarView({
                         </p>
                         {plan.chapitres.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium mb-1">Chapitres :</p>
+                            <p className="text-xs font-medium mb-1">
+                              Chapitres :
+                            </p>
                             <ul className="text-xs space-y-1">
                               {plan.chapitres.map((ch) => (
                                 <li key={ch.id}>• {ch.libelle}</li>

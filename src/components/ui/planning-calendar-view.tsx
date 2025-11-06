@@ -28,14 +28,10 @@ interface PlanningCalendarViewProps {
   className?: string;
 }
 
-// Générer les créneaux de 06h à 23h (même jour) + 00h à 05h (lendemain)
-const timeSlots = [
-  ...Array.from({ length: 18 }, (_, i) => {
-    const hour = 6 + i; // 6h à 23h
-    return `${String(hour).padStart(2, "0")}:00`;
-  }),
-  "00:00", // Minuit
-];
+// Générer les créneaux de 00h à 23h (24 heures complètes)
+const timeSlots = Array.from({ length: 24 }, (_, i) => {
+  return `${String(i).padStart(2, "0")}:00`;
+});
 
 const subjectColors: Record<number, string> = {
   0: "bg-blue-50 border-l-4 border-l-blue-500 text-blue-900 hover:bg-blue-100",
@@ -75,13 +71,8 @@ export function PlanningCalendarView({
   const getRowFromTime = (time: string) => {
     const [hour, minute] = time.split(":").map(Number);
 
-    // Gérer les heures après minuit (0h-5h) comme étant à la fin de la journée
-    let adjustedHour = hour;
-    if (hour >= 0 && hour < 6) {
-      adjustedHour = hour + 24; // 0h devient 24h, 1h devient 25h, etc.
-    }
-
-    const totalMinutesFromStart = (adjustedHour - 6) * 60 + minute;
+    // Calculer la position depuis minuit (0h)
+    const totalMinutesFromStart = hour * 60 + minute;
     return totalMinutesFromStart / 60 + 2;
   };
 
@@ -90,15 +81,8 @@ export function PlanningCalendarView({
     const hours = now.getHours();
     const minutes = now.getMinutes();
 
-    // Gérer les heures après minuit (0h-5h)
-    let adjustedHours = hours;
-    if (hours >= 0 && hours < 6) {
-      adjustedHours = hours + 24;
-    }
-
-    if (adjustedHours < 6 || adjustedHours >= 24) return null;
-
-    const totalMinutesFromStart = (adjustedHours - 6) * 60 + minutes;
+    // Calculer la position depuis minuit (0h)
+    const totalMinutesFromStart = hours * 60 + minutes;
     const row = totalMinutesFromStart / 60 + 2;
     return row;
   };
@@ -180,7 +164,7 @@ export function PlanningCalendarView({
                 <React.Fragment key={time}>
                   {/* Time Label */}
                   <div
-                    className="h-20 flex items-start justify-end pr-3 pt-1 text-xs text-gray-500 font-medium border-b"
+                    className="h-16 flex items-start justify-end pr-3 pt-1 text-xs text-gray-500 font-medium border-b"
                     style={{ gridRow: timeIndex + 2 }}
                   >
                     {time}
@@ -192,7 +176,7 @@ export function PlanningCalendarView({
                       key={`${day.toString()}-${time}`}
                       onClick={() => onSelectSlot?.(dayIndex + 1, `${time}:00`)}
                       className={cn(
-                        "h-20 border-l border-b relative cursor-pointer transition-colors group",
+                        "h-16 border-l border-b relative cursor-pointer transition-colors group",
                         dayIndex === todayIndex && "bg-orange-50/20",
                         "hover:bg-gray-50",
                       )}

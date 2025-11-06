@@ -3,8 +3,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Brain, Clock, Users, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  Clock,
+  Users,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { formatHoursToReadable } from "@/lib/utils/time";
 
 interface StudentQuickView {
   id: string;
@@ -115,7 +123,9 @@ export function RepetiteurStudentQuickView({
                       <Clock className="h-4 w-4" />
                       <span>Temps d'étude</span>
                     </div>
-                    <span className="font-medium">{student.weeklyStudyHours}h/sem</span>
+                    <span className="font-medium">
+                      {formatHoursToReadable(student.weeklyStudyHours)}/sem
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -144,7 +154,9 @@ export function RepetiteurStudentQuickView({
                 <Button
                   variant="outline"
                   className="w-full bg-white border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 rounded-xl font-medium"
-                  onClick={() => router.push(`/repetiteur/students/${student.id}`)}
+                  onClick={() =>
+                    router.push(`/repetiteur/students/${student.id}`)
+                  }
                 >
                   Voir le profil
                 </Button>

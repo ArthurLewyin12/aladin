@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { convertScoreToNote } from "@/lib/quiz-score";
+import { formatStudyTime } from "@/lib/utils/time";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function DashboardPage() {
       (acc, s) => acc + Number(s.seconds),
       0,
     );
-    const studyHours = Math.round((studySeconds / 3600) * 10) / 10;
+    const studyTime = formatStudyTime(studySeconds);
 
     // Calcul du taux de réussite (notes > 10)
     const successRate =
@@ -80,7 +81,7 @@ export default function DashboardPage() {
 
     return {
       averageNote: Math.round(averageNote * 10) / 10,
-      studyHours,
+      studyTime,
       successRate: Math.round(successRate),
       quizProgress: Math.min(quizProgress, 100),
       totalActivities:
@@ -258,7 +259,7 @@ export default function DashboardPage() {
                 <Zap className="h-5 w-5 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900">
-                {stats?.studyHours}h
+                {stats?.studyTime}
               </h3>
               <p className="text-sm text-gray-600 mt-1">Temps d'étude</p>
               <p className="text-xs text-blue-600 mt-2 font-medium">

@@ -109,7 +109,7 @@ export default function PlanningPage() {
         </Button>
         <div className="flex-1">
           <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-orange-500 leading-tight">
-            Mon Planning d'Études
+            Mon Planning de révision
           </h1>
         </div>
       </div>

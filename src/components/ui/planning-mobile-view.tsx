@@ -61,7 +61,7 @@ export function PlanningMobileView({
       <div className="bg-white rounded-2xl border shadow-sm p-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold text-gray-900">
-            Planning de la semaine
+            Ma semaine de révision
           </h2>
           <Button
             size="sm"
@@ -94,10 +94,7 @@ export function PlanningMobileView({
             >
               {/* Day Header */}
               <div
-                className={cn(
-                  "p-4 border-b",
-                  isCurrentDay && "bg-orange-50"
-                )}
+                className={cn("p-4 border-b", isCurrentDay && "bg-orange-50")}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -146,7 +143,7 @@ export function PlanningMobileView({
                           <div
                             className={cn(
                               "absolute left-0 top-0 bottom-0 w-1",
-                              colorClass
+                              colorClass,
                             )}
                           />
 

@@ -104,7 +104,7 @@ export default function RevisionPage() {
           </Button>
 
           <h1 className="text-orange-500 text-4xl md:text-[3rem]">
-            Place aux révisions
+            Place aux révisions !
           </h1>
         </div>
       </div>
@@ -177,8 +177,7 @@ export default function RevisionPage() {
                 {selectedMatiereName}
               </h1>
               <p className="text-gray-600 text-base md:text-lg">
-                Maintenant, choisis le chapitre que tu souhaites réviser. Chaque
-                chapitre t'aidera à maîtriser un concept spécifique !
+                Maintenant, choisis le chapitre que tu souhaites réviser.
               </p>
             </div>
             <div className="bg-[#E1E5F4] rounded-2xl p-8 md:p-10 shadow-sm">

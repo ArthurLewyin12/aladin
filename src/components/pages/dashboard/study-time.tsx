@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatHoursToReadable } from "@/lib/utils/time";
 
 type PeriodType = "week" | "month" | "quarter" | "year";
 
@@ -217,20 +218,20 @@ export function StudyTimeChart({
             tickFormatter={(value) => {
               // Mapping des jours en anglais vers le français
               const dayMapping: Record<string, string> = {
-                "Mon": "Lun",
-                "Tue": "Mar",
-                "Wed": "Mer",
-                "Thu": "Jeu",
-                "Fri": "Ven",
-                "Sat": "Sam",
-                "Sun": "Dim",
-                "Monday": "Lundi",
-                "Tuesday": "Mardi",
-                "Wednesday": "Mercredi",
-                "Thursday": "Jeudi",
-                "Friday": "Vendredi",
-                "Saturday": "Samedi",
-                "Sunday": "Dimanche"
+                Mon: "Lun",
+                Tue: "Mar",
+                Wed: "Mer",
+                Thu: "Jeu",
+                Fri: "Ven",
+                Sat: "Sam",
+                Sun: "Dim",
+                Monday: "Lundi",
+                Tuesday: "Mardi",
+                Wednesday: "Mercredi",
+                Thursday: "Jeudi",
+                Friday: "Vendredi",
+                Saturday: "Samedi",
+                Sunday: "Dimanche",
               };
               return dayMapping[value] || value;
             }}
@@ -253,16 +254,12 @@ export function StudyTimeChart({
               borderRadius: "12px",
               fontSize: "13px",
               padding: "12px",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              boxShadow:
+                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
             }}
             formatter={(value: number) => {
-              // Si moins d'1 heure, afficher en minutes
-              if (value < 1) {
-                const minutes = Math.round(value * 60);
-                return [`${minutes} min`, ""];
-              }
-              // Sinon afficher en heures
-              return [`${value.toFixed(1)}h`, ""];
+              // Utiliser la fonction utilitaire pour un formatage cohérent
+              return [formatHoursToReadable(value), ""];
             }}
             labelStyle={{ fontWeight: "600", marginBottom: "8px" }}
           />
@@ -283,7 +280,9 @@ export function StudyTimeChart({
             const isLast = index === subjectsList.length - 1;
 
             // Déterminer les radius selon la position
-            let radius: [number, number, number, number] | number = [0, 0, 0, 0];
+            let radius: [number, number, number, number] | number = [
+              0, 0, 0, 0,
+            ];
 
             if (index === 0) {
               // Premier : haut arrondi, bas plat

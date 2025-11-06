@@ -57,8 +57,8 @@ export default function ParentGenerateQuizPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const router = useRouter();
   const { data: enfantsData } = useEnfants();
@@ -88,7 +88,7 @@ export default function ParentGenerateQuizPage() {
     const payload: QuizGeneratePayload = {
       chapter_id: selectedChapitreId,
       difficulty: selectedDifficulty as "Facile" | "Moyen" | "Difficile",
-      document_file: selectedFile || undefined,
+      // document_file: selectedFile || undefined,
     };
 
     try {
@@ -309,8 +309,8 @@ export default function ParentGenerateQuizPage() {
                 </RadioGroup>
               </div>
 
-              {/* Checkbox et FileUpload pour document optionnel */}
-              {chapitres.length > 0 && (
+              {/* Checkbox et FileUpload pour document optionnel - MASQUÉ POUR LES PARENTS */}
+              {/* {chapitres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-300">
                   <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
                     <div className="flex items-start space-x-3 mb-4">
@@ -353,7 +353,7 @@ export default function ParentGenerateQuizPage() {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div className="text-center pt-4">
                 <Button

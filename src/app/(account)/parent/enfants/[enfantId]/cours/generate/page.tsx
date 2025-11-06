@@ -34,8 +34,8 @@ export default function ParentGenerateCoursPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const router = useRouter();
   const { data: enfantsData } = useEnfants();
@@ -79,7 +79,7 @@ export default function ParentGenerateCoursPage() {
   const handleStart = () => {
     if (selectedChapitreId) {
       // Stocker le document dans le store Zustand si présent
-      setPendingDocument(selectedFile);
+      setPendingDocument(null);
 
       toast({
         variant: "success",
@@ -243,8 +243,8 @@ export default function ParentGenerateCoursPage() {
                 </div>
               )}
 
-              {/* Checkbox et FileUpload pour document optionnel */}
-              {chapitres.length > 0 && (
+              {/* Checkbox et FileUpload pour document optionnel - MASQUÉ POUR LES PARENTS */}
+              {/* {chapitres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-300">
                   <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
                     <div className="flex items-start space-x-3 mb-4">
@@ -286,7 +286,7 @@ export default function ParentGenerateCoursPage() {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div className="text-center mt-8">
                 <Button

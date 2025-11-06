@@ -63,8 +63,8 @@ export default function GenerateQuizPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [userAnswers, setUserAnswers] = useState<
@@ -129,7 +129,7 @@ export default function GenerateQuizPage() {
     const payload: QuizGeneratePayload = {
       chapter_id: selectedChapitreId,
       difficulty: selectedDifficulty as "Facile" | "Moyen" | "Difficile",
-      document_file: selectedFile || undefined,
+      // document_file: selectedFile || undefined,
     };
 
     try {
@@ -146,8 +146,8 @@ export default function GenerateQuizPage() {
       setQuizQuestions(result.questions);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
-      setUseDocument(false);
-      setSelectedFile(null);
+      // setUseDocument(false);
+      // setSelectedFile(null);
       setStep("quiz");
     } catch (error: any) {
       console.error("Erreur lors de la génération du quiz", error);
@@ -454,8 +454,8 @@ export default function GenerateQuizPage() {
                 </RadioGroup>
               </div>
 
-              {/* Checkbox et FileUpload pour document optionnel */}
-              {chapitres.length > 0 && (
+              {/* Checkbox et FileUpload pour document optionnel - MASQUÉ POUR LES ÉLÈVES */}
+              {/* {chapitres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-300">
                   <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
                     <div className="flex items-start space-x-3 mb-4">
@@ -498,7 +498,7 @@ export default function GenerateQuizPage() {
                     )}
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div className="text-center pt-4">
                 <Button

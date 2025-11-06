@@ -95,11 +95,13 @@ export const QuizCard = ({
       {/* Informations du quiz */}
       <div className="mb-6 space-y-1">
         <p className="text-sm text-gray-500">{subject}</p>
+        <p className="text-base text-gray-500">{numberOfQuestions} questions</p>
         <p className="text-base font-bold text-gray-900">
-          Nombre de question : {numberOfQuestions}
+          {formatDuration(Math.floor(duration / numberOfQuestions))} par
+          question
         </p>
-        <p className="text-base font-bold text-gray-900">
-          Durée du quiz : {formatDuration(duration)}
+        <p className="text-sm text-gray-500">
+          Durée totale : {formatDuration(duration)}
         </p>
       </div>
 
@@ -120,7 +122,7 @@ export const QuizCard = ({
               variant="outline"
               className={cn(
                 "bg-gray-200 border-2 border-gray-300 text-gray-500 rounded-xl px-6 h-11 font-medium",
-                { "w-full": !allMembersTaken }
+                { "w-full": !allMembersTaken },
               )}
             >
               Déjà passé

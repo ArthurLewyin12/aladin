@@ -97,11 +97,15 @@ export const GroupQuizCard = ({
           Niveau : {groupe.niveau?.libelle || "N/A"}
         </p>
         <p className="text-sm text-gray-500">Difficulté : {quiz.difficulte}</p>
+        <p className="text-base text-gray-500">
+          {quiz.nombre_questions} questions
+        </p>
         <p className="text-base font-bold text-gray-900">
-          Durée estimée : {formatDuration(quiz.temps)}
+          {formatDuration(Math.floor(quiz.temps / quiz.nombre_questions))} par
+          question
         </p>
         <p className="text-sm text-gray-500">
-          {quiz.nombre_questions} questions
+          Durée totale : {formatDuration(quiz.temps)}
         </p>
       </div>
 

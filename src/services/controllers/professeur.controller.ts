@@ -1,8 +1,14 @@
 import { request } from "@/lib/request";
-import { ProfesseurEndpoints, EleveEndpoints } from "@/constants/endpoints";
+import {
+  ProfesseurEndpoints,
+  EleveEndpoints,
+  QuizEndpoints,
+  CourseEndpoints,
+} from "@/constants/endpoints";
 import { PromiseExecutor } from "@/lib/promise-executor";
 import {
   GetSubjectsResponse,
+  GetSubjectsGenericResponse,
   SetSubjectsPayload,
   SetSubjectsResponse,
   GetClassesResponse,
@@ -55,6 +61,17 @@ import {
 export const getSubjects = async (): Promise<GetSubjectsResponse> => {
   return request.get<GetSubjectsResponse>(ProfesseurEndpoints.GET_SUBJECTS);
 };
+
+/**
+ * Récupère toutes les matières disponibles sans filtrage par niveau.
+ * @returns {Promise<GetSubjectsGenericResponse>} Liste de toutes les matières disponibles.
+ */
+export const getSubjectsGeneric =
+  async (): Promise<GetSubjectsGenericResponse> => {
+    return request.get<GetSubjectsGenericResponse>(
+      ProfesseurEndpoints.GET_SUBJECTS_GENERIC,
+    );
+  };
 
 /**
  * Définit les matières enseignées par le professeur.
@@ -114,7 +131,10 @@ export const getClassesWithDetails = async (): Promise<GetClasseResponse[]> => {
     executor.add(
       `classe_${classe.id}`,
       getClasse(classe.id).catch((error) => {
-        console.error(`Erreur lors de la récupération de la classe ${classe.id}:`, error);
+        console.error(
+          `Erreur lors de la récupération de la classe ${classe.id}:`,
+          error,
+        );
         // Retourner la classe de base sans détails en cas d'erreur
         return {
           ...classe,
@@ -135,7 +155,10 @@ export const getClassesWithDetails = async (): Promise<GetClasseResponse[]> => {
       // Si on a des détails, les utiliser, sinon retourner la classe de base avec members vide
       return detail || { ...classe, members: [] };
     })
-    .filter((classe): classe is GetClasseResponse => classe != null && classe.id != null);
+    .filter(
+      (classe): classe is GetClasseResponse =>
+        classe != null && classe.id != null,
+    );
 };
 
 /**
@@ -175,23 +198,32 @@ export const getClasse = async (
   // Sinon, transformer la structure avec eleves en members
   const normalizedResponse: GetClasseResponse = {
     ...rawResponse.classe,
-    members: rawResponse.eleves?.map((eleve) => ({
-      id: eleve.id,
-      eleve_id: eleve.eleve_id,
-      classe_id: eleve.classe_id,
-      is_active: eleve.is_active,
-      eleve: eleve.eleve,
-    })) || [],
+    members:
+      rawResponse.eleves?.map((eleve) => ({
+        id: eleve.id,
+        eleve_id: eleve.eleve_id,
+        classe_id: eleve.classe_id,
+        is_active: eleve.is_active,
+        eleve: eleve.eleve,
+      })) || [],
     niveau: rawResponse.niveau
       ? {
           ...rawResponse.niveau,
           matieres: [],
-          created_at: rawResponse.niveau.created_at || ' ',
-          updated_at: rawResponse.niveau.updated_at || ' ',
+          created_at: rawResponse.niveau.created_at || " ",
+          updated_at: rawResponse.niveau.updated_at || " ",
         }
       : undefined,
     quizzes: rawResponse.quizzes || [],
-    matieres: rawResponse.matieres?.filter(m => m.niveau_id !== undefined).map(m => ({ ...m, niveau_id: m.niveau_id as number, created_at: ' ', updated_at: ' ' })) || [],
+    matieres:
+      rawResponse.matieres
+        ?.filter((m) => m.niveau_id !== undefined)
+        .map((m) => ({
+          ...m,
+          niveau_id: m.niveau_id as number,
+          created_at: " ",
+          updated_at: " ",
+        })) || [],
   };
 
   return normalizedResponse;
@@ -346,10 +378,8 @@ export const generateQuiz = async (
   classeId: number,
   payload: GenerateQuizPayload,
 ): Promise<GenerateQuizResponse> => {
-  const endpoint = ProfesseurEndpoints.GENERATE_QUIZ.replace(
-    "{classe_id}",
-    classeId.toString(),
-  );
+  // Utiliser la route standard /api/quizzes/generate avec classe_id dans le payload
+  const endpoint = QuizEndpoints.QUIZ_GENERATE;
 
   // Si un fichier est présent, utiliser FormData
   if (payload.document_file) {
@@ -359,6 +389,7 @@ export const generateQuiz = async (
       title: payload.title,
       nombre_questions: payload.nombre_questions,
       temps: payload.temps,
+      classe_id: classeId,
       document_file: payload.document_file,
     });
   } else {
@@ -369,6 +400,7 @@ export const generateQuiz = async (
       title: payload.title,
       nombre_questions: payload.nombre_questions,
       temps: payload.temps,
+      classe_id: classeId,
     });
   }
 };
@@ -476,21 +508,21 @@ export const generateCourse = async (
   classeId: number,
   payload: GenerateCoursePayload,
 ): Promise<GenerateCourseResponse> => {
-  const endpoint = ProfesseurEndpoints.GENERATE_COURSE.replace(
-    "{classe_id}",
-    classeId.toString(),
-  );
+  // Utiliser la route standard /api/cours/expliquer avec classe_id dans le payload
+  const endpoint = CourseEndpoints.COURSES_BY_CHAPITRE;
 
   // Si un fichier est présent, utiliser FormData
   if (payload.document_file) {
     return request.postFormData<GenerateCourseResponse>(endpoint, {
       chapter_id: payload.chapter_id,
+      classe_id: classeId,
       document_file: payload.document_file,
     });
   } else {
     // Sinon, envoi JSON classique
     return request.post<GenerateCourseResponse>(endpoint, {
       chapter_id: payload.chapter_id,
+      classe_id: classeId,
     });
   }
 };

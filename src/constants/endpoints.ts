@@ -244,6 +244,7 @@ export enum StudyPlanEndpoints {
 export enum ProfesseurEndpoints {
   // Matières enseignées
   GET_SUBJECTS = "/api/prof/subjects",
+  GET_SUBJECTS_GENERIC = "/api/prof/subjects/generic",
   SET_SUBJECTS = "/api/prof/subjects",
 
   // Classes - CRUD

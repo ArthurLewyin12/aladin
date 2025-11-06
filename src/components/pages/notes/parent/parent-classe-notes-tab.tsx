@@ -89,7 +89,7 @@ export function ParentClasseNotesTab({ enfantId }: ParentClasseNotesTabProps) {
             />
           </div>
 
-          {isManuel && (
+          {/*{isManuel && (
             <div className="text-center px-4">
               <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
                 Cliquez ci-dessous pour ajouter la première note de classe !
@@ -104,15 +104,15 @@ export function ParentClasseNotesTab({ enfantId }: ParentClasseNotesTabProps) {
                 Ajouter une note
               </Button>
             </div>
-          )}
+          )}*/}
         </div>
 
-        {isManuel && (
+        {/*{isManuel && (
           <AddNoteModal
             isOpen={isAddModalOpen}
             onOpenChange={setIsAddModalOpen}
           />
-        )}
+        )}*/}
       </div>
     );
   }
@@ -128,7 +128,9 @@ export function ParentClasseNotesTab({ enfantId }: ParentClasseNotesTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">{stats?.totalNotes}</div>
+            <div className="text-3xl font-bold text-purple-600">
+              {stats?.totalNotes}
+            </div>
           </CardContent>
         </Card>
 
@@ -172,7 +174,7 @@ export function ParentClasseNotesTab({ enfantId }: ParentClasseNotesTabProps) {
               {(stats?.totalNotes || 0) > 1 ? "s" : ""}
             </p>
           </div>
-          {isManuel && (
+          {/*{isManuel && (
             <Button
               size="lg"
               onClick={() => setIsAddModalOpen(true)}
@@ -182,13 +184,15 @@ export function ParentClasseNotesTab({ enfantId }: ParentClasseNotesTabProps) {
               <span className="hidden sm:inline">Ajouter une note</span>
               <span className="sm:hidden">Ajouter</span>
             </Button>
-          )}
+          )}*/}
         </div>
 
         {/* Table des notes */}
         <ParentNotesTable
           notes={notes}
-          pagination={pagination || { current_page: 1, per_page: 10, total: notes.length }}
+          pagination={
+            pagination || { current_page: 1, per_page: 10, total: notes.length }
+          }
           page={1}
           setPage={() => {}}
         />

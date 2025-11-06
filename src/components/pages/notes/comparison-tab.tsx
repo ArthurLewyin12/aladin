@@ -119,27 +119,40 @@ export function ComparisonTab() {
 
     if (sortedAladinNotes.length === 0) return [];
 
+    // Grouper les notes par date pour éviter les doublons sur le graphique
+    const notesByDate = new Map<string, NoteQuiz[]>();
+    sortedAladinNotes.forEach((note) => {
+      if (!notesByDate.has(note.date)) {
+        notesByDate.set(note.date, []);
+      }
+      notesByDate.get(note.date)!.push(note);
+    });
+
     // Construire l'évolution cumulative par matière pour Aladin
     const aladinMatieresCumulatives = new Map<string, number[]>();
     const dataPoints: Array<{ date: string; [key: string]: string | number }> =
       [];
 
-    sortedAladinNotes.forEach((note) => {
-      // Now 'note' is guaranteed to be NoteQuiz
-      const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
+    // Parcourir les dates uniques
+    Array.from(notesByDate.keys()).forEach((date) => {
+      const notesForDate = notesByDate.get(date)!;
 
-      // Initialiser le tableau pour cette matière si nécessaire
-      if (!aladinMatieresCumulatives.has(note.matiere!)) {
-        // Use non-null assertion
-        aladinMatieresCumulatives.set(note.matiere!, []);
-      }
+      // Traiter toutes les notes de cette date
+      notesForDate.forEach((note) => {
+        const noteSur20 = convertScoreToNote(note.note, note.nombre_questions);
 
-      // Ajouter la note à l'historique de cette matière
-      aladinMatieresCumulatives.get(note.matiere!)!.push(noteSur20);
+        // Initialiser le tableau pour cette matière si nécessaire
+        if (!aladinMatieresCumulatives.has(note.matiere!)) {
+          aladinMatieresCumulatives.set(note.matiere!, []);
+        }
 
-      // Créer un point de données avec la moyenne actuelle pour chaque matière
+        // Ajouter la note à l'historique de cette matière
+        aladinMatieresCumulatives.get(note.matiere!)!.push(noteSur20);
+      });
+
+      // Créer UN SEUL point de données pour cette date
       const dataPoint: { date: string; [key: string]: string | number } = {
-        date: note.date,
+        date: date,
       };
 
       // Calculer la moyenne cumulative pour chaque matière Aladin

@@ -48,7 +48,7 @@ export default function ParentNotesPage() {
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2C3E50] leading-tight">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-purple-600 leading-tight">
               Notes de vos enfants
             </h1>
           </div>

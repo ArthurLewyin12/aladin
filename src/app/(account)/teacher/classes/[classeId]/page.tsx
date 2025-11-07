@@ -84,7 +84,7 @@ const ClasseDetailPage = () => {
 
           {/* Nom de la classe et bouton de message */}
           <div className="flex justify-between items-center mb-8 px-4">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-500">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
               {classeDetails.nom}
             </h1>
             <Button onClick={() => setMessageModalOpen(true)} className="bg-[#2C3E50] hover:bg-[#1a252f] text-white">

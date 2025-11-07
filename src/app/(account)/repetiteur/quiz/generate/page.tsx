@@ -355,14 +355,10 @@ export default function RepetiteurGenerateQuizPage() {
                 step === "subject" ? "w-12 h-12 justify-center" : "px-4 py-2"
               }`}
             >
-              {step === "subject" ? (
-                <ArrowLeft className="w-4 h-4" />
-              ) : (
-                <span className="text-sm">Retour</span>
-              )}
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-[#548C2F] text-3xl md:text-4xl font-bold">
+              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#548C2F] leading-tight">
                 Générer un Quiz
               </h1>
               {eleveUtilise && (

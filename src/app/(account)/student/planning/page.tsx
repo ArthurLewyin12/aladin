@@ -108,7 +108,7 @@ export default function PlanningPage() {
           <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-orange-500 leading-tight">
+          <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
             Mon Planning de révision
           </h1>
         </div>

@@ -185,7 +185,7 @@ export default function ParentGroupsPage() {
             </Button>
 
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600">
+              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-purple-600 leading-tight">
                 Groupes d'étude
               </h1>
             </div>

@@ -152,16 +152,11 @@ export default function RepetiteurRevisionPage() {
               step === "subject" ? "w-12 h-12 justify-center" : "px-4 py-2"
             }`}
           >
-            <ArrowLeft
-              className={`${step === "subject" ? "w-5 h-5" : "w-4 h-4"}`}
-            />
-            {step === "chapter" && (
-              <span className="text-sm font-medium">Retour</span>
-            )}
+            <ArrowLeft className="w-4 h-4" />
           </Button>
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#548C2F] leading-tight">
+          <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#548C2F] leading-tight">
             Générer un cours pour {eleveUtilise.prenom}
           </h1>
           <p className="text-sm sm:text-base text-gray-600 mt-1">

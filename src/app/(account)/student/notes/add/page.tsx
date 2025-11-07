@@ -28,7 +28,7 @@ export default function AddNotePage() {
               onClick={handleCancel}
               className="h-10 w-10 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <ArrowLeft className="h-5 w-5 text-gray-700" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             <div>
               <h1 className="text-xl font-bold text-gray-900">

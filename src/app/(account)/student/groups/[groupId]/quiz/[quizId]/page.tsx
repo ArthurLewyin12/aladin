@@ -261,10 +261,9 @@ export default function GroupQuizTakingPage() {
               variant="ghost"
               size="sm"
               onClick={handleBackToGroup}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white px-4 py-2"
+               className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white w-12 h-12 justify-center"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              <span className="text-sm">Retour au groupe</span>
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             <h1 className="text-orange-600 text-4xl md:text-[3rem]">
               {quizDefinition?.titre || "Quiz de Groupe"}

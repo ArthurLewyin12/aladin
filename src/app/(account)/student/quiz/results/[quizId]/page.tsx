@@ -83,9 +83,9 @@ export default function QuizResultPage() {
         </p>
         <Button
           onClick={handleBackToHome}
-          className="rounded-xl px-6 py-3 text-lg"
+          className="rounded-xl w-12 h-12 p-0 flex items-center justify-center"
         >
-          Retour à l'accueil
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
       </div>
     );
@@ -155,10 +155,9 @@ export default function QuizResultPage() {
             variant="ghost"
             size="lg"
             onClick={handleBackToHome}
-            className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 border rounded-xl bg-white/80 px-6 py-3 shadow-sm hover:shadow-md transition-all duration-300"
+            className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 border rounded-xl bg-white/80 w-12 h-12 p-0 justify-center shadow-sm hover:shadow-md transition-all duration-300"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-base font-medium">Retour</span>
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
           <h1 className="text-orange-600 text-5xl md:text-6xl font-bold">
             Quiz Time !

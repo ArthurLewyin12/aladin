@@ -95,12 +95,9 @@ export default function RevisionPage() {
             variant="ghost"
             size="sm"
             onClick={step === "subject" ? handleBack : handleChapterBack}
-            className={`flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white ${
-              step === "subject" ? "w-12 h-12 justify-center" : "px-4 py-2"
-            }`}
+             className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white w-12 h-12 justify-center"
           >
-            {step === "subject" && <ArrowLeft className="w-4 h-4" />}
-            {step === "chapter" && <span className="text-sm">Retour</span>}
+             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
 
           <h1 className="text-orange-500 text-4xl md:text-[3rem]">

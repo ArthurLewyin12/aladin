@@ -243,9 +243,9 @@ export default function GroupQuizResultPage() {
         <div className="flex justify-center sm:justify-end">
           <Button
             onClick={handleBackToGroup}
-            className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
+            className="bg-gray-900 hover:bg-gray-800 text-white w-12 h-12 p-0 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
           >
-            Retour au groupe
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
       </div>

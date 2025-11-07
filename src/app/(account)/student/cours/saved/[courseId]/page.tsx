@@ -77,13 +77,12 @@ export default function SavedCoursePage() {
             Erreur lors du chargement du cours
           </p>
           <p className="text-sm text-red-500 mb-6">{(error as any)?.message}</p>
-          <Button
-            onClick={handleBack}
-            className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour
-          </Button>
+           <Button
+             onClick={handleBack}
+             className="bg-red-600 hover:bg-red-700 text-white rounded-xl w-12 h-12 p-0 flex items-center justify-center"
+           >
+             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+           </Button>
         </div>
       </div>
     );
@@ -97,13 +96,12 @@ export default function SavedCoursePage() {
           <p className="text-lg font-semibold text-gray-700 mb-6">
             Aucune donnée disponible pour ce cours
           </p>
-          <Button
-            onClick={handleBack}
-            className="bg-gray-600 hover:bg-gray-700 text-white rounded-xl"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour
-          </Button>
+              <Button
+                onClick={handleBack}
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl w-12 h-12 p-0 justify-center transition-all"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
         </div>
       </div>
     );

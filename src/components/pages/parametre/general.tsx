@@ -24,6 +24,7 @@ import {
   AlertCircle,
   CheckCircle,
   Volume2,
+  Users,
 } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useUpdateUserInfo } from "@/services/hooks/auth/useUpdateUserInfo";
@@ -537,10 +538,65 @@ export default function SettingsGeneralPage() {
                 : "Enregistrer les modifications"}
             </Button>
           </form>
-        </Form>
-      </div>
+         </Form>
+       </div>
 
-      {/* Section 3: Changer le mot de passe */}
+       {/* Section 2.5: Informations du parent */}
+       <div
+         className={cn(
+           "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+           CARD_COLORS[2],
+         )}
+       >
+         <div className="flex items-center gap-3 mb-6">
+           <div className="p-3 bg-white rounded-2xl shadow-sm">
+             <Users className="w-6 h-6 text-gray-900" />
+           </div>
+           <div>
+             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+               Informations du parent
+             </h2>
+             <p className="text-sm text-gray-600 mt-1">
+               Coordonnées de ton parent référent
+             </p>
+           </div>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           {/* Email du parent */}
+           <div className="space-y-2">
+             <label className="text-sm font-medium text-gray-900">
+               Email du parent
+             </label>
+             <div className="h-12 px-3 bg-white/60 border-2 border-gray-300 rounded-xl flex items-center">
+               <span className="text-gray-700 truncate">
+                 {user?.parent_mail || "Non renseigné"}
+               </span>
+             </div>
+           </div>
+
+           {/* Numéro du parent */}
+           <div className="space-y-2">
+             <label className="text-sm font-medium text-gray-900">
+               Numéro du parent
+             </label>
+             <div className="h-12 px-3 bg-white/60 border-2 border-gray-300 rounded-xl flex items-center">
+               <span className="text-gray-700 truncate">
+                 {user?.parent_numero || "Non renseigné"}
+               </span>
+             </div>
+           </div>
+         </div>
+
+         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+           <p className="text-xs text-blue-800">
+             ℹ️ Ces informations ont été saisies lors de ton inscription et ne peuvent pas être modifiées.
+             Contacte l'administrateur si tu dois les mettre à jour.
+           </p>
+         </div>
+       </div>
+
+       {/* Section 3: Changer le mot de passe */}
       <div
         className={cn(
           "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",

@@ -219,13 +219,13 @@ export function ComparisonTab() {
 
     const moyenneClasse = classeStatsData?.data?.moyenne_generale || 0;
 
-    const ecart = moyenneAladin - moyenneClasse;
+    const ecart = moyenneClasse - moyenneAladin;
 
     const stats = {
       moyenneAladin: Math.round(moyenneAladin * 10) / 10,
       moyenneClasse: Math.round(moyenneClasse * 10) / 10,
       ecart: Math.round(ecart * 10) / 10,
-      meilleurPlateforme: moyenneAladin > moyenneClasse ? "Aladin" : "Classe",
+      meilleurPlateforme: moyenneClasse > moyenneAladin ? "Classe" : "Aladin",
     };
 
     return stats;

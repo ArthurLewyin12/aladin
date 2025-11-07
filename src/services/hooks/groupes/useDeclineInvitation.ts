@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { declineInvitation } from "@/services/controllers/groupe.controller";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 
 /**
@@ -16,7 +16,7 @@ export const useDeclineInvitation = () => {
   return useMutation({
     mutationFn: (invitationId: number) => declineInvitation(invitationId),
     onSuccess: (data) => {
-      toast.success(data.message || "Invitation déclinée avec succès !");
+      toast({ message: data.message || "Invitation déclinée avec succès !", variant: "success" });
       // Invalider la requête qui récupère la liste des groupes pour la mettre à jour
       queryClient.invalidateQueries({ queryKey: createQueryKey("groupes") });
       // Note: We don't have the groupeId here, so we can't invalidate a specific group query.
@@ -24,7 +24,7 @@ export const useDeclineInvitation = () => {
     },
     onError: (error) => {
       console.error("Erreur lors du déclin de l'invitation", error);
-      toast.error("Une erreur est survenue lors du déclin de l'invitation.");
+      toast({ message: "Une erreur est survenue lors du déclin de l'invitation.", variant: "error" });
     },
   });
 };

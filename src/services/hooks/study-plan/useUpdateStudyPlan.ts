@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateStudyPlan } from "@/services/controllers/study-plan.controller";
 import { UpdateStudyPlanPayload } from "@/services/controllers/types/common/study-plan.types";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 
 /**
@@ -18,7 +18,7 @@ export const useUpdateStudyPlan = () => {
       updateStudyPlan({ id, payload }),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Créneau mis à jour avec succès !");
+        toast({ message: "Créneau mis à jour avec succès !", variant: "success" });
         queryClient.invalidateQueries({
           queryKey: createQueryKey("study-plans"),
         });
@@ -27,17 +27,13 @@ export const useUpdateStudyPlan = () => {
     onError: (error: any) => {
       const responseData = error?.response?.data;
       if (responseData && responseData.success === false && responseData.conflict) {
-        toast.error(responseData.message || "Conflit de planning détecté.", {
-          description: responseData.suggestion,
-        });
+        toast({ message: `${responseData.message || "Conflit de planning détecté."} ${responseData.suggestion || ""}`, variant: "error" });
       } else {
         const message =
           responseData?.message ||
           error.message ||
           "Une erreur est survenue.";
-        toast.error("Erreur", {
-          description: message,
-        });
+        toast({ message: `Erreur: ${message}`, variant: "error" });
       }
     },
   });

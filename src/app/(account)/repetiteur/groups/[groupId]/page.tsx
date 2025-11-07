@@ -285,7 +285,7 @@ const GroupPage = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#548C2F]">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#548C2F] leading-tight">
               Réviser à plusieurs, c'est mieux !
             </h1>
           </div>

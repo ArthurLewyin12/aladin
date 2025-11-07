@@ -215,7 +215,7 @@ const EditManualQuizPage = () => {
 
         {/* Titre */}
         <div className="mb-8 px-4">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-orange-500 mb-2">
+          <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
             Modifier le quiz
           </h1>
           <p className="text-gray-600 text-base sm:text-lg">

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Aladin is a Next.js 15 educational platform frontend for students in Senegal. It provides quiz generation, course content, group learning, subscription management, and study tracking features. The backend API is at `https://aladin.yira.pro` (configurable via `.env`).
+Aladin is a Next.js 15 educational platform frontend for students in Côte d'Ivoire. It provides quiz generation, course content, group learning, subscription management, and study tracking features. The backend API is at `https://aladin.yira.pro` (configurable via `.env`).
 
 ## Tech Stack
 

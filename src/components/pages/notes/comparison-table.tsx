@@ -175,7 +175,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             </Button>
           );
         },
-        accessorFn: (row) => (row.note_aladin ?? 0) - (row.note_classe ?? 0),
+        accessorFn: (row) => (row.note_classe ?? 0) - (row.note_aladin ?? 0),
         cell: ({ row }) => {
           const noteAladin = row.getValue("note_aladin") as number | null;
           const noteClasse = row.getValue("note_classe") as number | null;

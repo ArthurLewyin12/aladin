@@ -3,7 +3,7 @@
 import * as React from "react";
 import { StudyPlan } from "@/services/controllers/types/common";
 import { Button } from "@/components/ui/button";
-import { Plus, Clock } from "lucide-react";
+import { Plus, Clock, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import {
@@ -14,6 +14,7 @@ import {
   isToday,
 } from "date-fns";
 import { fr } from "date-fns/locale";
+import { PlanningSubjectsDrawer } from "./planning-subjects-drawer";
 
 interface PlanningMobileViewProps {
   plans: StudyPlan[];
@@ -42,6 +43,8 @@ export function PlanningMobileView({
   onSelectPlan,
   className,
 }: PlanningMobileViewProps) {
+  const [isSubjectsDrawerOpen, setIsSubjectsDrawerOpen] = React.useState(false);
+
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
@@ -57,20 +60,31 @@ export function PlanningMobileView({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Header */}
-      <div className="bg-white rounded-2xl border shadow-sm p-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Ma semaine de révision
-          </h2>
-          <Button
-            size="sm"
-            onClick={() => onSelectSlot?.(1, "09:00:00")}
-            className="h-9 gap-2 bg-[#2C3E50] hover:bg-[#1a252f] text-white"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
+        {/* Header */}
+       <div className="bg-white rounded-2xl border shadow-sm p-4 sticky top-0 z-10">
+         <div className="flex items-center justify-between mb-2">
+           <h2 className="text-lg font-semibold text-gray-900">
+             Ma semaine de révision
+           </h2>
+           <div className="flex gap-2">
+             <Button
+               size="sm"
+               variant="outline"
+               onClick={() => setIsSubjectsDrawerOpen(true)}
+               className="h-9 gap-2"
+             >
+               <BookOpen className="w-4 h-4" />
+               Matières
+             </Button>
+             <Button
+               size="sm"
+               onClick={() => onSelectSlot?.(1, "09:00:00")}
+               className="h-9 gap-2 bg-[#2C3E50] hover:bg-[#1a252f] text-white"
+             >
+               <Plus className="w-4 h-4" />
+             </Button>
+           </div>
+         </div>
         <p className="text-sm text-gray-600">
           {format(weekStart, "d", { locale: fr })} au{" "}
           {format(weekEnd, "d MMM yyyy", { locale: fr })}
@@ -199,6 +213,12 @@ export function PlanningMobileView({
           );
         })}
       </div>
+
+      {/* Subjects Drawer */}
+      <PlanningSubjectsDrawer
+        open={isSubjectsDrawerOpen}
+        onOpenChange={setIsSubjectsDrawerOpen}
+      />
     </div>
   );
 }

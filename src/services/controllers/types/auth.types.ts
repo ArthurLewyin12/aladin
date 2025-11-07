@@ -18,6 +18,8 @@ export type User = {
   statut: UserStatus;
   numero: string;
   mail: string;
+  parent_mail: string;
+  parent_numero: string;
   matiere_id: number | null;
   date_debut_abonnement: string;
   date_fin_abonnement: string;

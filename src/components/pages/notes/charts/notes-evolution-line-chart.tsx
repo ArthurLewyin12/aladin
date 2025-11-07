@@ -126,7 +126,7 @@ export function NotesEvolutionLineChart({
               filter === "cours" ? "bg-green-500 hover:bg-green-600" : ""
             }
           >
-            Notes Cours
+            Notes Classe
           </Button>
           <Button
             variant={filter === "both" ? "default" : "outline"}

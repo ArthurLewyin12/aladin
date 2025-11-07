@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createGroupe } from "@/services/controllers/groupe.controller";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 
 /**
@@ -16,7 +16,7 @@ export const useCreateGroupe = () => {
   return useMutation({
     mutationFn: createGroupe,
     onSuccess: (data) => {
-      toast.success(data.message || "Groupe créé avec succès !");
+      toast({ message: data.message || "Groupe créé avec succès !", variant: "success" });
       // Invalider la requête qui récupère la liste des groupes pour la mettre à jour
       queryClient.invalidateQueries({ queryKey: createQueryKey("groupes") });
       // Invalider aussi les groupes du parent (parent profil)
@@ -26,7 +26,7 @@ export const useCreateGroupe = () => {
     },
     onError: (error) => {
       console.error("Erreur lors de la création du groupe", error);
-      toast.error("Une erreur est survenue lors de la création du groupe.");
+      toast({ message: "Une erreur est survenue lors de la création du groupe.", variant: "error" });
     },
   });
 };

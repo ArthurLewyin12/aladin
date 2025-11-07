@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createStudyPlan } from "@/services/controllers/study-plan.controller";
 import { CreateStudyPlanPayload } from "@/services/controllers/types/common/study-plan.types";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 
 /**
@@ -15,7 +15,7 @@ export const useCreateStudyPlan = () => {
     onSuccess: (data) => {
       // L'API renvoie 201 en cas de succès
       if (data.success) {
-        toast.success("Créneau ajouté au planning avec succès !");
+        toast({ message: "Créneau ajouté au planning avec succès !", variant: "success" });
         queryClient.invalidateQueries({
           queryKey: createQueryKey("study-plans"),
         });
@@ -30,16 +30,12 @@ export const useCreateStudyPlan = () => {
         responseData.success === false &&
         responseData.conflict
       ) {
-        toast.error(responseData.message || "Conflit de planning détecté.", {
-          description: responseData.suggestion,
-        });
+        toast({ message: `${responseData.message || "Conflit de planning détecté."} ${responseData.suggestion || ""}`, variant: "error" });
       } else {
         // Gère les autres erreurs
         const message =
           responseData?.message || error.message || "Une erreur est survenue.";
-        toast.error("Erreur", {
-          description: message,
-        });
+        toast({ message: `Erreur: ${message}`, variant: "error" });
       }
     },
   });

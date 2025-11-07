@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteStudyPlan } from "@/services/controllers/study-plan.controller";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 
 /**
@@ -13,12 +13,12 @@ export const useDeleteStudyPlan = () => {
     mutationFn: (id: number) => deleteStudyPlan(id),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(data.message || "Créneau supprimé avec succès !");
+        toast({ message: data.message || "Créneau supprimé avec succès !", variant: "success" });
         queryClient.invalidateQueries({
           queryKey: createQueryKey("study-plans"),
         });
       } else {
-        toast.error(data.message || "La suppression a échoué.");
+        toast({ message: data.message || "La suppression a échoué.", variant: "error" });
       }
     },
     onError: (error: any) => {
@@ -26,9 +26,7 @@ export const useDeleteStudyPlan = () => {
         error?.response?.data?.message ||
         error.message ||
         "Une erreur est survenue.";
-      toast.error("Erreur", {
-        description: message,
-      });
+      toast({ message: `Erreur: ${message}`, variant: "error" });
     },
   });
 };

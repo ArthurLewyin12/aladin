@@ -1,13 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
+import { useCourses, Course } from "@/services/hooks/professeur/useCourses";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BookOpen, FileText, Plus, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { CourseCard } from "./course-card";
 import Image from "next/image";
+
+const CARD_COLORS = [
+  "bg-[#F5E6D3]", // Beige/Pêche
+  "bg-[#D4EBE8]", // Bleu clair
+  "bg-[#E5DFF7]", // Violet clair
+  "bg-[#FFE8D6]", // Orange clair
+  "bg-[#F0F9FF]", // Bleu très clair
+  "bg-[#FEF3C7]", // Jaune clair
+];
 
 export function TeacherCourseList() {
   const router = useRouter();
@@ -21,10 +33,19 @@ export function TeacherCourseList() {
   const { data: classes, isLoading: isLoadingClasses } = useClasses();
   const hasClasses = (classes || []).length > 0;
 
-  // TODO: Intégrer l'API pour récupérer les cours des classes du professeur
-  const courses: any[] = [];
+  // Récupérer les cours du professeur
+  const { data: coursesData, isLoading: isLoadingCourses } = useCourses();
+  const courses = coursesData?.courses || [];
 
-  if (isLoadingSubjects || isLoadingClasses) {
+  // Enrichir les cours avec les couleurs
+  const enrichedCourses = useMemo(() => {
+    return courses.map((course: Course, index: number) => ({
+      ...course,
+      cardColor: CARD_COLORS[index % CARD_COLORS.length],
+    }));
+  }, [courses]);
+
+  if (isLoadingSubjects || isLoadingClasses || isLoadingCourses) {
     return (
       <div className="flex justify-center items-center py-12">
         <Spinner />
@@ -107,17 +128,14 @@ export function TeacherCourseList() {
               avec vos élèves !
             </p>
 
-            <Button
-              size="lg"
-              onClick={() => {
-                // TODO: Rediriger vers la page de création de cours
-                console.log("Créer un cours");
-              }}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
-            >
-              <Plus className="w-4 sm:w-5 h-5 mr-2" />
-              Créer un cours
-            </Button>
+              <Button
+                size="lg"
+                onClick={() => router.push("/teacher/courses/create")}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+              >
+                <Plus className="w-4 sm:w-5 h-5 mr-2" />
+                Créer un cours
+              </Button>
           </div>
         </div>
       </div>
@@ -138,10 +156,7 @@ export function TeacherCourseList() {
         </div>
         <Button
           size="lg"
-          onClick={() => {
-            // TODO: Rediriger vers la page de création de cours
-            console.log("Créer un cours");
-          }}
+          onClick={() => router.push("/teacher/courses/create")}
           className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
         >
           <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
@@ -150,9 +165,21 @@ export function TeacherCourseList() {
         </Button>
       </div>
 
-      {/* TODO: Ajouter la grille des cours */}
+      {/* Grille des cours */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Les cours seront affichés ici */}
+        {enrichedCourses.map((course) => (
+          <CourseCard
+            key={`course-${course.id}`}
+            course={course}
+            cardColor={course.cardColor}
+            onEdit={(courseId) => router.push(`/teacher/courses/${courseId}/edit`)}
+            onPreview={(courseId) => router.push(`/teacher/courses/${courseId}/preview`)}
+            onDelete={(courseId) => {
+              // TODO: Implémenter la suppression
+              console.log("Supprimer cours", courseId);
+            }}
+          />
+        ))}
       </div>
     </div>
   );

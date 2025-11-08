@@ -8,11 +8,13 @@ import { QuizSubmitPayload } from "@/services/controllers/types/common";
 export const useSubmitGroupQuiz = () => {
   return useMutation({
     mutationFn: ({
+      groupeId,
       quizId,
       payload,
     }: {
+      groupeId: number;
       quizId: number;
       payload: QuizSubmitPayload;
-    }) => submitGroupQuiz({ quizId, payload }),
+    }) => submitGroupQuiz({ groupeId, quizId, payload }),
   });
 };

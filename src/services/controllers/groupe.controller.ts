@@ -269,21 +269,24 @@ export const startGroupQuiz = async ({
 
 /**
  * Soumet les réponses d'un quiz de groupe.
+ * @param {number} groupeId - L'ID du groupe.
  * @param {number} quizId - L'ID du quiz à soumettre.
  * @param {QuizSubmitPayload} payload - Le score de l'utilisateur.
  * @returns {Promise<SubmitGroupQuizResponse>} Une promesse résolue avec les corrections.
  */
 export const submitGroupQuiz = async ({
+  groupeId,
   quizId,
   payload,
 }: {
+  groupeId: number;
   quizId: number;
   payload: QuizSubmitPayload;
 }): Promise<SubmitGroupQuizResponse> => {
-  const endpoint = QuizEndpoints.QUIZ_SUBMIT.replace(
-    "{quiz_id}",
-    quizId.toString(),
-  );
+  const endpoint = GroupeEndpoints.SUBMIT_GROUP_QUIZ.replace(
+    "{groupeId}",
+    groupeId.toString(),
+  ).replace("{quizId}", quizId.toString());
   return request.post<SubmitGroupQuizResponse>(endpoint, payload);
 };
 

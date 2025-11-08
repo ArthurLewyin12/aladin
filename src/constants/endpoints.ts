@@ -107,6 +107,7 @@ export enum GroupeEndpoints {
   REACTIVATE_GROUPE = "api/groupes/{groupeId}/reactivate",
   CREATE_QUIZ = "api/quizzes/generate/group",
   START_GROUP_QUIZ = "/api/groupes/{groupeId}/quizzes/{quizId}/start",
+  SUBMIT_GROUP_QUIZ = "/api/groupes/{groupeId}/quizzes/{quizId}/submit",
   GROUP_QUIZ_NOTES = "api/groupes/{groupeId}/quizzes/{quizId}/notes/all",
 }
 

@@ -148,6 +148,7 @@ export default function GroupQuizTakingPage() {
 
     try {
       const result = await submitQuizMutation.mutateAsync({
+        groupeId: Number(groupId),
         quizId: Number(quizId),
         payload,
       });
@@ -155,7 +156,6 @@ export default function GroupQuizTakingPage() {
       console.log("=== RÉPONSE DU BACKEND ===");
       console.log("Résultat complet:", result);
       console.log("result.corrections:", result.corrections);
-      console.log("result.corrections.qcm:", result.corrections?.qcm);
       console.log("result.note:", result.note);
       console.log("result.note.note:", result.note?.note);
 
@@ -164,16 +164,20 @@ export default function GroupQuizTakingPage() {
         message: result.message || "Quiz terminé avec succès!",
       });
 
-      // Sauvegarder les corrections QCM avec les réponses utilisateur
-      const correctionsWithUserAnswers = result.corrections.qcm.map((correction: any, index: number) => ({
-        ...correction,
-        user_answer: userAnswers[quizQuestions[index]?.id]?.toString(),
-      }));
+      // Sauvegarder les corrections avec les réponses utilisateur
+      if (result.corrections && Array.isArray(result.corrections)) {
+        const correctionsWithUserAnswers = result.corrections.map((correction: any, index: number) => ({
+          ...correction,
+          user_answer: userAnswers[quizQuestions[index]?.id]?.toString(),
+        }));
 
-      sessionStorage.setItem(
-        "groupQuizCorrections",
-        JSON.stringify(correctionsWithUserAnswers),
-      );
+        sessionStorage.setItem(
+          "groupQuizCorrections",
+          JSON.stringify(correctionsWithUserAnswers),
+        );
+      } else {
+        console.warn("⚠️ Pas de corrections dans la réponse!");
+      }
 
       // Sauvegarder le score retourné par le backend (déjà sur 20)
       if (result.note && result.note.note !== undefined) {
@@ -187,11 +191,18 @@ export default function GroupQuizTakingPage() {
       sessionStorage.removeItem("groupQuizData");
 
       router.push(`/student/groups/${groupId}/quiz/${quizId}/results`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la soumission du quiz", error);
+
+      // Extraire le message d'erreur du backend
+      const errorMessage = error?.response?.data?.error ||
+                          error?.response?.data?.message ||
+                          error?.message ||
+                          "Impossible de soumettre le quiz. Veuillez réessayer.";
+
       toast({
         variant: "error",
-        message: "Impossible de soumettre le quiz. Veuillez réessayer.",
+        message: errorMessage,
       });
       setIsSubmitting(false);
     }

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 // import { toast } from "sonner";
 import { toast } from "@/lib/toast";
+import { convertScoreToNote } from "@/lib/quiz-score";
 
 interface CorrectionQCM {
   question: string;
@@ -152,7 +153,7 @@ export default function GroupQuizResultPage() {
 
       if (storedScore) {
         const parsedScore = parseFloat(storedScore);
-        console.log("Score parsé:", parsedScore);
+        console.log("Score brut du backend:", parsedScore);
         setScore(parsedScore);
       } else {
         console.warn("⚠️ Pas de score dans sessionStorage!");
@@ -184,6 +185,9 @@ export default function GroupQuizResultPage() {
 
   const totalQuestions = corrections.length;
   const hasScore = score !== null;
+
+  // Convertir le score brut (nombre de bonnes réponses) en note sur 20
+  const noteSur20 = hasScore ? convertScoreToNote(score, totalQuestions) : null;
 
   return (
     <div className="min-h-screen">
@@ -221,7 +225,7 @@ export default function GroupQuizResultPage() {
 
         {/* Statistiques */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {hasScore && (
+          {hasScore && noteSur20 !== null && (
             <div className="bg-white p-5 rounded-2xl shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-50 rounded-lg">
@@ -229,7 +233,7 @@ export default function GroupQuizResultPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Ta note</p>
-                  <p className="text-2xl font-bold text-gray-900">{score}/20</p>
+                  <p className="text-2xl font-bold text-gray-900">{noteSur20}/20</p>
                 </div>
               </div>
             </div>

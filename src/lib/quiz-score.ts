@@ -62,6 +62,7 @@ export function calculateQuizScore(
   let correctAnswers = 0;
 
   // Compter les bonnes réponses
+  // Les questions non répondues sont automatiquement comptées comme incorrectes
   for (const question of questions) {
     const userAnswerId = userAnswers[question.id];
 
@@ -69,6 +70,8 @@ export function calculateQuizScore(
     if (userAnswerId != null && userAnswerId == question.bonne_reponse_id) {
       correctAnswers++;
     }
+    // Si la question n'a pas été répondu (userAnswerId est undefined/null),
+    // elle n'est pas ajoutée à correctAnswers, donc elle compte comme incorrecte
   }
 
   const totalQuestions = questions.length;

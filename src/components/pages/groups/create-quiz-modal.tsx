@@ -40,10 +40,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { createQueryKey } from "@/lib/request";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
-import { Checkbox } from "@/components/ui/checkbox";
-import { FileUpload } from "@/components/ui/file-upload";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { cn } from "@/lib/utils";
+// Temporarily commented out - document upload functionality
+// import { Checkbox } from "@/components/ui/checkbox";
+// import { FileUpload } from "@/components/ui/file-upload";
+// import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CreateQuizModalProps {
   isOpen: boolean;
@@ -78,8 +80,9 @@ export const CreateQuizModal = ({
   matieres,
 }: CreateQuizModalProps) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [useDocument, setUseDocument] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // Temporarily commented out - document upload functionality
+  // const [useDocument, setUseDocument] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -116,14 +119,16 @@ export const CreateQuizModal = ({
         nombre_questions: Number(data.nombre_questions),
         temps: Number(data.temps) * Number(data.nombre_questions),
         chapter_id: Number(data.chapter_id),
-        document_file: selectedFile || undefined,
+        // Temporarily commented out - document upload functionality
+        // document_file: selectedFile || undefined,
       },
       {
         onSuccess: () => {
           onClose();
           form.reset();
-          setUseDocument(false);
-          setSelectedFile(null);
+          // Temporarily commented out - document upload functionality
+          // setUseDocument(false);
+          // setSelectedFile(null);
           queryClient.invalidateQueries({
             queryKey: createQueryKey("detailedGroupe", groupId),
           });
@@ -134,7 +139,7 @@ export const CreateQuizModal = ({
 
   const FormContent = (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         <FormField
           control={form.control}
           name="title"
@@ -151,70 +156,169 @@ export const CreateQuizModal = ({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="matiere_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm text-gray-600">Matière</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
-                    <SelectValue placeholder="Sélectionner une matière" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {matieres.map((matiere) => (
-                    <SelectItem key={matiere.id} value={matiere.id.toString()}>
-                      {matiere.libelle}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="chapter_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm text-gray-600">Chapitre</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={!watchedMatiere || isLoadingChapitres}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
-                    <SelectValue placeholder="Sélectionner un chapitre" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {isLoadingChapitres ? (
-                    <SelectItem value="loading" disabled>
-                      Chargement...
-                    </SelectItem>
-                  ) : (
-                    chapitres?.map((chapitre) => (
-                      <SelectItem
-                        key={chapitre.id}
-                        value={chapitre.id.toString()}
-                      >
-                        {chapitre.libelle}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <FormField
+            control={form.control}
+            name="matiere_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-gray-600">Matière</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
+                      <SelectValue placeholder="Sélectionner une matière" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {matieres.map((matiere) => (
+                      <SelectItem key={matiere.id} value={matiere.id.toString()}>
+                        {matiere.libelle}
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Checkbox pour activer l'upload de document */}
+          <FormField
+            control={form.control}
+            name="chapter_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-gray-600">Chapitre</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={!watchedMatiere || isLoadingChapitres}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
+                      <SelectValue placeholder="Sélectionner un chapitre" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {isLoadingChapitres ? (
+                      <SelectItem value="loading" disabled>
+                        Chargement...
+                      </SelectItem>
+                    ) : (
+                      chapitres?.map((chapitre) => (
+                        <SelectItem
+                          key={chapitre.id}
+                          value={chapitre.id.toString()}
+                        >
+                          {chapitre.libelle}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <FormField
+            control={form.control}
+            name="difficulty"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-gray-600">
+                  Difficulté
+                </FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
+                      <SelectValue placeholder="Difficulté" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Facile">Facile</SelectItem>
+                    <SelectItem value="Moyen">Moyen</SelectItem>
+                    <SelectItem value="Difficile">Difficile</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="nombre_questions"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-gray-600">
+                  Questions
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    className="mt-1 bg-gray-50 border-gray-200"
+                    placeholder="10"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="temps"
+            render={({ field }) => {
+              const nombreQuestions = form.watch("nombre_questions");
+              const tempsParQuestion = field.value;
+              const durationTotal =
+                Number(tempsParQuestion) * Number(nombreQuestions || 0);
+              const minutes = Math.floor(durationTotal / 60);
+              const seconds = durationTotal % 60;
+
+              const displayDuration = () => {
+                if (durationTotal < 60) {
+                  return `${durationTotal}s`;
+                } else if (seconds === 0) {
+                  return `${minutes}min`;
+                } else {
+                  return `${minutes}min ${seconds}s`;
+                }
+              };
+
+              return (
+                <FormItem>
+                  <FormLabel className="text-sm text-gray-600">
+                    Temps/question
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="mt-1 bg-gray-50 border-gray-200">
+                        <SelectValue placeholder="Durée" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="30">30s</SelectItem>
+                      <SelectItem value="60">1min</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {nombreQuestions && tempsParQuestion && durationTotal > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Total: {displayDuration()}
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        </div>
+
+        {/* Temporarily commented out - document upload functionality */}
+        {/*
         <div className="flex items-start space-x-2 pt-2">
           <Checkbox
             id="useDocument"
@@ -241,7 +345,6 @@ export const CreateQuizModal = ({
           </div>
         </div>
 
-        {/* Zone d'upload conditionnelle */}
         {useDocument && (
           <div className="space-y-2">
             <FileUpload
@@ -254,99 +357,7 @@ export const CreateQuizModal = ({
             />
           </div>
         )}
-
-        <FormField
-          control={form.control}
-          name="difficulty"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm text-gray-600">
-                Difficulté
-              </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
-                    <SelectValue placeholder="Sélectionner une difficulté" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Facile">Facile</SelectItem>
-                  <SelectItem value="Moyen">Moyen</SelectItem>
-                  <SelectItem value="Difficile">Difficile</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="nombre_questions"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm text-gray-600">
-                Nombre de questions
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  {...field}
-                  className="mt-1 bg-gray-50 border-gray-200"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="temps"
-          render={({ field }) => {
-            const nombreQuestions = form.watch("nombre_questions");
-            const tempsParQuestion = field.value;
-            const durationTotal =
-              Number(tempsParQuestion) * Number(nombreQuestions || 0);
-            const minutes = Math.floor(durationTotal / 60);
-            const seconds = durationTotal % 60;
-
-            const displayDuration = () => {
-              if (durationTotal < 60) {
-                return `${durationTotal} sec`;
-              } else if (seconds === 0) {
-                return `${minutes} min`;
-              } else {
-                return `${minutes} min ${seconds} sec`;
-              }
-            };
-
-            return (
-              <FormItem>
-                <FormLabel className="text-sm text-gray-600">
-                  Temps par question
-                </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="mt-1 bg-gray-50 border-gray-200">
-                      <SelectValue placeholder="Sélectionner la durée" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="30">30 secondes</SelectItem>
-                    <SelectItem value="60">60 secondes (1 min)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {nombreQuestions && tempsParQuestion && durationTotal > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    💡 Durée totale du quiz : {displayDuration()}
-                  </p>
-                )}
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
+        */}
       </form>
     </Form>
   );
@@ -354,10 +365,7 @@ export const CreateQuizModal = ({
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent
-          className="bg-white flex flex-col"
-          style={{ maxHeight: useDocument ? "90vh" : "auto" }}
-        >
+      <DrawerContent className="bg-white flex flex-col">
           <GenerationLoadingOverlay
             isLoading={isPending}
             messages={quizLoadingMessages}
@@ -371,13 +379,7 @@ export const CreateQuizModal = ({
               <span className="sr-only">Close</span>
             </DrawerClose>
           </DrawerHeader>
-          {useDocument ? (
-            <ScrollArea className="flex-1 overflow-y-auto">
-              <div className="px-4 pb-4">{FormContent}</div>
-            </ScrollArea>
-          ) : (
-            <div className="px-4 pb-4">{FormContent}</div>
-          )}
+          <div className="px-4 pb-4">{FormContent}</div>
           <DrawerFooter className="flex-row gap-3 justify-end flex-shrink-0 border-t">
             <Button variant="ghost" onClick={onClose} className="flex-1">
               Annuler
@@ -397,12 +399,7 @@ export const CreateQuizModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        className={cn(
-          "sm:max-w-[500px] bg-white flex flex-col",
-          useDocument ? "max-h-[90vh]" : "",
-        )}
-      >
+      <DialogContent className="sm:max-w-[700px] bg-white flex flex-col">
         <GenerationLoadingOverlay
           isLoading={isPending}
           messages={quizLoadingMessages}
@@ -412,13 +409,7 @@ export const CreateQuizModal = ({
             Créer un Quiz
           </DialogTitle>
         </DialogHeader>
-        {useDocument ? (
-          <ScrollArea className="flex-1 overflow-y-auto pr-4 -mr-4">
-            <div className="mt-4 pb-4">{FormContent}</div>
-          </ScrollArea>
-        ) : (
-          <div className="mt-4">{FormContent}</div>
-        )}
+        <div className="mt-4">{FormContent}</div>
         <div className="flex gap-3 mt-6 justify-end flex-shrink-0 border-t pt-4">
           <Button variant="ghost" onClick={onClose} className="px-6">
             Annuler

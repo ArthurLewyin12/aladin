@@ -16,6 +16,7 @@ interface CorrectionQCM {
   question: string;
   propositions: Record<string, string>;
   bonne_reponse: string;
+  user_answer?: string; // Réponse donnée par l'utilisateur (optionnel)
 }
 
 // Composant Card pour une question QCM
@@ -33,6 +34,8 @@ interface QuestionCardProps {
 
 const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
+  const userAnswered = qcmItem.user_answer !== undefined && qcmItem.user_answer !== null;
+  const userAnsweredCorrectly = userAnswered && qcmItem.user_answer === qcmItem.bonne_reponse;
 
   return (
     <div
@@ -46,6 +49,25 @@ const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
           <p className="font-semibold text-gray-900 text-base sm:text-lg leading-relaxed">
             {qcmItem.question}
           </p>
+          {/* Indicateur de statut de réponse */}
+          <div className="mt-2 flex items-center gap-2">
+            {userAnswered ? (
+              userAnsweredCorrectly ? (
+                <span className="inline-flex items-center gap-1 text-sm text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Correct
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-sm text-red-700 bg-red-50 px-2 py-1 rounded-full">
+                  ❌ Incorrect
+                </span>
+              )
+            ) : (
+              <span className="inline-flex items-center gap-1 text-sm text-orange-700 bg-orange-50 px-2 py-1 rounded-full">
+                ⏰ Non répondu (0 point)
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -53,28 +75,41 @@ const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
       <div className="space-y-2 mb-4">
         {Object.entries(qcmItem.propositions).map(([key, value]) => {
           const isCorrect = key === qcmItem.bonne_reponse;
+          const isUserAnswer = userAnswered && key === qcmItem.user_answer;
+
           return (
             <div
               key={key}
               className={`p-3 rounded-lg border flex items-start gap-2 ${
                 isCorrect
                   ? "bg-green-50 border-green-200"
+                  : isUserAnswer
+                  ? "bg-red-50 border-red-200"
                   : "bg-white border-gray-200"
               }`}
             >
               {isCorrect ? (
                 <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+              ) : isUserAnswer ? (
+                <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-red-500 mt-0.5 flex-shrink-0" />
               ) : (
                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 mt-0.5 flex-shrink-0" />
               )}
               <div className="flex-1">
                 <p
                   className={`text-sm ${
-                    isCorrect ? "text-green-900 font-medium" : "text-gray-700"
+                    isCorrect
+                      ? "text-green-900 font-medium"
+                      : isUserAnswer
+                      ? "text-red-900 font-medium"
+                      : "text-gray-700"
                   }`}
                 >
                   <span className="font-semibold mr-2">{key}.</span>
                   {value}
+                  {isUserAnswer && !isCorrect && (
+                    <span className="ml-2 text-xs text-red-600">(ta réponse)</span>
+                  )}
                 </p>
               </div>
             </div>

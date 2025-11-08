@@ -164,10 +164,15 @@ export default function GroupQuizTakingPage() {
         message: result.message || "Quiz terminé avec succès!",
       });
 
-      // Sauvegarder les corrections QCM
+      // Sauvegarder les corrections QCM avec les réponses utilisateur
+      const correctionsWithUserAnswers = result.corrections.qcm.map((correction: any, index: number) => ({
+        ...correction,
+        user_answer: userAnswers[quizQuestions[index]?.id]?.toString(),
+      }));
+
       sessionStorage.setItem(
         "groupQuizCorrections",
-        JSON.stringify(result.corrections.qcm),
+        JSON.stringify(correctionsWithUserAnswers),
       );
 
       // Sauvegarder le score retourné par le backend (déjà sur 20)
@@ -217,6 +222,8 @@ export default function GroupQuizTakingPage() {
         if (prev <= 1) {
           clearInterval(timer);
           // Auto-submit quand le temps est écoulé
+          // Les questions non répondues sont déjà comptées comme incorrectes (0 point)
+          // car elles ne sont pas dans userAnswers
           handleSubmitQuiz();
           return 0;
         }

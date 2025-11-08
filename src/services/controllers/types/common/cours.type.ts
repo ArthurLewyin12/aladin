@@ -61,3 +61,38 @@ export type Course = {
 export type Courses = {
   courses: Course[];
 };
+
+/**
+ * Type pour un cours complet du professeur (avec contenu Lexical)
+ */
+export type ProfesseurCourse = {
+  id: number;
+  titre: string;
+  classe_id: number;
+  chapitre_id: number;
+  professeur_id: number;
+  classe?: {
+    id: number;
+    nom: string;
+  };
+  chapitre?: Chapitre;
+  content?: {
+    lexical_state: any;
+    html: string;
+    plain_text: string;
+    metadata: {
+      word_count: number;
+      character_count: number;
+      has_images: boolean;
+      has_tables: boolean;
+      has_videos: boolean;
+      has_math: boolean;
+      image_count: number;
+      video_count: number;
+      table_count: number;
+    };
+  };
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};

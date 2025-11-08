@@ -269,11 +269,14 @@ export enum ProfesseurEndpoints {
   GET_QUIZ_NOTES = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/notes",
 
   // Cours de classe
+  GET_COURSES = "/api/prof/cours",
+  GET_COURSE = "/api/prof/cours/{cours_id}",
   CREATE_MANUAL_COURSE = "/api/prof/classes/{classe_id}/courses/manual",
   GENERATE_COURSE = "/api/prof/classes/{classe_id}/courses/generate",
   UPDATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}",
   ACTIVATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}/activate",
   DEACTIVATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}/deactivate",
+  UPLOAD_COURSE_IMAGE = "/api/prof/cours/upload-image",
 
   // Notes et évaluations
   SAVE_GRADES = "/api/prof/classes/{classe_id}/grades",

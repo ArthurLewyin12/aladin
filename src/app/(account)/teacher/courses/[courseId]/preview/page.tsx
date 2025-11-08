@@ -11,7 +11,7 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
-import { useCourse } from "@/services/hooks/professeur/useCourses";
+import { useCourse } from "@/services/hooks/professeur/useCourse";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -118,12 +118,6 @@ export default function CoursePreviewPage() {
                       <span>{course.classe.nom}</span>
                     </div>
                   )}
-                  {course.matiere && (
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-gray-500" />
-                      <span>{course.matiere.libelle}</span>
-                    </div>
-                  )}
                   {course.chapitre && (
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-gray-500" />
@@ -149,12 +143,19 @@ export default function CoursePreviewPage() {
                       Statistiques
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1">
-                      <div>{course.content.metadata.word_count} mots</div>
+                      <div>📝 {course.content.metadata.word_count} mots</div>
+                      <div>🔤 {course.content.metadata.character_count} caractères</div>
                       {course.content.metadata.has_images && (
-                        <div>Contient des images</div>
+                        <div>🖼️ {course.content.metadata.image_count} image{course.content.metadata.image_count > 1 ? 's' : ''}</div>
+                      )}
+                      {course.content.metadata.has_videos && (
+                        <div>🎥 {course.content.metadata.video_count} vidéo{course.content.metadata.video_count > 1 ? 's' : ''}</div>
                       )}
                       {course.content.metadata.has_tables && (
-                        <div>Contient des tableaux</div>
+                        <div>📊 {course.content.metadata.table_count} tableau{course.content.metadata.table_count > 1 ? 'x' : ''}</div>
+                      )}
+                      {course.content.metadata.has_math && (
+                        <div>➗ Formules mathématiques</div>
                       )}
                     </div>
                   </div>
@@ -183,34 +184,39 @@ export default function CoursePreviewPage() {
                 <CardTitle>Aperçu du contenu</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="min-h-[400px] p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  {course.content?.plain_text ? (
-                    <div className="prose prose-gray max-w-none">
-                      <div className="whitespace-pre-wrap text-gray-700">
-                        {course.content.plain_text}
+                <div className="min-h-[400px]">
+                  {course.content?.html ? (
+                    <div
+                      className="prose prose-lg max-w-none p-6 bg-white rounded-lg border border-gray-200"
+                      dangerouslySetInnerHTML={{ __html: course.content.html }}
+                    />
+                  ) : course.content?.plain_text ? (
+                    <div className="p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="prose prose-gray max-w-none">
+                        <div className="whitespace-pre-wrap text-gray-700">
+                          {course.content.plain_text}
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500 p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                       <BookOpen className="w-12 h-12 mb-4 text-gray-400" />
                       <p className="text-center">
-                        Le contenu riche du cours sera affiché ici une fois
-                        rendu.
+                        Aucun contenu disponible.
                         <br />
-                        Pour l'instant, seules les métadonnées sont disponibles.
+                        Éditez ce cours pour ajouter du contenu.
                       </p>
                     </div>
                   )}
                 </div>
 
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note :</strong> Cette prévisualisation montre le
-                    contenu texte brut. Le rendu complet avec mise en forme,
-                    images et formules mathématiques sera disponible une fois le
-                    lecteur de cours implémenté.
-                  </p>
-                </div>
+                {course.content?.html && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      <strong>✓ Rendu HTML :</strong> Cette prévisualisation affiche le contenu avec sa mise en forme complète (texte riche, images, tableaux, etc.).
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

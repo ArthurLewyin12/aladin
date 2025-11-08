@@ -26,8 +26,9 @@ export function TeacherCourseList() {
 
   // Récupérer les matières enseignées du prof
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
-  const subjectsResponse = subjectsData || { matieres: [], count: 0, max: 3 };
-  const hasDefinedSubjects = subjectsResponse.matieres.length > 0;
+  const subjectsResponse = subjectsData || { matieres: [], libelles: [], count: 0, max: 3 };
+  // Vérifier si le prof a défini des matières (nouveau format: libelles contient les IDs)
+  const hasDefinedSubjects = (subjectsResponse.libelles && subjectsResponse.libelles.length > 0) || subjectsResponse.matieres.length > 0;
 
   // Récupérer les classes du prof
   const { data: classes, isLoading: isLoadingClasses } = useClasses();

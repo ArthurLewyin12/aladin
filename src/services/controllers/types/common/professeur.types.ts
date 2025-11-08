@@ -17,12 +17,13 @@ export type MatiereEnseignee = {
 
 export type GetSubjectsResponse = {
   matieres: MatiereEnseignee[];
+  libelles?: number[]; // IDs des matières enseignées (nouveau format backend)
   count: number;
   max: number;
 };
 
 export type SetSubjectsPayload = {
-  matiere_ids: number[];
+  matieres: string[];
 };
 
 export type SetSubjectsResponse = {
@@ -317,11 +318,40 @@ export type GetQuizNotesResponse = {
 /**
  * Types pour les cours de classe
  */
+
+/**
+ * Métadonnées extraites du contenu Lexical
+ */
+export type CourseContentMetadata = {
+  word_count: number;
+  character_count: number;
+  has_images: boolean;
+  has_tables: boolean;
+  has_videos: boolean;
+  has_math: boolean;
+  image_count: number;
+  video_count: number;
+  table_count: number;
+};
+
+/**
+ * Contenu du cours avec état Lexical et métadonnées
+ */
+export type CourseContent = {
+  lexical_state: any; // JSON sérialisé de l'état Lexical
+  html: string; // Version HTML pour affichage
+  plain_text: string; // Texte brut pour recherche
+  metadata: CourseContentMetadata;
+};
+
+/**
+ * Payload pour créer un cours manuellement avec l'éditeur Lexical
+ */
 export type CreateManualCoursePayload = {
   titre: string;
   chapitre_id: number;
-  text: string;
-  questions: Array<{
+  content: CourseContent;
+  questions?: Array<{
     question: string;
     reponse: string;
   }>;
@@ -342,8 +372,12 @@ export type GenerateCourseResponse = {
   cours: Course & { classe_id: number };
 };
 
+/**
+ * Payload pour mettre à jour un cours
+ */
 export type UpdateCoursePayload = {
-  text?: string;
+  titre?: string;
+  content?: CourseContent;
   questions?: Array<{
     question: string;
     reponse: string;
@@ -353,6 +387,22 @@ export type UpdateCoursePayload = {
 export type UpdateCourseResponse = {
   message: string;
   cours: Course;
+};
+
+/**
+ * Payload pour uploader une image dans le cours
+ */
+export type UploadCourseImagePayload = {
+  image: File;
+  cours_id?: number; // Optionnel si l'image est uploadée avant la création du cours
+};
+
+export type UploadCourseImageResponse = {
+  message: string;
+  url: string; // URL de l'image uploadée
+  path: string; // Chemin relatif de l'image
+  filename: string;
+  size: number;
 };
 
 export type ActivateCourseResponse = {

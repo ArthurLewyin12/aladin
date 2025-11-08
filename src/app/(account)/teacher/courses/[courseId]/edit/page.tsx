@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,17 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Eye, FileText, AlertCircle } from "lucide-react";
 import { Editor } from "@/components/blocks/editor-x/editor";
-import { SerializedEditorState } from "lexical";
+import { SerializedEditorState, LexicalEditor } from "lexical";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
-import { useCourse } from "@/services/hooks/professeur/useCourses";
+import { useCourse } from "@/services/hooks/professeur/useCourse";
+import { useUpdateCourse } from "@/services/hooks/professeur/useUpdateCourse";
+import { useCourseEditor } from "@/stores/useCourseEditor";
+import { extractCourseContent } from "@/lib/lexical-utils";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useClasse } from "@/services/hooks/professeur/useClasse";
+import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
 
 export default function EditCoursePage() {
   const params = useParams();
@@ -29,32 +34,85 @@ export default function EditCoursePage() {
 
   const [title, setTitle] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedMatiere, setSelectedMatiere] = useState("");
   const [selectedChapter, setSelectedChapter] = useState("");
   const [editorState, setEditorState] = useState<
     SerializedEditorState | undefined
   >();
-  const [isSaving, setIsSaving] = useState(false);
+  const editorRef = useRef<LexicalEditor | null>(null);
 
   // Fetch data
   const { data: classes, isLoading: isLoadingClasses } = useClasses();
   const { data: course, isLoading: isLoadingCourse } = useCourse(courseId);
+  const { data: classeDetails, isLoading: isLoadingClasseDetails } = useClasse(
+    selectedClass ? Number(selectedClass) : null
+  );
+  const { data: chapitres, isLoading: isLoadingChapitres } = useChapitres(
+    selectedMatiere ? Number(selectedMatiere) : null
+  );
+  const { mutate: updateCourseMutation, isPending: isSaving } =
+    useUpdateCourse();
+  const { updateDraft, markAsSaved, hasUnsavedChanges } = useCourseEditor();
 
   // Initialize form with course data
   useEffect(() => {
     if (course) {
       setTitle(course.titre);
       setSelectedClass(course.classe?.id.toString() || "");
+      setSelectedMatiere(course.chapitre?.matiere_id.toString() || "");
       setSelectedChapter(course.chapitre?.id.toString() || "");
 
-      // TODO: Load editor state from course.content.lexical_state
+      // Load editor state from course.content.lexical_state
       if (course.content?.lexical_state) {
         setEditorState(course.content.lexical_state);
       }
     }
   }, [course]);
 
+  // Reset matiere and chapter when class changes
+  useEffect(() => {
+    if (!isLoadingCourse && course) {
+      // Only reset if we're not loading initial data
+      return;
+    }
+    setSelectedMatiere("");
+    setSelectedChapter("");
+  }, [selectedClass, isLoadingCourse, course]);
+
+  // Reset chapter when matiere changes
+  useEffect(() => {
+    if (!isLoadingCourse && course) {
+      // Only reset if we're not loading initial data
+      return;
+    }
+    setSelectedChapter("");
+  }, [selectedMatiere, isLoadingCourse, course]);
+
+  // Track changes for autosave
+  useEffect(() => {
+    if (editorRef.current && title) {
+      updateDraft({
+        id: courseId,
+        titre: title,
+        chapitre_id: selectedChapter ? Number(selectedChapter) : null,
+        classe_id: selectedClass ? Number(selectedClass) : null,
+        lexical_state: editorState,
+      });
+    }
+  }, [title, selectedClass, selectedChapter, editorState]);
+
   const handleBack = () => {
-    router.push("/teacher/courses");
+    if (hasUnsavedChanges) {
+      if (
+        confirm(
+          "Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?",
+        )
+      ) {
+        router.push("/teacher/courses");
+      }
+    } else {
+      router.push("/teacher/courses");
+    }
   };
 
   const handleSave = async () => {
@@ -66,31 +124,45 @@ export default function EditCoursePage() {
       return;
     }
 
-    setIsSaving(true);
-    try {
-      // TODO: Implement course update API call
-      console.log("Updating course:", {
-        id: courseId,
-        title,
-        classe_id: selectedClass,
-        chapitre_id: selectedChapter,
-        content: JSON.stringify(editorState),
-      });
-
+    if (!selectedClass || !selectedChapter) {
       toast({
-        variant: "success",
-        message: "Cours mis à jour avec succès !",
+        variant: "warning",
+        message: "Veuillez sélectionner une classe et un chapitre",
       });
+      return;
+    }
 
-      router.push("/teacher/courses");
-    } catch (error) {
+    if (!editorRef.current) {
       toast({
         variant: "error",
-        message: "Erreur lors de la mise à jour du cours",
+        message: "L'éditeur n'est pas encore prêt",
       });
+      return;
+    }
+
+    try {
+      // Extract complete content from Lexical editor
+      const content = extractCourseContent(editorRef.current);
+
+      // Update course via API
+      updateCourseMutation(
+        {
+          classeId: Number(selectedClass),
+          coursId: courseId,
+          payload: {
+            titre: title,
+            content,
+          },
+        },
+        {
+          onSuccess: () => {
+            markAsSaved();
+            router.push("/teacher/courses");
+          },
+        },
+      );
+    } catch (error) {
       console.error("Course update error:", error);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -253,6 +325,9 @@ export default function EditCoursePage() {
                   <Editor
                     editorSerializedState={editorState}
                     onSerializedChange={(value) => setEditorState(value)}
+                    onEditorReady={(editor) => {
+                      editorRef.current = editor;
+                    }}
                   />
                 </div>
               </CardContent>

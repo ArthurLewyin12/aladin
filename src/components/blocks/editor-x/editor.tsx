@@ -1,17 +1,32 @@
 "use client"
 
+import { useEffect } from "react"
 import {
   InitialConfigType,
   LexicalComposer,
 } from "@lexical/react/LexicalComposer"
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
-import { EditorState, SerializedEditorState } from "lexical"
+import { EditorState, SerializedEditorState, LexicalEditor } from "lexical"
 
 import { editorTheme } from "@/components/editor/themes/editor-theme"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 import { nodes } from "./nodes"
 import { Plugins } from "./plugins"
+
+// Plugin pour récupérer la référence de l'éditeur
+function EditorRefPlugin({ onReady }: { onReady?: (editor: LexicalEditor) => void }) {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    if (onReady) {
+      onReady(editor)
+    }
+  }, [editor, onReady])
+
+  return null
+}
 
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
@@ -27,11 +42,13 @@ export function Editor({
   editorSerializedState,
   onChange,
   onSerializedChange,
+  onEditorReady,
 }: {
   editorState?: EditorState
   editorSerializedState?: SerializedEditorState
   onChange?: (editorState: EditorState) => void
   onSerializedChange?: (editorSerializedState: SerializedEditorState) => void
+  onEditorReady?: (editor: import("lexical").LexicalEditor) => void
 }) {
   return (
     <div className="bg-background overflow-hidden rounded-lg border shadow">
@@ -46,6 +63,7 @@ export function Editor({
       >
         <TooltipProvider>
           <Plugins />
+          <EditorRefPlugin onReady={onEditorReady} />
 
           <OnChangePlugin
             ignoreSelectionChange={true}

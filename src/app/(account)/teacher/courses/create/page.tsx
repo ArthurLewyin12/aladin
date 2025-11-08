@@ -1,19 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Eye, FileText } from "lucide-react";
 import { Editor } from "@/components/blocks/editor-x/editor";
-import { SerializedEditorState } from "lexical";
+import { SerializedEditorState, LexicalEditor } from "lexical";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useSubjects } from "@/services/hooks/professeur/useSubjects";
+import { useCreateManualCourse } from "@/services/hooks/professeur/useCreateManualCourse";
+import { useCourseEditor } from "@/stores/useCourseEditor";
+import { extractCourseContent } from "@/lib/lexical-utils";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
+import { useClasse } from "@/services/hooks/professeur/useClasse";
+import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
 
 const initialValue = {
   root: {
@@ -49,49 +60,118 @@ export default function CreateCoursePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedMatiere, setSelectedMatiere] = useState("");
   const [selectedChapter, setSelectedChapter] = useState("");
-  const [editorState, setEditorState] = useState<SerializedEditorState>(initialValue);
-  const [isSaving, setIsSaving] = useState(false);
+  const [editorState, setEditorState] =
+    useState<SerializedEditorState>(initialValue);
+  const editorRef = useRef<LexicalEditor | null>(null);
 
-  // Fetch data
+  // Hooks
   const { data: classes, isLoading: isLoadingClasses } = useClasses();
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
+  const { data: classeDetails, isLoading: isLoadingClasseDetails } = useClasse(
+    selectedClass ? Number(selectedClass) : null
+  );
+  const { data: chapitres, isLoading: isLoadingChapitres } = useChapitres(
+    selectedMatiere ? Number(selectedMatiere) : null
+  );
+  const { mutate: createCourseMutation, isPending: isSaving } =
+    useCreateManualCourse();
+  const { updateDraft, clearDraft, hasUnsavedChanges } = useCourseEditor();
+
+  // Reset matiere and chapter when class changes
+  useEffect(() => {
+    setSelectedMatiere("");
+    setSelectedChapter("");
+  }, [selectedClass]);
+
+  // Reset chapter when matiere changes
+  useEffect(() => {
+    setSelectedChapter("");
+  }, [selectedMatiere]);
+
+  // Track changes for draft
+  useEffect(() => {
+    if (title || selectedClass || selectedChapter) {
+      updateDraft({
+        titre: title,
+        chapitre_id: selectedChapter ? Number(selectedChapter) : null,
+        classe_id: selectedClass ? Number(selectedClass) : null,
+        lexical_state: editorState,
+      });
+    }
+  }, [title, selectedClass, selectedChapter, editorState]);
 
   const handleBack = () => {
-    router.push("/teacher/courses");
+    if (hasUnsavedChanges) {
+      if (
+        confirm(
+          "Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?",
+        )
+      ) {
+        clearDraft();
+        router.push("/teacher/courses");
+      }
+    } else {
+      router.push("/teacher/courses");
+    }
   };
 
-   const handleSave = async () => {
+  const handleSave = async () => {
     if (!title.trim()) {
-      toast({ message: "Le titre du cours est requis", variant: "error" });
+      toast({ message: "Le titre du cours est requis", variant: "warning" });
       return;
     }
     if (!selectedClass) {
-      toast({ message: "Veuillez sélectionner une classe", variant: "error" });
+      toast({
+        message: "Veuillez sélectionner une classe",
+        variant: "warning",
+      });
+      return;
+    }
+    if (!selectedMatiere) {
+      toast({
+        message: "Veuillez sélectionner une matière",
+        variant: "warning",
+      });
       return;
     }
     if (!selectedChapter) {
-      toast({ message: "Veuillez sélectionner un chapitre", variant: "error" });
+      toast({
+        message: "Veuillez sélectionner un chapitre",
+        variant: "warning",
+      });
       return;
     }
 
-    setIsSaving(true);
-    try {
-      // TODO: Implement course creation API call
-      console.log("Creating course:", {
-        title,
-        classe_id: selectedClass,
-        chapitre_id: selectedChapter,
-        content: JSON.stringify(editorState),
-      });
+    if (!editorRef.current) {
+      toast({ message: "L'éditeur n'est pas encore prêt", variant: "error" });
+      return;
+    }
 
-      toast({ message: "Cours créé avec succès !", variant: "success" });
-      router.push("/teacher/courses");
+    try {
+      // Extract complete content from Lexical editor
+      const content = extractCourseContent(editorRef.current);
+
+      // Create course via API
+      createCourseMutation(
+        {
+          classeId: Number(selectedClass),
+          payload: {
+            titre: title,
+            chapitre_id: Number(selectedChapter),
+            content,
+          },
+        },
+        {
+          onSuccess: () => {
+            clearDraft();
+            router.push("/teacher/courses");
+          },
+        },
+      );
     } catch (error) {
-      toast({ message: "Erreur lors de la création du cours", variant: "error" });
       console.error("Course creation error:", error);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -160,13 +240,19 @@ export default function CreateCoursePage() {
 
                 <div>
                   <Label htmlFor="class">Classe *</Label>
-                  <Select value={selectedClass} onValueChange={setSelectedClass}>
+                  <Select
+                    value={selectedClass}
+                    onValueChange={setSelectedClass}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Sélectionner une classe" />
                     </SelectTrigger>
                     <SelectContent>
                       {classes?.map((classe) => (
-                        <SelectItem key={classe.id} value={classe.id.toString()}>
+                        <SelectItem
+                          key={classe.id}
+                          value={classe.id.toString()}
+                        >
                           {classe.nom}
                         </SelectItem>
                       ))}
@@ -175,16 +261,67 @@ export default function CreateCoursePage() {
                 </div>
 
                 <div>
+                  <Label htmlFor="matiere">Matière *</Label>
+                  <Select
+                    value={selectedMatiere}
+                    onValueChange={setSelectedMatiere}
+                    disabled={!selectedClass || isLoadingClasseDetails}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Sélectionner une matière" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoadingClasseDetails ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Spinner className="w-4 h-4" />
+                        </div>
+                      ) : classeDetails?.matieres && classeDetails.matieres.length > 0 ? (
+                        classeDetails.matieres.map((matiere) => (
+                          <SelectItem
+                            key={matiere.id}
+                            value={matiere.id.toString()}
+                          >
+                            {matiere.libelle}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-4 text-sm text-gray-500">
+                          Aucune matière disponible pour cette classe
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label htmlFor="chapter">Chapitre *</Label>
-                  <Select value={selectedChapter} onValueChange={setSelectedChapter}>
+                  <Select
+                    value={selectedChapter}
+                    onValueChange={setSelectedChapter}
+                    disabled={!selectedMatiere || isLoadingChapitres}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Sélectionner un chapitre" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* TODO: Load chapters based on selected class/subject */}
-                      <SelectItem value="1">Chapitre 1: Introduction</SelectItem>
-                      <SelectItem value="2">Chapitre 2: Concepts de base</SelectItem>
-                      <SelectItem value="3">Chapitre 3: Applications</SelectItem>
+                      {isLoadingChapitres ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Spinner className="w-4 h-4" />
+                        </div>
+                      ) : chapitres && chapitres.length > 0 ? (
+                        chapitres.map((chapitre) => (
+                          <SelectItem
+                            key={chapitre.id}
+                            value={chapitre.id.toString()}
+                          >
+                            {chapitre.libelle}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-4 text-sm text-gray-500">
+                          Aucun chapitre disponible pour cette matière
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -231,6 +368,9 @@ export default function CreateCoursePage() {
                   <Editor
                     editorSerializedState={editorState}
                     onSerializedChange={(value) => setEditorState(value)}
+                    onEditorReady={(editor) => {
+                      editorRef.current = editor;
+                    }}
                   />
                 </div>
               </CardContent>

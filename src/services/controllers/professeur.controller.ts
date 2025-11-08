@@ -42,6 +42,8 @@ import {
   UpdateCourseResponse,
   ActivateCourseResponse,
   DeactivateCourseResponse,
+  UploadCourseImagePayload,
+  UploadCourseImageResponse,
   SaveGradesPayload,
   SaveGradesResponse,
   CreateClassEvaluationPayload,
@@ -482,6 +484,27 @@ export const getQuizNotes = async (
  */
 
 /**
+ * Récupère la liste des cours du professeur.
+ * @returns {Promise<any>} Liste des cours.
+ */
+export const getCourses = async (): Promise<any> => {
+  return request.get<any>(ProfesseurEndpoints.GET_COURSES);
+};
+
+/**
+ * Récupère un cours spécifique par son ID.
+ * @param {number} coursId - ID du cours.
+ * @returns {Promise<any>} Détails du cours.
+ */
+export const getCourse = async (coursId: number): Promise<any> => {
+  const endpoint = ProfesseurEndpoints.GET_COURSE.replace(
+    "{cours_id}",
+    coursId.toString(),
+  );
+  return request.get<any>(endpoint);
+};
+
+/**
  * Crée un cours manuel pour une classe.
  * @param {number} classeId - ID de la classe.
  * @param {CreateManualCoursePayload} payload - Données du cours.
@@ -578,6 +601,25 @@ export const deactivateCourse = async (
     classeId.toString(),
   ).replace("{cours_id}", coursId.toString());
   return request.post<DeactivateCourseResponse>(endpoint);
+};
+
+/**
+ * Upload une image pour un cours.
+ * @param {File} image - Fichier image à uploader.
+ * @param {number} [coursId] - ID du cours (optionnel).
+ * @returns {Promise<UploadCourseImageResponse>} URL et informations de l'image uploadée.
+ */
+export const uploadCourseImage = async (
+  image: File,
+  coursId?: number,
+): Promise<UploadCourseImageResponse> => {
+  return request.postFormData<UploadCourseImageResponse>(
+    ProfesseurEndpoints.UPLOAD_COURSE_IMAGE,
+    {
+      image,
+      ...(coursId && { cours_id: coursId }),
+    },
+  );
 };
 
 /**

@@ -107,21 +107,49 @@ export function InsertImageUploadedDialogBody({
 }: {
   onClick: (payload: InsertImagePayload) => void
 }) {
-  const [src, setSrc] = useState("")
+  const [file, setFile] = useState<File | null>(null)
   const [altText, setAltText] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState("")
 
-  const isDisabled = src === ""
+  const isDisabled = !file || isUploading
 
   const loadImage = (files: FileList | null) => {
-    const reader = new FileReader()
-    reader.onload = function () {
-      if (typeof reader.result === "string") {
-        setSrc(reader.result)
+    if (files && files[0]) {
+      const selectedFile = files[0]
+      setFile(selectedFile)
+
+      // Créer une preview locale
+      const reader = new FileReader()
+      reader.onload = function () {
+        if (typeof reader.result === "string") {
+          setPreviewUrl(reader.result)
+        }
       }
-      return ""
+      reader.readAsDataURL(selectedFile)
     }
-    if (files !== null) {
-      reader.readAsDataURL(files[0])
+  }
+
+  const handleUpload = async () => {
+    if (!file) return
+
+    setIsUploading(true)
+
+    try {
+      // Importer dynamiquement le hook pour éviter les problèmes de SSR
+      const { uploadCourseImage } = await import("@/services/controllers/professeur.controller")
+
+      // Upload l'image
+      const response = await uploadCourseImage(file)
+
+      // Utiliser l'URL retournée par le backend
+      onClick({ altText, src: response.url })
+    } catch (error: any) {
+      console.error("Erreur lors de l'upload de l'image:", error)
+      // En cas d'erreur, utiliser la preview locale (Base64) en fallback
+      onClick({ altText, src: previewUrl })
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -135,7 +163,17 @@ export function InsertImageUploadedDialogBody({
           onChange={(e) => loadImage(e.target.files)}
           accept="image/*"
           data-test-id="image-modal-file-upload"
+          disabled={isUploading}
         />
+        {previewUrl && (
+          <div className="mt-2">
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="max-w-full h-auto max-h-48 rounded border"
+            />
+          </div>
+        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="alt-text">Alt Text</Label>
@@ -145,15 +183,16 @@ export function InsertImageUploadedDialogBody({
           onChange={(e) => setAltText(e.target.value)}
           value={altText}
           data-test-id="image-modal-alt-text-input"
+          disabled={isUploading}
         />
       </div>
       <Button
         type="submit"
         disabled={isDisabled}
-        onClick={() => onClick({ altText, src })}
+        onClick={handleUpload}
         data-test-id="image-modal-file-upload-btn"
       >
-        Confirm
+        {isUploading ? "Uploading..." : "Confirm"}
       </Button>
     </div>
   )

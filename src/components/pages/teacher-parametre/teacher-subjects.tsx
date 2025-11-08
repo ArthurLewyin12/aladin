@@ -58,9 +58,14 @@ export default function TeacherSubjects() {
       return;
     }
 
+    // Récupérer les libellés des matières sélectionnées
+    const selectedLibelles = matieres
+      .filter((m) => selectedMatieres.includes(m.id))
+      .map((m) => m.libelle);
+
     setIsSaving(true);
     setSubjectsMutation(
-      { matiere_ids: selectedMatieres },
+      { matieres: selectedLibelles },
       {
         onSuccess: () => {
           setIsSaving(false);

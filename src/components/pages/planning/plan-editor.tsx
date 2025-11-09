@@ -93,10 +93,25 @@ export function PlanEditor({
 
   React.useEffect(() => {
     if (plan) {
-      // Edit mode
+      console.log("=== DEBUG PLAN EDITOR ===");
+      console.log("Plan reçu:", plan);
+      console.log("Plan.matiere:", plan.matiere);
+      console.log("Plan.chapitre_ids:", plan.chapitre_ids);
+      console.log("Plan.chapitres:", plan.chapitres);
+
+      // Edit mode - Extraire les IDs des chapitres
+      const chapitreIds = plan.chapitre_ids
+        ? plan.chapitre_ids.map(String)
+        : plan.chapitres?.map((ch: any) => String(ch.id)) || [];
+
+      const matiereId = plan.matiere?.id || (plan as any).matiere_id || "";
+
+      console.log("Chapitre IDs extraits:", chapitreIds);
+      console.log("Matiere ID extrait:", matiereId);
+
       form.reset({
-        matiere_id: String(plan.matiere.id),
-        chapitre_ids: plan.chapitre_ids.map(String),
+        matiere_id: String(matiereId),
+        chapitre_ids: chapitreIds,
         start_time: plan.start_time.substring(0, 5),
         end_time: plan.end_time.substring(0, 5),
         weekday: plan.weekday,

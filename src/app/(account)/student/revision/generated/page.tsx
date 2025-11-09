@@ -110,7 +110,7 @@ export default function RevisionPage() {
         {step === "subject" && (
           <>
             <div className="text-center mb-8">
-              <p className="text-gray-600 text-lg md:text-[1.2rem]">
+              <p className="text-gray-600 text-xl md:text-2xl">
                 Prêt à réviser ? Choisis ta matière et plonge dans tes cours.
                 C'est parti pour consolider tes connaissances !
               </p>
@@ -173,7 +173,7 @@ export default function RevisionPage() {
               <h1 className="text-4xl font-bold text-orange-500 mb-2">
                 {selectedMatiereName}
               </h1>
-              <p className="text-gray-600 text-base md:text-lg">
+              <p className="text-gray-600 text-xl md:text-2xl">
                 Maintenant, choisis le chapitre que tu souhaites réviser.
               </p>
             </div>

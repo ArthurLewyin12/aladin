@@ -99,89 +99,96 @@ export function GenericDonutChart({
 
   return (
     <div className={`relative mt-4 ${className}`}>
-      <ClientTooltip>
-        <svg
-          viewBox={`-${radius} -${radius} ${radius * 2} ${radius * 2}`}
-          className="max-w-[16rem] mx-auto overflow-visible"
-        >
-          {arcs.map((d, i) => {
-            const angle = computeAngle(d);
-            let centroid = arcLabel.centroid(d);
+      <svg
+        viewBox={`-${radius} -${radius} ${radius * 2} ${radius * 2}`}
+        className="max-w-[16rem] mx-auto overflow-visible"
+      >
+        {arcs.map((d, i) => {
+          const angle = computeAngle(d);
+          let centroid = arcLabel.centroid(d);
 
-            if (d.endAngle > Math.PI) {
-              centroid[0] += 10;
-              centroid[1] += 10;
-            } else {
-              centroid[0] -= 10;
-              centroid[1] -= 0;
-            }
+          if (d.endAngle > Math.PI) {
+            centroid[0] += 10;
+            centroid[1] += 10;
+          } else {
+            centroid[0] -= 10;
+            centroid[1] -= 0;
+          }
 
-            return (
-              <AnimatedSlice key={`${d.data.name}-${i}`} index={i}>
-                {showTooltips ? (
+          return (
+            <AnimatedSlice key={`${d.data.name}-${i}`} index={i}>
+              {showTooltips ? (
+                <ClientTooltip>
                   <TooltipTrigger>
-                    <path
-                      stroke="#ffffff33"
-                      strokeWidth={lightStrokeEffect}
-                      fill={getColor(i, d.data)}
-                      d={arcGenerator(d) || undefined}
-                      style={{ cursor: "pointer" }}
-                    />
-                    <TooltipContent>
-                      <div className="text-sm">
-                        <div className="font-semibold">{d.data.name}</div>
-                        <div className="text-gray-600 dark:text-gray-300">
-                          Valeur: {d.data.value.toLocaleString()}
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-300">
-                          Pourcentage:{" "}
-                          {((d.data.value / total) * 100).toFixed(1)}%
-                        </div>
-                      </div>
-                    </TooltipContent>
+                    <g style={{ cursor: "pointer" }}>
+                      <path
+                        stroke="#ffffff33"
+                        strokeWidth={lightStrokeEffect}
+                        fill={getColor(i, d.data)}
+                        d={arcGenerator(d) || undefined}
+                      />
+                    </g>
                   </TooltipTrigger>
-                ) : (
-                  <path
-                    stroke="#ffffff33"
-                    strokeWidth={lightStrokeEffect}
-                    fill={getColor(i, d.data)}
-                    d={arcGenerator(d) || undefined}
-                  />
-                )}
-                {/* Labels conditionnels */}
-                {showLabels && (
-                  <g opacity={angle > minAngle ? 1 : 0}>
-                    <text
-                      transform={`translate(${centroid})`}
-                      textAnchor="middle"
-                      fontSize={38}
-                      style={{ pointerEvents: "none" }}
-                    >
-                      <tspan
-                        y="-0.4em"
-                        fontWeight="600"
-                        fill={singleColor === "purple" ? "#eee" : "#444"}
+                  <TooltipContent>
+                    <div className="text-sm p-2">
+                      <div
+                        className="font-bold text-base mb-2 pb-2 border-b"
+                        style={{ color: getColor(i, d.data) }}
                       >
                         {d.data.name}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-gray-700 dark:text-gray-300">
+                          Performance: <span className="font-semibold">{d.data.value.toFixed(1)}%</span>
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs">
+                          Part: {((d.data.value / total) * 100).toFixed(1)}% du total
+                        </div>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </ClientTooltip>
+              ) : (
+                <path
+                  stroke="#ffffff33"
+                  strokeWidth={lightStrokeEffect}
+                  fill={getColor(i, d.data)}
+                  d={arcGenerator(d) || undefined}
+                />
+              )}
+              {/* Labels conditionnels */}
+              {showLabels && (
+                <g opacity={angle > minAngle ? 1 : 0}>
+                  <text
+                    transform={`translate(${centroid})`}
+                    textAnchor="middle"
+                    fontSize={38}
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <tspan
+                      y="-0.4em"
+                      fontWeight="600"
+                      fill={singleColor === "purple" ? "#eee" : "#444"}
+                    >
+                      {d.data.name}
+                    </tspan>
+                    {angle > minAngle && (
+                      <tspan
+                        x={0}
+                        y="0.7em"
+                        fillOpacity={0.7}
+                        fill={singleColor === "purple" ? "#eee" : "#444"}
+                      >
+                        {((d.data.value / total) * 100).toFixed(1)}%
                       </tspan>
-                      {angle > minAngle && (
-                        <tspan
-                          x={0}
-                          y="0.7em"
-                          fillOpacity={0.7}
-                          fill={singleColor === "purple" ? "#eee" : "#444"}
-                        >
-                          {((d.data.value / total) * 100).toFixed(1)}%
-                        </tspan>
-                      )}
-                    </text>
-                  </g>
-                )}
-              </AnimatedSlice>
-            );
-          })}
-        </svg>
-      </ClientTooltip>
+                    )}
+                  </text>
+                </g>
+              )}
+            </AnimatedSlice>
+          );
+        })}
+      </svg>
     </div>
   );
 }

@@ -10,21 +10,25 @@ import { PlanningMobileView } from "@/components/ui/planning-mobile-view";
 import { useStudyPlans } from "@/services/hooks/study-plan/useStudyPlans";
 import { StudyPlan } from "@/services/controllers/types/common";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
+import { usePlanningEditor } from "@/stores/usePlanningEditor";
 
 export default function PlanningPage() {
   const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const { data, isLoading, isError, error } = useStudyPlans();
+  const { setEditingPlan } = usePlanningEditor();
 
   const handleBack = () => {
     router.push("/student/home");
   };
 
   const handleOpenCreator = (day: number, time: string) => {
+    setEditingPlan(null);
     router.push(`/student/planning/editor?day=${day}&time=${time}`);
   };
 
   const handleOpenEditor = (plan: StudyPlan) => {
+    setEditingPlan(plan);
     router.push(`/student/planning/editor?id=${plan.id}`);
   };
 

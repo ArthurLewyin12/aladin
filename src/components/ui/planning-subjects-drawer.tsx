@@ -27,8 +27,23 @@ export function PlanningSubjectsDrawer({
   const { user } = useSession();
   const [selectedMatiereId, setSelectedMatiereId] = React.useState<number | null>(null);
 
+  // Debug: Afficher les informations de l'utilisateur
+  React.useEffect(() => {
+    console.log("=== DEBUG PLANNING SUBJECTS DRAWER ===");
+    console.log("User:", user);
+    console.log("User niveau:", user?.niveau);
+    console.log("User niveau ID:", user?.niveau?.id);
+  }, [user]);
+
   const { data: matieresData, isLoading: isLoadingMatieres } =
     useMatieresByNiveau(user?.niveau?.id || 0);
+
+  // Debug: Afficher les données des matières
+  React.useEffect(() => {
+    console.log("=== DEBUG MATIERES DATA ===");
+    console.log("Matieres Data:", matieresData);
+    console.log("Is Loading Matieres:", isLoadingMatieres);
+  }, [matieresData, isLoadingMatieres]);
 
   const { data: chapitresData, isLoading: isLoadingChapitres } =
     useChapitresByMatiere(selectedMatiereId || 0);
@@ -86,19 +101,27 @@ export function PlanningSubjectsDrawer({
           {!selectedMatiereId ? (
             // Affichage des matières
             <div className="space-y-3">
+              {(() => {
+                console.log("=== DEBUG RENDER MATIERES ===");
+                console.log("isLoadingMatieres:", isLoadingMatieres);
+                console.log("matieresData:", matieresData);
+                console.log("matieresData?.matieres:", matieresData?.matieres);
+                console.log("matieresData?.matieres.length:", matieresData?.matieres?.length);
+                return null;
+              })()}
               {isLoadingMatieres ? (
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full rounded-lg" />
                   ))}
                 </div>
-              ) : matieresData?.matieres.length === 0 ? (
+              ) : !matieresData?.matieres || matieresData.matieres.length === 0 ? (
                 <div className="text-center py-8">
                   <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                   <p className="text-gray-500">Aucune matière disponible</p>
                 </div>
               ) : (
-                matieresData?.matieres.map((matiere) => (
+                matieresData.matieres.map((matiere) => (
                   <button
                     key={matiere.id}
                     onClick={() => handleMatiereClick(matiere.id)}

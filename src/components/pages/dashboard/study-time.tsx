@@ -240,11 +240,12 @@ export function StudyTimeChart({
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#666", fontSize: 12 }}
+            tickFormatter={(value) => `${Math.round(value * 60)}min`}
             label={{
-              value: selectedPeriod === "week" ? "8h" : "",
-              position: "top",
-              offset: 10,
-              style: { fill: "#666", fontSize: 12 },
+              value: "Temps (min)",
+              position: "insideLeft",
+              angle: -90,
+              style: { fill: "#666", fontSize: 12, textAnchor: "middle" },
             }}
           />
           <Tooltip

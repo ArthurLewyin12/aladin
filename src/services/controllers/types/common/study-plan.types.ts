@@ -1,6 +1,7 @@
 interface SimpleMatiere {
   id: number;
   libelle: string;
+  label?: string;
 }
 
 interface SimpleChapitre {

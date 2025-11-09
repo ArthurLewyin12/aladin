@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
-import { NotificationsBell } from "@/components/pages/groups/notification-group";
+import { NotificationCenter } from "@/components/ui/notification-center";
 import { getNavigationForRole, UserRole } from "@/constants/navigation";
 
 export function AccountHeader() {
@@ -56,7 +56,7 @@ export function AccountHeader() {
 
       {/* Menu utilisateur */}
       <div className="flex items-center gap-4">
-        <NotificationsBell />
+        <NotificationCenter />
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center space-x-3 hover:bg-gray-200 rounded-xl p-2 transition-colors cursor-pointer">
             <Avatar className="h-10 w-10">

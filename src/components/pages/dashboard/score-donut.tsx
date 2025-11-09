@@ -82,7 +82,7 @@ const BestSubjectChart: React.FC<BestSubjectChartProps> = ({ data }) => {
   const radius = 420;
   const gap = 0.01;
   const labelExternalRadius = radius + 40;
-  const minAngle = 20;
+  const minAngle = 5; // Réduire le seuil pour afficher plus de labels
   const pieLayout = pie<ChartItem>()
     .value((d) => d.value)
     .padAngle(gap);
@@ -139,7 +139,7 @@ const BestSubjectChart: React.FC<BestSubjectChartProps> = ({ data }) => {
         ))}
       </div>
 
-      {/* Chart wrapper avec labels superposés */}
+      {/* Chart wrapper */}
       <div className="relative">
         <GenericDonutChart
           data={chartData}
@@ -147,65 +147,8 @@ const BestSubjectChart: React.FC<BestSubjectChartProps> = ({ data }) => {
           gap={gap}
           showLabels={false}
           showTooltips={true}
-          className="max-w-[16rem] mx-auto"
+          className="max-w-[16rem] mx-auto hover:scale-105 transition-transform duration-300"
         />
-
-        {/* SVG superposé pour les labels externes avec fond arrondi */}
-        <svg
-          viewBox={`-${radius} -${radius} ${radius * 2} ${radius * 2}`}
-          className="absolute inset-0 w-full h-full pointer-events-none max-w-[16rem] mx-auto"
-        >
-          {arcs.map((d, i) => {
-            const angle = computeAngle(d);
-            if (angle < minAngle) return null;
-
-            let centroid: [number, number] = arcExternal.centroid(d) || [0, 0];
-            if (d.endAngle > Math.PI) {
-              centroid[0] += 10;
-              centroid[1] += 10;
-            } else {
-              centroid[0] -= 10;
-              centroid[1] -= 0;
-            }
-
-            const percent = d.data.value.toFixed(0) + "%";
-            const rectWidth = 50;
-            const rectHeight = 32;
-            const rx = 16;
-            const x = centroid[0] - rectWidth / 2;
-            const y = centroid[1] - rectHeight / 2;
-
-            // Utiliser la couleur de la matière avec une opacité réduite pour le fond
-            const bgColor = d.data.color ? `${d.data.color}20` : "#fef3c7";
-            const borderColor = d.data.color || "#f59e0b";
-
-            return (
-              <g key={`${d.data.name}-${i}`} opacity={1}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={rectWidth}
-                  height={rectHeight}
-                  rx={rx}
-                  fill={bgColor}
-                  stroke={borderColor}
-                  strokeWidth={2}
-                />
-                <text
-                  x={centroid[0]}
-                  y={centroid[1] + 6}
-                  textAnchor="middle"
-                  fontSize={28}
-                  fontWeight="600"
-                  fill="#1f2937"
-                  style={{ pointerEvents: "none" }}
-                >
-                  {percent}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
       </div>
     </div>
   );

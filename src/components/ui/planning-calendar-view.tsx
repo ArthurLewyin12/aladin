@@ -250,7 +250,7 @@ export function PlanningCalendarView({
                       >
                         <div className="flex flex-col h-full">
                           <p className="font-bold text-sm leading-tight line-clamp-1">
-                            {plan.matiere.libelle}
+                            {plan.matiere?.label || plan.matiere?.libelle}
                           </p>
                           <p className="text-xs opacity-75 mt-1 line-clamp-2">
                             {plan.chapitres.map((c) => c.libelle).join(", ")}
@@ -265,7 +265,7 @@ export function PlanningCalendarView({
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">
                       <div className="space-y-2">
-                        <p className="font-semibold">{plan.matiere.libelle}</p>
+                        <p className="font-semibold">{plan.matiere?.label || plan.matiere?.libelle}</p>
                         <p className="text-sm text-muted-foreground">
                           {plan.start_time.substring(0, 5)} -{" "}
                           {plan.end_time.substring(0, 5)}

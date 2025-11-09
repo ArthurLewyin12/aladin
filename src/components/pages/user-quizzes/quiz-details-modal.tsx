@@ -71,6 +71,9 @@ export function QuizDetailsModal({
     }
   }, [isOpen, quizId]);
 
+  // Calculer le temps réel basé sur le nombre de questions (60 secondes par question)
+  const realTime = quizData?.questions?.length || 0; // en minutes
+
   const title = quizData?.chapitre?.libelle || "Détails du Quiz";
   const description = quizData ? (
     <div className="flex flex-wrap gap-2 mt-2">
@@ -84,7 +87,7 @@ export function QuizDetailsModal({
       </Badge>
       <Badge variant="secondary" className="bg-slate-200 text-slate-700">
         <Clock className="w-3 h-3 mr-1.5" />
-        {quizData.time} min
+        {realTime} min ({quizData.questions?.length || 0} questions)
       </Badge>
     </div>
   ) : (

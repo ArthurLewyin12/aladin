@@ -17,9 +17,17 @@ export default function QuizResultPage() {
   const quizId = Number(params.quizId);
   const [corrections, setCorrections] = useState<QuizQuestion[]>([]);
   const [isExplanationsOpen, setIsExplanationsOpen] = useState(false);
+  const [localScore, setLocalScore] = useState<{
+    score: number;
+    totalQuestions: number;
+    noteSur20: number;
+    totalTimeInSeconds?: number;
+  } | null>(null);
 
   useEffect(() => {
     const storedCorrections = sessionStorage.getItem("quizCorrections");
+    const storedScore = sessionStorage.getItem("quizScore");
+
     if (storedCorrections) {
       setCorrections(JSON.parse(storedCorrections));
     } else {
@@ -29,6 +37,10 @@ export default function QuizResultPage() {
         message: "Impossible de récupérer les résultats du quiz.",
       });
       router.push("/student/home");
+    }
+
+    if (storedScore) {
+      setLocalScore(JSON.parse(storedScore));
     }
   }, [router]);
 
@@ -91,12 +103,20 @@ export default function QuizResultPage() {
     );
   }
 
-  const score = notesData?.notes[0]?.note || 0; // Nombre de bonnes réponses
-  const totalQuestions = corrections.length || 0;
+  // Utiliser le score local en priorité pour éviter les incohérences
+  const score = localScore?.score ?? (notesData?.notes[0]?.note || 0);
+  const totalQuestions = localScore?.totalQuestions ?? (corrections.length || 0);
   const explanations = notesData?.questions_approfondissement || [];
 
-  // Convertir le score en note sur 20
-  const noteSur20 = convertScoreToNote(score, totalQuestions);
+  // Convertir le score en note sur 20 - utiliser le score local si disponible
+  const noteSur20 = localScore?.noteSur20 ?? convertScoreToNote(score, totalQuestions);
+
+  // Debug: afficher les scores pour comprendre les incohérences
+  console.log("=== QUIZ RESULTS DEBUG ===");
+  console.log("Score local (calculé):", localScore);
+  console.log("Score backend:", notesData?.notes[0]?.note);
+  console.log("Score final utilisé:", score);
+  console.log("Note sur 20:", noteSur20);
 
   // Calculer le pourcentage
   const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
@@ -206,6 +226,11 @@ export default function QuizResultPage() {
           <div className="text-lg text-gray-600 mt-2">
             {score}/{totalQuestions} bonnes réponses ({percentage.toFixed(0)}%)
           </div>
+          {localScore?.totalTimeInSeconds && (
+            <div className="text-base text-gray-500 mt-2">
+              ⏱️ Temps réel : {Math.floor(localScore.totalTimeInSeconds / 60)}min {localScore.totalTimeInSeconds % 60}s
+            </div>
+          )}
         </div>
 
         {/* Questions and Corrections */}

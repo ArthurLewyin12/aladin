@@ -144,7 +144,13 @@ export function PlanningMobileView({
                 ) : (
                   <>
                     {dayPlans.map((plan) => {
-                      const colorClass = getColorForSubject(plan.matiere.id);
+                      console.log("=== DEBUG PLAN ===");
+                      console.log("Plan complet:", plan);
+                      console.log("Plan.matiere:", plan.matiere);
+                      console.log("Plan.matiere.libelle:", plan.matiere?.libelle);
+                      console.log("Plan.chapitres:", plan.chapitres);
+
+                      const colorClass = getColorForSubject(plan.matiere?.id || 0);
                       return (
                         <motion.div
                           key={plan.id}
@@ -165,7 +171,7 @@ export function PlanningMobileView({
                           <div className="ml-3 space-y-2">
                             <div className="flex items-start justify-between gap-2">
                               <h4 className="font-semibold text-gray-900 text-base">
-                                {plan.matiere.libelle}
+                                {plan.matiere?.label || plan.matiere?.libelle || "Matière non définie"}
                               </h4>
                               <div className="flex items-center gap-1 text-xs text-gray-600 font-medium bg-white px-2 py-1 rounded-full border flex-shrink-0">
                                 <Clock className="w-3 h-3" />

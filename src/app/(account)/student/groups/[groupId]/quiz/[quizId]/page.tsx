@@ -117,10 +117,13 @@ export default function GroupQuizTakingPage() {
     }
   };
 
-  const handleSubmitQuiz = useCallback(async () => {
+  const handleSubmitQuiz = useCallback(async (answersToSubmit?: Record<string | number, string | number>) => {
     if (!quizId || isSubmitting) return;
 
     setIsSubmitting(true);
+
+    // Utiliser les réponses passées en paramètre ou celles du state
+    const finalAnswers = answersToSubmit || userAnswers;
 
     console.log("=== DEBUG GROUP QUIZ SUBMISSION ===");
     console.log("Questions totales:", quizQuestions.length);
@@ -133,10 +136,10 @@ export default function GroupQuizTakingPage() {
         propositions: q.propositions,
       })),
     );
-    console.log("Réponses utilisateur:", userAnswers);
+    console.log("Réponses utilisateur:", finalAnswers);
 
     // Calculer le score avec l'utilitaire centralisé
-    const scoreResult = calculateQuizScore(quizQuestions, userAnswers);
+    const scoreResult = calculateQuizScore(quizQuestions, finalAnswers);
 
     console.log("Score calculé:", scoreResult);
     console.log(
@@ -166,10 +169,28 @@ export default function GroupQuizTakingPage() {
 
       // Sauvegarder les corrections avec les réponses utilisateur
       if (result.corrections && Array.isArray(result.corrections)) {
-        const correctionsWithUserAnswers = result.corrections.map((correction: any, index: number) => ({
-          ...correction,
-          user_answer: userAnswers[quizQuestions[index]?.id]?.toString(),
-        }));
+        console.log("=== DEBUG CORRECTIONS AVEC RÉPONSES ===");
+        console.log("result.corrections:", result.corrections);
+        console.log("quizQuestions:", quizQuestions);
+        console.log("finalAnswers:", finalAnswers);
+
+        const correctionsWithUserAnswers = result.corrections.map((correction: any, index: number) => {
+          const questionId = quizQuestions[index]?.id;
+          const userAnswer = finalAnswers[questionId];
+
+          console.log(`Question ${index}:`, {
+            questionId,
+            userAnswer,
+            correction
+          });
+
+          return {
+            ...correction,
+            user_answer: userAnswer?.toString(),
+          };
+        });
+
+        console.log("correctionsWithUserAnswers:", correctionsWithUserAnswers);
 
         sessionStorage.setItem(
           "groupQuizCorrections",
@@ -338,13 +359,17 @@ export default function GroupQuizTakingPage() {
                   <RadioGroup
                     value={userAnswers[currentQuestion.id]?.toString() || ""}
                     onValueChange={(value) => {
-                      setUserAnswers((prev) => ({
-                        ...prev,
+                      const updatedAnswers = {
+                        ...userAnswers,
                         [currentQuestion.id]: value,
-                      }));
+                      };
+                      setUserAnswers(updatedAnswers);
 
                       if (currentQuestionIndex === quizQuestions.length - 1) {
-                        setTimeout(() => handleSubmitQuiz(), 300);
+                        // Dernière question : soumettre avec les réponses mises à jour
+                        setTimeout(() => {
+                          handleSubmitQuiz(updatedAnswers);
+                        }, 300);
                       } else {
                         setTimeout(() => handleNextQuestion(), 300);
                       }

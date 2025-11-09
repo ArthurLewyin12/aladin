@@ -26,6 +26,10 @@ export const UserQuizCard = ({
 }: UserQuizCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
 
+  // Utiliser le temps réel si disponible (depuis sessionStorage), sinon calculer basé sur les questions
+  // Note: Le temps réel sera affiché seulement pour les quiz récemment passés
+  const estimatedTime = quiz.questions?.length || 0; // en minutes (60s par question)
+
   return (
     <div
       className={cn(
@@ -51,7 +55,7 @@ export const UserQuizCard = ({
         </p>
         <p className="text-sm text-gray-500">Difficulté : {quiz.difficulte}</p>
         <p className="text-base font-bold text-gray-900">
-          Durée estimée : {quiz.time} min
+          Durée estimée : {estimatedTime} min ({quiz.questions?.length || 0} questions)
         </p>
         <p className="text-base text-gray-500">
           Matière : {quiz.chapitre?.matiere?.libelle || "N/A"}

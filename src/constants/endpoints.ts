@@ -116,6 +116,9 @@ export enum GroupeEndpoints {
  */
 export enum NotificationEndpoints {
   GET_NOTIFICATIONS = "/api/notifications",
+  GET_ELEVE_NOTIFICATIONS = "/api/notifications/eleve/{eleveId}",
+  MARK_AS_READ = "/api/notifications/{notificationId}/read",
+  MARK_ALL_AS_READ = "/api/notifications/read-all",
 }
 
 /**

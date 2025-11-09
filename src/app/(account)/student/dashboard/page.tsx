@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/pages/dashboard/stat-card";
 import {
@@ -22,18 +23,20 @@ import {
   Target,
   Zap,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import BestSubjectChart from "@/components/pages/dashboard/score-donut";
 import { StudyTimeChart } from "@/components/pages/dashboard/study-time";
 import { NotesEvolutionChart } from "@/components/pages/dashboard/note-chart";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useEleveDashboard } from "@/services/hooks/stats/useEleveDashboard";
-import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { convertScoreToNote } from "@/lib/quiz-score";
 import { formatStudyTime } from "@/lib/utils/time";
+import { parseAsInteger, useQueryState } from "nuqs";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -42,6 +45,10 @@ export default function DashboardPage() {
     user?.id || 0,
     "week",
   );
+
+  // Pagination avec nuqs
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const itemsPerPage = 10;
 
   const handleBack = () => {
     router.push("/student/home");
@@ -174,6 +181,37 @@ export default function DashboardPage() {
     if (note >= 10) return "bg-orange-500";
     return "bg-red-500";
   };
+
+  // Calculer les notes paginées
+  const paginatedNotes = useMemo(() => {
+    if (!dashboardData?.notes_quiz) return [];
+
+    const filteredNotes = dashboardData.notes_quiz.filter(
+      (note) =>
+        note.matiere !== null &&
+        note.matiere !== "Non défini" &&
+        note.matiere !== "Indéfini" &&
+        note.matiere.trim() !== "",
+    );
+
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredNotes.slice(startIndex, endIndex);
+  }, [dashboardData, page, itemsPerPage]);
+
+  const totalPages = useMemo(() => {
+    if (!dashboardData?.notes_quiz) return 0;
+
+    const filteredCount = dashboardData.notes_quiz.filter(
+      (note) =>
+        note.matiere !== null &&
+        note.matiere !== "Non défini" &&
+        note.matiere !== "Indéfini" &&
+        note.matiere.trim() !== "",
+    ).length;
+
+    return Math.ceil(filteredCount / itemsPerPage);
+  }, [dashboardData, itemsPerPage]);
 
   if (isLoading || !dashboardData) {
     return (
@@ -378,30 +416,22 @@ export default function DashboardPage() {
           </div>
 
           {(dashboardData.notes_quiz?.length || 0) > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold">Matière</TableHead>
-                    <TableHead className="font-semibold">Chapitre</TableHead>
-                    <TableHead className="font-semibold">Niveau</TableHead>
-                    <TableHead className="font-semibold">Date</TableHead>
-                    <TableHead className="text-right font-semibold">
-                      Note
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {dashboardData.notes_quiz
-                    .filter(
-                      (note) =>
-                        note.matiere !== null &&
-                        note.matiere !== "Non défini" &&
-                        note.matiere !== "Indéfini" &&
-                        note.matiere.trim() !== "",
-                    )
-                    .slice(0, 10)
-                    .map((note, index) => {
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-semibold">Matière</TableHead>
+                      <TableHead className="font-semibold">Chapitre</TableHead>
+                      <TableHead className="font-semibold">Niveau</TableHead>
+                      <TableHead className="font-semibold">Date</TableHead>
+                      <TableHead className="text-right font-semibold">
+                        Note
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedNotes.map((note, index) => {
                       const noteValue = convertScoreToNote(
                         note.note,
                         note.nombre_questions,
@@ -448,9 +478,56 @@ export default function DashboardPage() {
                         </TableRow>
                       );
                     })}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 px-2">
+                  <div className="text-sm text-gray-600">
+                    Page {page} sur {totalPages}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
+                      className="h-8"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (pageNum) => (
+                          <Button
+                            key={pageNum}
+                            variant={page === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPage(pageNum)}
+                            className="h-8 w-8"
+                          >
+                            {pageNum}
+                          </Button>
+                        ),
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(page + 1)}
+                      disabled={page === totalPages}
+                      className="h-8"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12">
               <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />

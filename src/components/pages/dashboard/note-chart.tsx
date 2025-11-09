@@ -28,7 +28,7 @@ import { useSession } from "@/services/hooks/auth/useSession";
 
 export const description = "Graphique d'évolution des notes par matière";
 
-// Palette de couleurs pour les différentes matières - alignée avec score-donut.tsx
+// Palette de couleurs pour les différentes matières
 const SUBJECT_COLORS = [
   "#ec4899", // Rose
   "#10b981", // Vert
@@ -38,6 +38,7 @@ const SUBJECT_COLORS = [
 ];
 
 // Fonction pour obtenir une couleur stable basée sur le nom de la matière
+// Cette fonction sera remplacée par chartConfig.color dans le tooltip
 const getSubjectColor = (subjectName: string, subjects: string[]) => {
   const index = subjects.indexOf(subjectName);
   return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
@@ -343,12 +344,6 @@ export function NotesEvolutionChart() {
                     });
                   }}
                   indicator="dot"
-                  formatter={(value, name) => (
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{name}:</span>
-                      <span className="font-bold">{value}/20</span>
-                    </div>
-                  )}
                 />
               }
             />
@@ -371,7 +366,7 @@ export function NotesEvolutionChart() {
                   strokeWidth: 2,
                   stroke: "#fff",
                 }}
-                connectNulls={false}
+                connectNulls={true}
               />
             ))}
           </LineChart>

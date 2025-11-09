@@ -255,14 +255,17 @@ export const CreateQuizModal = ({
                 <FormLabel className="text-sm text-gray-600">
                   Questions
                 </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    className="mt-1 bg-gray-50 border-gray-200"
-                    placeholder="10"
-                  />
-                </FormControl>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
+                      <SelectValue placeholder="Nombre" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="5">5 questions</SelectItem>
+                    <SelectItem value="10">10 questions</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -271,51 +274,53 @@ export const CreateQuizModal = ({
           <FormField
             control={form.control}
             name="temps"
-            render={({ field }) => {
-              const nombreQuestions = form.watch("nombre_questions");
-              const tempsParQuestion = field.value;
-              const durationTotal =
-                Number(tempsParQuestion) * Number(nombreQuestions || 0);
-              const minutes = Math.floor(durationTotal / 60);
-              const seconds = durationTotal % 60;
-
-              const displayDuration = () => {
-                if (durationTotal < 60) {
-                  return `${durationTotal}s`;
-                } else if (seconds === 0) {
-                  return `${minutes}min`;
-                } else {
-                  return `${minutes}min ${seconds}s`;
-                }
-              };
-
-              return (
-                <FormItem>
-                  <FormLabel className="text-sm text-gray-600">
-                    Temps/question
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="mt-1 bg-gray-50 border-gray-200">
-                        <SelectValue placeholder="Durée" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="30">30s</SelectItem>
-                      <SelectItem value="60">1min</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {nombreQuestions && tempsParQuestion && durationTotal > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Total: {displayDuration()}
-                    </p>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm text-gray-600">
+                  Temps/question
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full mt-1 bg-gray-50 border-gray-200">
+                      <SelectValue placeholder="Durée" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="30">30s</SelectItem>
+                    <SelectItem value="60">1min</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
+
+        {/* Durée totale du quiz */}
+        {(() => {
+          const nombreQuestions = form.watch("nombre_questions");
+          const tempsParQuestion = form.watch("temps");
+          const durationTotal =
+            Number(tempsParQuestion) * Number(nombreQuestions || 0);
+          const minutes = Math.floor(durationTotal / 60);
+          const seconds = durationTotal % 60;
+
+          const displayDuration = () => {
+            if (durationTotal < 60) {
+              return `${durationTotal}s`;
+            } else if (seconds === 0) {
+              return `${minutes}min`;
+            } else {
+              return `${minutes}min ${seconds}s`;
+            }
+          };
+
+          return nombreQuestions && tempsParQuestion && durationTotal > 0 ? (
+            <p className="text-xs text-gray-500 mt-2">
+              Durée totale du quiz: {displayDuration()}
+            </p>
+          ) : null;
+        })()}
 
         {/* Temporarily commented out - document upload functionality */}
         {/*

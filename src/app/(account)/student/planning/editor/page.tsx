@@ -33,22 +33,36 @@ import { useStudyPlans } from "@/services/hooks/study-plan/useStudyPlans";
 import { useCreateStudyPlan } from "@/services/hooks/study-plan/useCreateStudyPlan";
 import { useUpdateStudyPlan } from "@/services/hooks/study-plan/useUpdateStudyPlan";
 import { useDeleteStudyPlan } from "@/services/hooks/study-plan/useDeleteStudyPlan";
+import { usePlanningEditor } from "@/stores/usePlanningEditor";
 
-const planSchema = z.object({
-  matiere_id: z.string().min(1, "La matière est requise."),
-  chapitre_ids: z.array(z.string()).min(1, "Au moins un chapitre est requis."),
-  start_time: z.string().min(1, "L'heure de début est requise.").regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
-  end_time: z.string().min(1, "L'heure de fin est requise.").regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
-  weekday: z.number(),
-}).refine((data) => {
-  if (data.start_time && data.end_time) {
-    return data.end_time > data.start_time;
-  }
-  return true;
-}, {
-  message: "L'heure de fin doit être après l'heure de début",
-  path: ["end_time"],
-});
+const planSchema = z
+  .object({
+    matiere_id: z.string().min(1, "La matière est requise."),
+    chapitre_ids: z
+      .array(z.string())
+      .min(1, "Au moins un chapitre est requis."),
+    start_time: z
+      .string()
+      .min(1, "L'heure de début est requise.")
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
+    end_time: z
+      .string()
+      .min(1, "L'heure de fin est requise.")
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
+    weekday: z.number(),
+  })
+  .refine(
+    (data) => {
+      if (data.start_time && data.end_time) {
+        return data.end_time > data.start_time;
+      }
+      return true;
+    },
+    {
+      message: "L'heure de fin doit être après l'heure de début",
+      path: ["end_time"],
+    },
+  );
 
 type PlanFormValues = z.infer<typeof planSchema>;
 
@@ -82,6 +96,7 @@ export default function PlanningEditorPage() {
   const isEditMode = !!planId;
   const { user } = useSession();
 
+  const { editingPlan, clearEditingPlan } = usePlanningEditor();
   const { data: plansData } = useStudyPlans();
   const { data: matieresData, isLoading: isLoadingMatieres } =
     useMatieresByNiveau(user?.niveau?.id || 0);
@@ -105,18 +120,38 @@ export default function PlanningEditorPage() {
     useChapitresByMatiere(Number(watchedMatiereId));
 
   React.useEffect(() => {
-    if (isEditMode && plansData && planId) {
-      const plan = plansData.plans.find((p) => p.id === planId);
+    // En mode édition, utiliser le plan du store en priorité
+    if (isEditMode && matieresData) {
+      const plan = editingPlan || plansData?.plans.find((p) => p.id === planId);
+
+      console.log("=== DEBUG PLAN EDITOR ===");
+      console.log("planId:", planId);
+      console.log("editingPlan depuis store:", editingPlan);
+      console.log("plan utilisé:", plan);
+
       if (plan) {
+        // Extraire l'ID de la matière - peut être plan.matiere.id ou plan.matiere_id
+        const matiereId =
+          (plan.matiere as any)?.id || (plan as any).matiere_id || "";
+
+        // Extraire les IDs des chapitres
+        const chapitreIds = plan.chapitre_ids
+          ? plan.chapitre_ids.map(String)
+          : plan.chapitres?.map((ch: any) => String(ch.id)) || [];
+
+        console.log("matiereId extrait:", matiereId);
+        console.log("chapitreIds extraits:", chapitreIds);
+
         form.reset({
-          matiere_id: String(plan.matiere.id),
-          chapitre_ids: plan.chapitre_ids.map(String),
+          matiere_id: String(matiereId),
+          chapitre_ids: chapitreIds,
           start_time: formatTimeToHHMM(plan.start_time),
           end_time: formatTimeToHHMM(plan.end_time),
           weekday: plan.weekday,
         });
       }
     } else if (day && time) {
+      // Mode création
       form.reset({
         matiere_id: "",
         chapitre_ids: [],
@@ -125,13 +160,22 @@ export default function PlanningEditorPage() {
         weekday: day,
       });
     }
-  }, [isEditMode, planId, plansData, day, time, form]);
+  }, [
+    isEditMode,
+    planId,
+    editingPlan,
+    plansData,
+    day,
+    time,
+    form,
+    matieresData,
+  ]);
 
   const onSubmit = (values: PlanFormValues) => {
     // Format times to ensure HH:mm format
     const formatTime = (time: string) => {
-      const [hours, minutes] = time.split(':');
-      return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+      const [hours, minutes] = time.split(":");
+      return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
     };
 
     const payload = {
@@ -147,6 +191,7 @@ export default function PlanningEditorPage() {
         { id: planId, payload },
         {
           onSuccess: () => {
+            clearEditingPlan();
             router.push("/student/planning");
           },
         },
@@ -154,6 +199,7 @@ export default function PlanningEditorPage() {
     } else {
       createPlanMutation.mutate(payload, {
         onSuccess: () => {
+          clearEditingPlan();
           router.push("/student/planning");
         },
       });
@@ -164,6 +210,7 @@ export default function PlanningEditorPage() {
     if (planId) {
       deletePlanMutation.mutate(planId, {
         onSuccess: () => {
+          clearEditingPlan();
           router.push("/student/planning");
         },
       });
@@ -171,6 +218,7 @@ export default function PlanningEditorPage() {
   };
 
   const handleBack = () => {
+    clearEditingPlan();
     router.push("/student/planning");
   };
 
@@ -216,7 +264,7 @@ export default function PlanningEditorPage() {
                           field.onChange(value);
                           form.setValue("chapitre_ids", []);
                         }}
-                        value={field.value || undefined}
+                        value={field.value || ""}
                         disabled={isLoadingMatieres}
                       >
                         <FormControl>
@@ -299,32 +347,32 @@ export default function PlanningEditorPage() {
               {/* Horaires Card */}
               <div className="bg-white rounded-xl shadow-sm p-5">
                 <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="start_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Heure de début</FormLabel>
-                      <FormControl>
-                        <Input type="time" step="60" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="end_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Heure de fin</FormLabel>
-                      <FormControl>
-                        <Input type="time" step="60" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="start_time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Heure de début</FormLabel>
+                        <FormControl>
+                          <Input type="time" step="60" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="end_time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Heure de fin</FormLabel>
+                        <FormControl>
+                          <Input type="time" step="60" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 

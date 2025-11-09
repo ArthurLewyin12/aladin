@@ -220,7 +220,12 @@ export function getPerformanceBadge(noteSur20: number) {
 }
 
 /**
- * Obtient le niveau de performance basé sur le pourcentage de réussite
+ * Obtient le niveau de performance basé sur le nombre de bonnes réponses
+ *
+ * Mapping :
+ * - 5 questions : 0=Mauvais, 1=Médiocre, 2=Passable, 3=Assez bien, 4=Bien, 5=Excellent
+ * - 10 questions : 0=Mauvais, 1-2=Médiocre, 3-4=Passable, 5-6=Assez bien, 7-8=Bien, 9-10=Excellent
+ * - Scaled proportionnellement pour tout nombre de questions
  *
  * @param correctAnswers - Nombre de bonnes réponses
  * @param totalQuestions - Nombre total de questions
@@ -228,8 +233,8 @@ export function getPerformanceBadge(noteSur20: number) {
  *
  * @example
  * ```typescript
- * const performance = getPerformanceLevel(5, 10); // 50% -> "Passable"
- * const performance = getPerformanceLevel(9, 10); // 90% -> "Excellent"
+ * const performance = getPerformanceLevel(5, 10); // Excellent
+ * const performance = getPerformanceLevel(3, 10); // Passable
  * ```
  */
 export function getPerformanceLevel(correctAnswers: number, totalQuestions: number) {
@@ -237,15 +242,26 @@ export function getPerformanceLevel(correctAnswers: number, totalQuestions: numb
     return { label: "Mauvais", color: "bg-red-500" };
   }
 
-  const percentage = (correctAnswers / totalQuestions) * 100;
+  // Calculer les seuils basés sur 5 questions de base
+  const scale = totalQuestions / 5;
+  const seuils = {
+    excellent: Math.ceil(5 * scale),      // 5 sur 5, ou équivalent (10 sur 10)
+    bien: Math.ceil(4 * scale),            // 4 sur 5, ou équivalent (8 sur 10)
+    assezBien: Math.ceil(3 * scale),       // 3 sur 5, ou équivalent (6 sur 10)
+    passable: Math.ceil(2 * scale),        // 2 sur 5, ou équivalent (4 sur 10)
+    mediocre: Math.ceil(1 * scale),        // 1 sur 5, ou équivalent (2 sur 10)
+    // 0 = Mauvais
+  };
 
-  if (percentage >= 80) {
+  if (correctAnswers >= seuils.excellent) {
     return { label: "Excellent", color: "bg-green-500" };
-  } else if (percentage >= 60) {
-    return { label: "Assez bien", color: "bg-blue-500" };
-  } else if (percentage >= 40) {
+  } else if (correctAnswers >= seuils.bien) {
+    return { label: "Bien", color: "bg-blue-500" };
+  } else if (correctAnswers >= seuils.assezBien) {
+    return { label: "Assez bien", color: "bg-cyan-500" };
+  } else if (correctAnswers >= seuils.passable) {
     return { label: "Passable", color: "bg-yellow-500" };
-  } else if (percentage >= 20) {
+  } else if (correctAnswers >= seuils.mediocre) {
     return { label: "Médiocre", color: "bg-orange-500" };
   } else {
     return { label: "Mauvais", color: "bg-red-500" };

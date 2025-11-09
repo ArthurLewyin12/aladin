@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import { calculateQuizScore } from "@/lib/quiz-score";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { QuizReader } from "@/components/ui/tts";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function GroupQuizTakingPage() {
   const [quizDefinition, setQuizDefinition] = useState<any>(null);
@@ -308,6 +309,34 @@ export default function GroupQuizTakingPage() {
               {quizDefinition?.titre || "Quiz de Groupe"}
             </h1>
           </div>
+        </div>
+
+        {/* Alert Règles du Quiz */}
+        <div className="w-full mx-auto max-w-4xl px-4 md:px-8 pt-4 pb-4">
+          <Alert className="border-2 border-red-500 bg-red-50">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
+            <AlertTitle className="text-red-800 font-bold text-lg md:text-xl">
+              Règles du Quiz
+            </AlertTitle>
+            <AlertDescription className="text-red-700 space-y-2 text-base md:text-lg">
+              <p>
+                ⏱️ <strong>{Math.floor(timeLimit / quizQuestions.length)} secondes</strong> par question - passage
+                automatique si le temps expire
+              </p>
+              <p>
+                ➡️ <strong>Passage automatique</strong> à la question
+                suivante après sélection
+              </p>
+              <p>
+                🚫 <strong>Impossible de revenir</strong> en arrière sur
+                une question déjà passée
+              </p>
+              <p>
+                ⚠️ <strong>Valider avant la fin</strong> pour que vos réponses soient
+                comptabilisées
+              </p>
+            </AlertDescription>
+          </Alert>
         </div>
 
         {/* Main Content */}

@@ -35,8 +35,10 @@ interface QuestionCardProps {
 
 const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
-  const userAnswered = qcmItem.user_answer !== undefined && qcmItem.user_answer !== null;
-  const userAnsweredCorrectly = userAnswered && qcmItem.user_answer === qcmItem.bonne_reponse;
+  const userAnswered =
+    qcmItem.user_answer !== undefined && qcmItem.user_answer !== null;
+  const userAnsweredCorrectly =
+    userAnswered && qcmItem.user_answer === qcmItem.bonne_reponse;
 
   return (
     <div
@@ -85,8 +87,8 @@ const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
                 isCorrect
                   ? "bg-green-50 border-green-200"
                   : isUserAnswer
-                  ? "bg-red-50 border-red-200"
-                  : "bg-white border-gray-200"
+                    ? "bg-red-50 border-red-200"
+                    : "bg-white border-gray-200"
               }`}
             >
               {isCorrect ? (
@@ -102,14 +104,16 @@ const QuestionCard = ({ qcmItem, index }: QuestionCardProps) => {
                     isCorrect
                       ? "text-green-900 font-medium"
                       : isUserAnswer
-                      ? "text-red-900 font-medium"
-                      : "text-gray-700"
+                        ? "text-red-900 font-medium"
+                        : "text-gray-700"
                   }`}
                 >
                   <span className="font-semibold mr-2">{key}.</span>
                   {value}
                   {isUserAnswer && !isCorrect && (
-                    <span className="ml-2 text-xs text-red-600">(ta réponse)</span>
+                    <span className="ml-2 text-xs text-red-600">
+                      (ta réponse)
+                    </span>
                   )}
                 </p>
               </div>
@@ -134,7 +138,10 @@ export default function GroupQuizResultPage() {
       const storedScore = sessionStorage.getItem("groupQuizScore");
 
       console.log("=== DEBUG GROUP QUIZ RESULTS PAGE ===");
-      console.log("groupQuizCorrections depuis sessionStorage:", storedCorrections);
+      console.log(
+        "groupQuizCorrections depuis sessionStorage:",
+        storedCorrections,
+      );
       console.log("groupQuizScore depuis sessionStorage:", storedScore);
 
       if (storedCorrections) {
@@ -240,7 +247,9 @@ export default function GroupQuizResultPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Ta note</p>
-                  <p className="text-2xl font-bold text-gray-900">{noteSur20}/20</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {noteSur20}/20
+                  </p>
                 </div>
               </div>
             </div>
@@ -286,14 +295,14 @@ export default function GroupQuizResultPage() {
         </div>
 
         {/* Bouton retour */}
-        <div className="flex justify-center sm:justify-end">
+        {/*<div className="flex justify-center sm:justify-end">
           <Button
             onClick={handleBackToGroup}
             className="bg-gray-900 hover:bg-gray-800 text-white w-12 h-12 p-0 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-        </div>
+        </div>*/}
       </div>
     </div>
   );

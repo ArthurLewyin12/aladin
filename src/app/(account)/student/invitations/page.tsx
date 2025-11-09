@@ -71,7 +71,7 @@ function InvitationComponent() {
     return null;
   }
 
-  if (invitation.status !== "pending") {
+  if (invitation.status !== "en attente") {
     return (
       <div className="w-full max-w-md">
         <Alert className="border-orange-200 bg-orange-50">
@@ -81,7 +81,7 @@ function InvitationComponent() {
           </AlertTitle>
           <AlertDescription className="text-orange-700">
             Cette invitation a déjà été{" "}
-            {invitation.status === "accepted" ? "acceptée" : "refusée"}.
+            {invitation.status === "acceptée" ? "acceptée" : "refusée"}.
           </AlertDescription>
         </Alert>
       </div>
@@ -112,7 +112,8 @@ function InvitationComponent() {
           </span>{" "}
           par{" "}
           <span className="font-semibold text-gray-800">
-            {invitation.invited_by.prenom} {invitation.invited_by.nom}
+            {invitation.inviteur?.prenom || invitation.user_envoie?.prenom}{" "}
+            {invitation.inviteur?.nom || invitation.user_envoie?.nom}
           </span>
           .
         </CardDescription>

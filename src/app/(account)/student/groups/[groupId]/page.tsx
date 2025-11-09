@@ -386,7 +386,13 @@ const GroupPage = () => {
             {isChief && (
               <button
                 onClick={() => setCreateQuizModalOpen(true)}
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
+                disabled={utilisateurs.length < 2}
+                className={`px-4 sm:px-6 md:px-6 py-3 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all w-full sm:w-auto whitespace-nowrap flex items-center justify-center ${
+                  utilisateurs.length < 2
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#2C3E50] hover:bg-[#1a252f] text-white hover:shadow-xl"
+                }`}
+                title={utilisateurs.length < 2 ? "Le groupe doit avoir au moins 2 membres pour créer un quiz" : ""}
               >
                 <span className="text-lg mr-2">+</span>
                 <span className="hidden sm:inline">Nouveau quiz</span>
@@ -427,18 +433,31 @@ const GroupPage = () => {
 
               {isChief && (
                 <div className="text-center px-4">
-                  <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
-                    Clique ci-dessous pour créer ton premier quiz !
-                  </p>
+                  {utilisateurs.length < 2 ? (
+                    <>
+                      <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
+                        Le groupe doit avoir au moins 2 membres pour créer un quiz.
+                      </p>
+                      <p className="text-gray-500 text-sm">
+                        Invite d'autres membres pour commencer !
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
+                        Clique ci-dessous pour créer ton premier quiz !
+                      </p>
 
-                  <Button
-                    size="lg"
-                    onClick={() => setCreateQuizModalOpen(true)}
-                    className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
-                  >
-                    <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Créer un Quiz
-                  </Button>
+                      <Button
+                        size="lg"
+                        onClick={() => setCreateQuizModalOpen(true)}
+                        className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+                      >
+                        <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        Créer un Quiz
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </div>

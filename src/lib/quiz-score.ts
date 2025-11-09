@@ -218,3 +218,36 @@ export function getPerformanceBadge(noteSur20: number) {
   if (noteSur20 >= 10) return { label: "Passable", color: "bg-orange-500" };
   return { label: "À améliorer", color: "bg-red-500" };
 }
+
+/**
+ * Obtient le niveau de performance basé sur le pourcentage de réussite
+ *
+ * @param correctAnswers - Nombre de bonnes réponses
+ * @param totalQuestions - Nombre total de questions
+ * @returns Objet contenant le label et la couleur du badge
+ *
+ * @example
+ * ```typescript
+ * const performance = getPerformanceLevel(5, 10); // 50% -> "Passable"
+ * const performance = getPerformanceLevel(9, 10); // 90% -> "Excellent"
+ * ```
+ */
+export function getPerformanceLevel(correctAnswers: number, totalQuestions: number) {
+  if (totalQuestions === 0) {
+    return { label: "Mauvais", color: "bg-red-500" };
+  }
+
+  const percentage = (correctAnswers / totalQuestions) * 100;
+
+  if (percentage >= 80) {
+    return { label: "Excellent", color: "bg-green-500" };
+  } else if (percentage >= 60) {
+    return { label: "Assez bien", color: "bg-blue-500" };
+  } else if (percentage >= 40) {
+    return { label: "Passable", color: "bg-yellow-500" };
+  } else if (percentage >= 20) {
+    return { label: "Médiocre", color: "bg-orange-500" };
+  } else {
+    return { label: "Mauvais", color: "bg-red-500" };
+  }
+}

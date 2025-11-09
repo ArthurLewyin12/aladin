@@ -193,17 +193,24 @@ export default function GroupQuizResultPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 mb-8">
-          <div className="flex items-center gap-4">
+        <div
+          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-6 sm:py-8 mb-6 sm:mb-8 rounded-3xl shadow-sm"
+          style={{
+            backgroundImage: `url("/bg-2.png")`,
+            backgroundSize: "180px 180px",
+            backgroundRepeat: "repeat",
+          }}
+        >
+          <div className="flex items-center space-x-6">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={handleBackToGroup}
-              className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white w-12 h-12 justify-center"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+            <h1 className="text-orange-600 text-4xl md:text-[3rem] font-bold">
               Résultats du Quiz
             </h1>
           </div>

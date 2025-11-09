@@ -158,6 +158,7 @@ export default function CoursePage() {
             </Button>
 
             <div className="flex items-center gap-3">
+              {/* TODO: Réactiver quand le TTS sera fonctionnel
               {courseData && (
                 <TTSButton
                   text={courseData.text}
@@ -165,8 +166,10 @@ export default function CoursePage() {
                   size="sm"
                   showLabel
                   label="Écouter le cours"
+                  disabled
                 />
               )}
+              */}
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <BookOpen className="w-4 h-4" />
                 <span className="hidden sm:inline">Cours personnalisé</span>

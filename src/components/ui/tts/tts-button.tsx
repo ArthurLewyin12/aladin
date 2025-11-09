@@ -25,6 +25,8 @@ interface TTSButtonProps {
   showLabel?: boolean;
   /** Label personnalisé */
   label?: string;
+  /** Désactiver le bouton */
+  disabled?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export const TTSButton = ({
   className,
   showLabel = false,
   label = "Écouter",
+  disabled = false,
 }: TTSButtonProps) => {
   const tts = useTTSReader(text, {
     onError: (error) => {
@@ -71,7 +74,7 @@ export const TTSButton = ({
       variant={variant}
       size={size}
       onClick={handleClick}
-      disabled={tts.isLoading || !text}
+      disabled={disabled || tts.isLoading || !text}
       className={cn(
         "transition-all",
         tts.isPlaying && "text-primary",

@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useGroupQuizNotes } from "@/services/hooks/groupes/useGroupQuizNotes";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { convertScoreToNote } from "@/lib/quiz-score";
+import { convertScoreToNote, getPerformanceLevel } from "@/lib/quiz-score";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -38,7 +38,18 @@ interface UserNoteCardProps {
 const UserNoteCard = ({ note, index, totalQuestions }: UserNoteCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
   const noteSur20 = convertScoreToNote(note.note, totalQuestions);
-  const isSuccess = noteSur20 >= 10;
+  const performance = getPerformanceLevel(note.note, totalQuestions);
+
+  // Déterminer la couleur du badge de performance
+  const badgeColorMap: Record<string, { bg: string; text: string }> = {
+    "Excellent": { bg: "bg-green-50", text: "text-green-700" },
+    "Assez bien": { bg: "bg-blue-50", text: "text-blue-700" },
+    "Passable": { bg: "bg-yellow-50", text: "text-yellow-700" },
+    "Médiocre": { bg: "bg-orange-50", text: "text-orange-700" },
+    "Mauvais": { bg: "bg-red-50", text: "text-red-700" },
+  };
+
+  const badgeColors = badgeColorMap[performance.label] || { bg: "bg-gray-50", text: "text-gray-700" };
 
   return (
     <div
@@ -64,17 +75,9 @@ const UserNoteCard = ({ note, index, totalQuestions }: UserNoteCardProps) => {
           <p className="text-xs text-gray-500 mt-1">({note.note}/{totalQuestions} bonnes réponses)</p>
         </div>
 
-        {isSuccess ? (
-          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-            <CheckCircle2 className="w-3 h-3" />
-            Réussi
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
-            <XCircle className="w-3 h-3" />
-            Échoué
-          </span>
-        )}
+        <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${badgeColors.bg} ${badgeColors.text}`}>
+          {performance.label}
+        </span>
       </div>
     </div>
   );
@@ -98,18 +101,33 @@ export const GroupQuizNotes = () => {
 
   // Calculer les statistiques
   const getStats = (totalQuestions: number) => {
-    if (!notesData?.notes.length) return null;
+    if (!notesData?.notes || !notesData.notes.length) return null;
 
     // Convertir tous les scores bruts en notes sur 20
     const notesSur20 = notesData.notes.map((n) => convertScoreToNote(n.note, totalQuestions));
     const moyenne = (notesSur20.reduce((a, b) => a + b, 0) / notesSur20.length).toFixed(2);
     const meilleureNote = Math.max(...notesSur20);
-    const tauxReussite = (
-      (notesSur20.filter((n) => n >= 10).length / notesSur20.length) *
-      100
-    ).toFixed(0);
 
-    return { moyenne, meilleureNote, tauxReussite, total: notesSur20.length };
+    // Compter les performances par niveau
+    const performanceCounts: Record<string, number> = {
+      "Excellent": 0,
+      "Assez bien": 0,
+      "Passable": 0,
+      "Médiocre": 0,
+      "Mauvais": 0,
+    };
+
+    notesData.notes.forEach((note) => {
+      const performance = getPerformanceLevel(note.note, totalQuestions);
+      performanceCounts[performance.label]++;
+    });
+
+    return {
+      moyenne,
+      meilleureNote,
+      performanceCounts,
+      total: notesSur20.length
+    };
   };
 
   if (isLoading) {
@@ -130,31 +148,96 @@ export const GroupQuizNotes = () => {
     );
   }
 
-  const { notes, corrections, questions_approfondissement } = notesData;
-  const totalQuestions = corrections?.length || 0;
+  // Vérifier s'il y a des pending_members
+  const hasPendingMembers = notesData.pending_members && notesData.pending_members.length > 0;
+
+  if (hasPendingMembers) {
+    return (
+      <div className="min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Header */}
+          <div
+            className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-6 sm:py-8 mb-6 sm:mb-8 rounded-3xl shadow-sm"
+            style={{
+              backgroundImage: `url("/bg-2.png")`,
+              backgroundSize: "180px 180px",
+              backgroundRepeat: "repeat",
+            }}
+          >
+            <div className="flex items-center space-x-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white w-12 h-12 justify-center"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+              <h1 className="text-orange-600 text-4xl md:text-[3rem] font-bold">
+                Résultats du Quiz
+              </h1>
+            </div>
+          </div>
+
+          {/* Message d'attente */}
+          <div className="rounded-3xl bg-[#FFE8D6] p-6 sm:p-10 shadow-sm max-w-2xl mx-auto">
+            <div className="text-center">
+              <div className="text-6xl mb-4">⏳</div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                Quiz en cours de completion
+              </h2>
+              <p className="text-gray-700 mb-6">
+                Les résultats ne sont pas encore disponibles. En attente que les membres suivants terminent le quiz :
+              </p>
+              <div className="mt-6 space-y-3 bg-white/60 rounded-2xl p-4 mb-6">
+                {notesData.pending_members?.map((member) => (
+                  <div key={member.id} className="flex items-center justify-center gap-2 text-gray-700">
+                    <span className="text-lg">👤</span>
+                    <span className="font-medium">{member.prenom} {member.nom}</span>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={handleBack}
+                className="bg-gray-900 hover:bg-gray-800 text-white rounded-xl px-6 h-11 font-medium"
+              >
+                Retour
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const notes = notesData?.notes || [];
+  const corrections = notesData?.corrections || [];
+  const questions_approfondissement = notesData?.questions_approfondissement || [];
+  const totalQuestions = corrections.length;
   const stats = getStats(totalQuestions);
 
   return (
-    <div
-      className="min-h-screen bg-[#F5F4F1]"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.2'%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 20h10v10H60zM80 60h10v10H80zM30 70h10v10H30zM70 30h10v10H70zM50 50h10v10H50z'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "100px 100px",
-      }}
-    >
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 mb-8">
-          <div className="flex items-center gap-4">
+        <div
+          className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-6 sm:py-8 mb-6 sm:mb-8 rounded-3xl shadow-sm"
+          style={{
+            backgroundImage: `url("/bg-2.png")`,
+            backgroundSize: "180px 180px",
+            backgroundRepeat: "repeat",
+          }}
+        >
+          <div className="flex items-center space-x-6">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={handleBack}
-              className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white w-12 h-12 justify-center"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+            <h1 className="text-orange-600 text-4xl md:text-[3rem] font-bold">
               Résultats du Quiz
             </h1>
           </div>
@@ -216,11 +299,18 @@ export const GroupQuizNotes = () => {
                 </div>
                 <div>
                   <p className="text-xs sm:text-sm text-gray-500">
-                    Taux de Réussite
+                    Évaluation
                   </p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                    {stats.tauxReussite}%
-                  </p>
+                  <div className="space-y-0.5 text-xs">
+                    {Object.entries(stats.performanceCounts).map(([level, count]) => {
+                      if (count === 0) return null;
+                      return (
+                        <p key={level} className="text-gray-700">
+                          <span className="font-semibold text-gray-900">{level}:</span> {count}
+                        </p>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>

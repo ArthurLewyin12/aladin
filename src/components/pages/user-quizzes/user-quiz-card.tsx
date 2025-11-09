@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Quiz } from "@/services/controllers/types/common/quiz.types";
+import { convertScoreToNote } from "@/lib/quiz-score";
 
 interface UserQuizCardProps {
   quiz: Quiz;
@@ -29,6 +30,11 @@ export const UserQuizCard = ({
   // Utiliser le temps réel si disponible (depuis sessionStorage), sinon calculer basé sur les questions
   // Note: Le temps réel sera affiché seulement pour les quiz récemment passés
   const estimatedTime = quiz.questions?.length || 0; // en minutes (60s par question)
+
+  // Récupérer la note la plus récente si disponible
+  const latestNote = quiz.notes && quiz.notes.length > 0 ? quiz.notes[0] : null;
+  const totalQuestions = quiz.questions?.length || 0;
+  const noteSur20 = latestNote ? convertScoreToNote(latestNote.note, totalQuestions) : null;
 
   return (
     <div
@@ -60,6 +66,11 @@ export const UserQuizCard = ({
         <p className="text-base text-gray-500">
           Matière : {quiz.chapitre?.matiere?.libelle || "N/A"}
         </p>
+        {noteSur20 !== null && (
+          <p className="text-base font-bold text-gray-900">
+            Note : {noteSur20}/20 ({latestNote.note}/{totalQuestions})
+          </p>
+        )}
       </div>
 
       {/* Footer avec bouton "Voir les détails" */}

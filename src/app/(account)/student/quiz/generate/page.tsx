@@ -79,7 +79,13 @@ export default function GenerateQuizPage() {
   const router = useRouter();
   const { user } = useSession();
   const { startTracking, stopTracking } = useTimeTracking();
-  const { startQuiz, startQuestion, endQuestion, getTotalTime, reset: resetQuizTimer } = useQuizTimer();
+  const {
+    startQuiz,
+    startQuestion,
+    endQuestion,
+    getTotalTime,
+    reset: resetQuizTimer,
+  } = useQuizTimer();
 
   // Démarrer le tracking quand le quiz commence
   useEffect(() => {
@@ -668,11 +674,12 @@ export default function GenerateQuizPage() {
                     </p>
                     <p>
                       🚫 <strong>Impossible de revenir</strong> en arrière sur
-                      une question
+                      une question déjà passée
                     </p>
                     <p>
-                      ⚠️ <strong>Quitter = soumission automatique</strong> du
-                      quiz avec tes réponses actuelles
+                      ⚠️{" "}
+                      <strong>Quitter la page = soumission automatique</strong>{" "}
+                      du quiz avec tes réponses actuelles
                     </p>
                   </AlertDescription>
                 </Alert>

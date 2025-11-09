@@ -105,11 +105,13 @@ export default function QuizResultPage() {
 
   // Utiliser le score local en priorité pour éviter les incohérences
   const score = localScore?.score ?? (notesData?.notes[0]?.note || 0);
-  const totalQuestions = localScore?.totalQuestions ?? (corrections.length || 0);
+  const totalQuestions =
+    localScore?.totalQuestions ?? (corrections.length || 0);
   const explanations = notesData?.questions_approfondissement || [];
 
   // Convertir le score en note sur 20 - utiliser le score local si disponible
-  const noteSur20 = localScore?.noteSur20 ?? convertScoreToNote(score, totalQuestions);
+  const noteSur20 =
+    localScore?.noteSur20 ?? convertScoreToNote(score, totalQuestions);
 
   // Debug: afficher les scores pour comprendre les incohérences
   console.log("=== QUIZ RESULTS DEBUG ===");
@@ -161,26 +163,27 @@ export default function QuizResultPage() {
   const scoreMessage = getScoreMessage();
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Header */}
       <div
-        className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+        className="mt-2 sm:mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-6 sm:py-8 mb-6 sm:mb-8 rounded-3xl shadow-sm"
         style={{
           backgroundImage: `url("/bg-2.png")`,
           backgroundSize: "180px 180px",
+          backgroundRepeat: "repeat",
         }}
       >
         <div className="flex items-center space-x-6">
           <Button
             variant="ghost"
-            size="lg"
+            size="sm"
             onClick={handleBackToHome}
-            className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 border rounded-xl bg-white/80 w-12 h-12 p-0 justify-center shadow-sm hover:shadow-md transition-all duration-300"
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 border rounded-full bg-white w-12 h-12 justify-center"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <h1 className="text-orange-600 text-5xl md:text-6xl font-bold">
-            Quiz Time !
+          <h1 className="text-orange-600 text-4xl md:text-[3rem] font-bold">
+            Résultats du Quiz
           </h1>
         </div>
       </div>
@@ -228,7 +231,8 @@ export default function QuizResultPage() {
           </div>
           {localScore?.totalTimeInSeconds && (
             <div className="text-base text-gray-500 mt-2">
-              ⏱️ Temps réel : {Math.floor(localScore.totalTimeInSeconds / 60)}min {localScore.totalTimeInSeconds % 60}s
+              ⏱️ Temps réel : {Math.floor(localScore.totalTimeInSeconds / 60)}
+              min {localScore.totalTimeInSeconds % 60}s
             </div>
           )}
         </div>

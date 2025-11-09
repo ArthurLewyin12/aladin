@@ -241,6 +241,8 @@ export function StudyTimeChart({
             tickLine={false}
             tick={{ fill: "#666", fontSize: 12 }}
             tickFormatter={(value) => `${Math.round(value * 60)}min`}
+            domain={[0, 'auto']}
+            ticks={[1/60, 2/60, 3/60, 4/60, 5/60]}
             label={{
               value: "Temps (min)",
               position: "insideLeft",

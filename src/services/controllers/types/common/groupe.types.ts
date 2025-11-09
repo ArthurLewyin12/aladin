@@ -156,7 +156,7 @@ export type GetAllQuizNotesRequest = Record<string, never>; // Vide, ou query pa
 
 // Interface pour le payload de réponse en cas de succès
 export interface GetAllQuizNotesSuccessResponse {
-  notes: Array<{
+  notes?: Array<{
     id: number;
     user_id: number;
     quiz_id: number;
@@ -168,7 +168,7 @@ export interface GetAllQuizNotesSuccessResponse {
       prenom: string;
     };
   }>; // Trié par created_at desc
-  corrections: Array<{
+  corrections?: Array<{
     id?: number;
     question: string; // Texte nettoyé (LaTeX -> MathJax)
     reponses: Array<{
@@ -177,11 +177,20 @@ export interface GetAllQuizNotesSuccessResponse {
     }>;
     // Autres champs question (ex. type, explication)
   }>;
-  questions_approfondissement: Array<{
+  questions_approfondissement?: Array<{
     // Structure similaire à corrections, pour questions ouvertes
     question: string;
     // ...
   }>;
+  pending_members?: Array<{
+    id: number;
+    nom: string;
+    prenom: string;
+    mail: string;
+    niveau?: string | null;
+    type: string;
+  }>;
+  message?: string;
 }
 
 // Interface pour le payload de réponse en cas d'erreur d'autorisation

@@ -331,6 +331,7 @@ export function NotesEvolutionChart() {
               tick={{ fill: "#666", fontSize: 12 }}
               domain={[0, 20]}
               ticks={[0, 5, 10, 15, 20]}
+              tickFormatter={(value) => `${value}/20`}
             />
             <ChartTooltip
               cursor={false}

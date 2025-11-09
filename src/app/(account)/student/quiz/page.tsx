@@ -59,7 +59,7 @@ export default function QuizPage() {
 
         {/* Tabs */}
         <div className="flex justify-center mb-8">
-          <AnimatedTabs tabs={tabs} onTabChange={setActiveTab} />
+          <AnimatedTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
 
         {/* Contenu principal basé sur l'onglet actif */}

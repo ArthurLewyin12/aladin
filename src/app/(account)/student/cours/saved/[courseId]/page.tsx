@@ -13,7 +13,7 @@ import { MathText } from "@/components/ui/MathText";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { Spinner } from "@/components/ui/spinner";
 import { TTSButton } from "@/components/ui/tts";
-import { TTSDebug } from "@/components/debug/TTSDebug";
+// import { TTSDebug } from "@/components/debug/TTSDebug";
 
 export default function SavedCoursePage() {
   const router = useRouter();
@@ -77,12 +77,12 @@ export default function SavedCoursePage() {
             Erreur lors du chargement du cours
           </p>
           <p className="text-sm text-red-500 mb-6">{(error as any)?.message}</p>
-           <Button
-             onClick={handleBack}
-             className="bg-red-600 hover:bg-red-700 text-white rounded-xl w-12 h-12 p-0 flex items-center justify-center"
-           >
-             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-           </Button>
+          <Button
+            onClick={handleBack}
+            className="bg-red-600 hover:bg-red-700 text-white rounded-xl w-12 h-12 p-0 flex items-center justify-center"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
         </div>
       </div>
     );
@@ -96,12 +96,12 @@ export default function SavedCoursePage() {
           <p className="text-lg font-semibold text-gray-700 mb-6">
             Aucune donnée disponible pour ce cours
           </p>
-              <Button
-                onClick={handleBack}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl w-12 h-12 p-0 justify-center transition-all"
-              >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
+          <Button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl w-12 h-12 p-0 justify-center transition-all"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
         </div>
       </div>
     );
@@ -127,7 +127,6 @@ export default function SavedCoursePage() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Debug Component - Temporaire pour tester le Web Speech API */}
-      <TTSDebug />
 
       {/* Header Sticky */}
       <div className="sticky top-0 z-20 backdrop-blur-md bg-white/80 border-b border-gray-200">
@@ -144,7 +143,7 @@ export default function SavedCoursePage() {
             </Button>
 
             <div className="flex items-center gap-3">
-              {data && (
+              {/*{data && (
                 <TTSButton
                   text={data.text}
                   variant="outline"
@@ -152,7 +151,7 @@ export default function SavedCoursePage() {
                   showLabel
                   label="Écouter le cours"
                 />
-              )}
+              )}*/}
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <BookOpen className="w-4 h-4" />
                 <span className="hidden sm:inline">Cours sauvegardé</span>

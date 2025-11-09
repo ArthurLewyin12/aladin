@@ -64,6 +64,12 @@ export interface GroupQuizItem {
   quiz: GroupQuizDefinition;
   groupe: GroupeInfo;
   is_completed: boolean;
+  pending_members?: Array<{
+    id: number;
+    nom: string;
+    prenom: string;
+    mail: string;
+  }>;
 }
 
 export interface GroupQuizzesResponse {

@@ -127,15 +127,20 @@ export const QuizCard = ({
             >
               Déjà passé
             </Button>
-            {allMembersTaken && onViewGrades && (
-              <Button
-                onClick={onViewGrades}
-                variant="outline"
-                className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium"
-              >
-                Voir les notes
-              </Button>
-            )}
+            <Button
+              onClick={onViewGrades}
+              disabled={!allMembersTaken}
+              variant="outline"
+              className={cn(
+                "rounded-xl px-6 h-11 font-medium border-2",
+                allMembersTaken
+                  ? "bg-white border-gray-900 text-gray-900 hover:bg-gray-50"
+                  : "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+              )}
+              title={!allMembersTaken ? "En attente que tous les membres terminent le quiz" : ""}
+            >
+              Voir les notes
+            </Button>
           </>
         )}
       </div>

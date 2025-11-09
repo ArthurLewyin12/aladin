@@ -39,8 +39,10 @@ export const GroupQuizCard = ({
   className,
   onDetailsClick,
 }: GroupQuizCardProps) => {
-  const { quiz, groupe, is_completed } = quizItem;
+  const { quiz, groupe, is_completed, pending_members } = quizItem;
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
+
+  const hasPendingMembers = pending_members && pending_members.length > 0;
 
   return (
     <div
@@ -110,11 +112,18 @@ export const GroupQuizCard = ({
       </div>
 
       {/* Footer avec bouton */}
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-end gap-3 flex-wrap">
         <Button
           variant="outline"
           onClick={onDetailsClick}
-          className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
+          disabled={hasPendingMembers}
+          className={cn(
+            "rounded-xl px-4 h-11 font-medium border-2",
+            hasPendingMembers
+              ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+              : "bg-white border-gray-900 text-gray-900 hover:bg-gray-50"
+          )}
+          title={hasPendingMembers ? `En attente de ${pending_members?.length} membre(s)` : ""}
         >
           Voir les notes
         </Button>

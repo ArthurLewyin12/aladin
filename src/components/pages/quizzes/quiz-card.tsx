@@ -106,12 +106,12 @@ export const QuizCard = ({
       </div>
 
       {/* Footer avec boutons */}
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-between gap-3">
         {!hasTaken ? (
           <Button
             onClick={onStart}
             variant="outline"
-            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
+            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
           >
             Lancer le quiz
           </Button>
@@ -120,10 +120,7 @@ export const QuizCard = ({
             <Button
               disabled
               variant="outline"
-              className={cn(
-                "bg-gray-200 border-2 border-gray-300 text-gray-500 rounded-xl px-6 h-11 font-medium",
-                { "w-full": !allMembersTaken },
-              )}
+              className="bg-gray-200 border-2 border-gray-300 text-gray-500 rounded-xl px-6 h-11 font-medium flex-1"
             >
               Déjà passé
             </Button>
@@ -132,7 +129,7 @@ export const QuizCard = ({
               disabled={!allMembersTaken}
               variant="outline"
               className={cn(
-                "rounded-xl px-6 h-11 font-medium border-2",
+                "rounded-xl px-6 h-11 font-medium border-2 flex-1",
                 allMembersTaken
                   ? "bg-white border-gray-900 text-gray-900 hover:bg-gray-50"
                   : "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"

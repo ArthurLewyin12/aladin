@@ -1,5 +1,5 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useInvitationByToken } from "@/services/hooks/groupes/useInvitationByToken";
 import { useAcceptInvitation } from "@/services/hooks/groupes/useAcceptInvitation";
 import { useDeclineInvitation } from "@/services/hooks/groupes/useDeclineInvitation";
@@ -20,6 +20,7 @@ import {
 import { Suspense } from "react";
 
 function InvitationComponent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const {
@@ -29,9 +30,23 @@ function InvitationComponent() {
     error,
   } = useInvitationByToken(token || "");
   const { mutate: acceptInvitation, isPending: isAccepting } =
-    useAcceptInvitation();
+    useAcceptInvitation({
+      onSuccess: () => {
+        // Redirection vers la page des groupes après 1 seconde
+        setTimeout(() => {
+          router.push("/student/groups");
+        }, 1000);
+      },
+    });
   const { mutate: declineInvitation, isPending: isDeclining } =
-    useDeclineInvitation();
+    useDeclineInvitation({
+      onSuccess: () => {
+        // Redirection vers la page des groupes après 1 seconde
+        setTimeout(() => {
+          router.push("/student/groups");
+        }, 1000);
+      },
+    });
 
   const handleAccept = () => {
     if (invitation) {

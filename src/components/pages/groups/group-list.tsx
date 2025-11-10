@@ -10,11 +10,12 @@ import { ParentGroupCard } from "../parent/parent-group-card";
 import { InviteUsersModal } from "./invit-member-modal";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { useEnfants } from "@/services/hooks/parent";
 import { useEleves } from "@/services/hooks/repetiteur";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, useQueryState, parseAsString } from "nuqs";
 import { toast } from "@/lib/toast";
 
 const ITEMS_PER_PAGE = 6;
@@ -31,6 +32,7 @@ interface GroupListProps {
   basePath?: string; // Chemin de base pour la redirection (ex: "/student/groups", "/parent/groups", ou "/repetiteur/groups")
   showCreateButton?: boolean; // Afficher ou masquer le bouton de création
   variant?: "student" | "parent" | "repetiteur"; // Variant pour savoir si c'est un parent, un étudiant ou un répétiteur
+  searchQuery?: string; // Requête de recherche pour filtrer les groupes
 }
 
 export const GroupList = ({
@@ -38,6 +40,7 @@ export const GroupList = ({
   basePath = "/student/groups",
   showCreateButton = true,
   variant = "student",
+  searchQuery = "",
 }: GroupListProps) => {
   const router = useRouter();
   const { data: groupes, isLoading, isError } = useGroupes();
@@ -56,6 +59,15 @@ export const GroupList = ({
 
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+
+  // Recherche avec nuqs (si pas déjà défini en prop)
+  const [searchQueryState, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault(""),
+  );
+
+  // Utiliser la prop searchQuery si elle existe, sinon utiliser le state local
+  const finalSearchQuery = searchQuery || searchQueryState;
 
   // State pour la modale d'invitation
   const [inviteModal, setInviteModal] = useState<{
@@ -87,6 +99,11 @@ export const GroupList = ({
 
     return groupes
       .filter((item) => {
+        // Filtrer par recherche
+        if (finalSearchQuery && !item.groupe.nom.toLowerCase().includes(finalSearchQuery.toLowerCase())) {
+          return false;
+        }
+
         if (item.groupe.is_active) {
           return true;
         }
@@ -122,7 +139,7 @@ export const GroupList = ({
           isChief, // Explicitly add the isChief property
         };
       });
-  }, [groupes, currentUser]);
+  }, [groupes, currentUser, finalSearchQuery]);
 
   // Calculer les groupes paginés
   const { paginatedGroupes, totalPages } = useMemo(() => {
@@ -262,6 +279,22 @@ export const GroupList = ({
               <span className="sm:hidden">Créer</span>
             </button>
           )}
+        </div>
+
+        {/* Barre de recherche */}
+        <div className="flex justify-center mb-6 px-4">
+          <div className="relative w-full max-w-lg">
+            <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+            <Input
+              type="text"
+              placeholder="Rechercher un groupe..."
+              value={finalSearchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+              }}
+              className="pl-14 sm:pl-16 pr-6 py-4 sm:py-5 rounded-3xl border-2 border-gray-300 focus:border-orange-500 focus:outline-none text-base sm:text-lg text-gray-900 placeholder-gray-500 w-full bg-white shadow-md"
+            />
+          </div>
         </div>
 
         {/* Grille des groupes paginés */}

@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, X, Search } from "lucide-react";
+import { useQueryState, parseAsString } from "nuqs";
+import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import {
   Dialog,
@@ -18,7 +20,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { GroupList } from "@/components/pages/groups/group-list";
@@ -82,6 +84,12 @@ export default function GroupsPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
+
+  // Recherche avec nuqs
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault(""),
+  );
 
   const { user } = useSession();
   const { mutate: createGroupeMutation, isPending: isCreatingGroup } =
@@ -199,6 +207,7 @@ export default function GroupsPage() {
           <GroupList
             basePath="/student/groups"
             onCreateGroup={() => setIsOpen(true)}
+            searchQuery={searchQuery}
           />
         ) : (
           // Scénario: Aucun groupe (contenu placeholder original)

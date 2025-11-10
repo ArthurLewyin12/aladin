@@ -248,7 +248,7 @@ export default function GeneratedCoursePage() {
               <Lightbulb className="w-5 h-5 text-white" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-amber-900">
-              À retenir
+              Synthèse du cours
             </h2>
           </div>
           <MathText
@@ -265,7 +265,7 @@ export default function GeneratedCoursePage() {
                 <MessageCircleQuestion className="w-5 h-5 text-white" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Questions fréquentes
+                Questions d'approfondissements
               </h2>
             </div>
             <div className="space-y-4">

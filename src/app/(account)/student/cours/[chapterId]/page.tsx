@@ -300,41 +300,6 @@ export default function CoursePage() {
                   </div>
                 </div>
 
-                {/* Questions Fréquentes */}
-                {courseData.questions && courseData.questions.length > 0 && (
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                      Questions fréquentes
-                    </h2>
-                    <div className="space-y-3">
-                      {courseData.questions.map((qa, index) => (
-                        <details
-                          key={index}
-                          className="group border border-gray-300 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                        >
-                          <summary className="font-medium text-gray-900 flex items-start gap-3 list-none select-none">
-                            <span className="flex-shrink-0 mt-0.5 text-gray-400 group-open:hidden">
-                              ▶
-                            </span>
-                            <span className="flex-shrink-0 mt-0.5 text-gray-400 hidden group-open:block">
-                              ▼
-                            </span>
-                            <MathText
-                              text={qa.question}
-                              className="flex-1 text-gray-900"
-                            />
-                          </summary>
-                          <div className="mt-3 ml-6 pl-3 border-l-2 border-gray-300">
-                            <MathText
-                              text={qa.reponse}
-                              className="text-gray-700 leading-relaxed"
-                            />
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </>
             ) : (
               <>

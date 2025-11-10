@@ -10,6 +10,17 @@ import { MathText } from "@/components/ui/MathText";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { useDocumentUpload } from "@/stores/useDocumentUpload";
+import { DeepeeningQuestions } from "@/components/pages/cours/deepening-questions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const courseLoadingMessages = [
   "Génération de votre cours personnalisé...",
@@ -23,6 +34,9 @@ export default function CoursePage() {
   const router = useRouter();
   const params = useParams();
   const chapterId = params.chapterId as string;
+  const [showCourseChoiceModal, setShowCourseChoiceModal] = useState(false);
+  const [courseIsExisting, setCourseIsExisting] = useState(false);
+  const [showDeepeeningQuestions, setShowDeepeeningQuestions] = useState(false);
 
   // Récupérer le document depuis le store Zustand
   const { pendingDocument, clearPendingDocument } = useDocumentUpload();
@@ -40,9 +54,20 @@ export default function CoursePage() {
     }
   }, [isLoading, data, clearPendingDocument]);
 
+  // Détecter si le cours est déjà généré et afficher la modal
+  useEffect(() => {
+    if (!isLoading && data && "served" in data) {
+      const courseData = data as GenerateCoursSuccessResponse;
+      if (courseData.served === "existing") {
+        setCourseIsExisting(true);
+        setShowCourseChoiceModal(true);
+      }
+    }
+  }, [isLoading, data]);
+
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
-    if (!isLoading && data && "cours_id" in data) {
+    if (!isLoading && data && "cours_id" in data && !showCourseChoiceModal) {
       const courseData = data as GenerateCoursSuccessResponse;
       startTracking("revision", courseData.cours_id, Number(chapterId));
     }
@@ -51,7 +76,7 @@ export default function CoursePage() {
     return () => {
       stopTracking();
     };
-  }, [isLoading, data, chapterId]);
+  }, [isLoading, data, chapterId, showCourseChoiceModal]);
 
   const parsedContent = useMemo(() => {
     if (!data || !("text" in data)) return [];
@@ -168,13 +193,19 @@ export default function CoursePage() {
         {/* Main Content */}
         {data && (
           <main className="w-full max-w-4xl mx-auto py-8 sm:py-12">
-            {hasStructuredCourseData ? (
+            {showDeepeeningQuestions ? (
+              <DeepeeningQuestions
+                questions={courseData.questions || []}
+                onBack={() => setShowDeepeeningQuestions(false)}
+              />
+            ) : hasStructuredCourseData ? (
               <>
                 {/* NOUVEAU FORMAT STRUCTURÉ - Simple et épuré */}
 
                 {/* Titre Principal avec underline */}
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-orange-500 w-fit mx-auto">
-                  {(courseData as any)?.course_data?.["Titre de la leçon"] || (courseData as any)?.course_data?.["Titre de la lecon"]}
+                  {(courseData as any)?.course_data?.["Titre de la leçon"] ||
+                    (courseData as any)?.course_data?.["Titre de la lecon"]}
                 </h1>
 
                 {/* Introduction */}
@@ -377,6 +408,62 @@ export default function CoursePage() {
           </main>
         )}
       </div>
+
+      {/* Modal pour choix du cours */}
+      {courseIsExisting && data && "cours_id" in data && (
+        <AlertDialog
+          open={showCourseChoiceModal}
+          onOpenChange={setShowCourseChoiceModal}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cours déjà généré</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tu as déjà généré ce cours, Que souhaite-tu faire ?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            {/*<div className="space-y-3">
+              <p className="text-sm text-gray-600">
+                <strong>Approfondir :</strong> Voir les 5 questions
+                d'approfondissement pour mieux comprendre le sujet.
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Voir :</strong> Accédez au cours complet précédemment
+                généré.
+              </p>
+            </div>*/}
+            <div className="flex items-center justify-between gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="rounded-full bg-white hover:bg-gray-50 w-9 h-9 sm:w-10 sm:h-10 shadow-sm flex-shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+              <AlertDialogFooter>
+                <AlertDialogAction
+                  onClick={() => {
+                    router.push(
+                      `/student/cours/saved/${(data as GenerateCoursSuccessResponse).cours_id}`,
+                    );
+                  }}
+                >
+                  Voir le cours
+                </AlertDialogAction>
+                <AlertDialogCancel
+                  onClick={() => {
+                    setShowCourseChoiceModal(false);
+                    setShowDeepeeningQuestions(true);
+                  }}
+                >
+                  Approfondir
+                </AlertDialogCancel>
+              </AlertDialogFooter>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

@@ -313,7 +313,7 @@ export default function SavedCoursePage() {
 
                 {/* Synthèse */}
                 <div className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
-                  <h2 className="text-lg font-semibold text-amber-900 mb-3">
+                  <h2 className="text-xl font-semibold text-amber-900 mb-3">
                     Synthèse du cours
                   </h2>
                   <div className="text-gray-700 leading-relaxed">
@@ -325,42 +325,6 @@ export default function SavedCoursePage() {
                     />
                   </div>
                 </div>
-
-                {/* Questions Fréquentes */}
-                {data.questions && data.questions.length > 0 && (
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                      Questions fréquentes
-                    </h2>
-                    <div className="space-y-3">
-                      {data.questions.map((qa, index) => (
-                        <details
-                          key={index}
-                          className="group border border-gray-300 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                        >
-                          <summary className="font-medium text-gray-900 flex items-start gap-3 list-none select-none">
-                            <span className="flex-shrink-0 mt-0.5 text-gray-400 group-open:hidden">
-                              ▶
-                            </span>
-                            <span className="flex-shrink-0 mt-0.5 text-gray-400 hidden group-open:block">
-                              ▼
-                            </span>
-                            <MathText
-                              text={qa.question}
-                              className="flex-1 text-gray-900"
-                            />
-                          </summary>
-                          <div className="mt-3 ml-6 pl-3 border-l-2 border-gray-300">
-                            <MathText
-                              text={qa.reponse}
-                              className="text-gray-700 leading-relaxed"
-                            />
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </>
             ) : (
               <>
@@ -425,7 +389,7 @@ export default function SavedCoursePage() {
                           <MessageCircleQuestion className="w-6 h-6 text-white" />
                         </div>
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                          Questions fréquentes
+                          Questions d'approfondissements
                         </h2>
                       </div>
                       <div className="space-y-4">
@@ -465,7 +429,7 @@ export default function SavedCoursePage() {
                       <MessageCircleQuestion className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                      Questions fréquentes
+                      Questions d'approfondissements
                     </h2>
                   </div>
                   <div className="space-y-4">
@@ -475,6 +439,12 @@ export default function SavedCoursePage() {
                         className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
                       >
                         <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                          <span className="flex-shrink-0 mt-0.5 text-orange-500 group-open:hidden">
+                            ▶
+                          </span>
+                          <span className="flex-shrink-0 mt-0.5 text-orange-500 hidden group-open:block">
+                            ▼
+                          </span>
                           <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
                             {index + 1}
                           </span>

@@ -100,7 +100,8 @@ export default function SettingsGeneralPage() {
   const { user } = useSession();
   const { data: niveaux, isLoading: isLoadingNiveaux } = useNiveau();
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const { preferences, setEnabled, setVoice, setVoiceSettings } = useTTSPreferences();
+  const { preferences, setEnabled, setVoice, setVoiceSettings } =
+    useTTSPreferences();
 
   const [selectedNiveau, setSelectedNiveau] = useState<string>("");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -385,7 +386,11 @@ export default function SettingsGeneralPage() {
             <Select
               value={selectedNiveau}
               onValueChange={setSelectedNiveau}
-              disabled={!canChangeNiveau.allowed || isLoadingNiveaux || filteredNiveaux.length === 0}
+              disabled={
+                !canChangeNiveau.allowed ||
+                isLoadingNiveaux ||
+                filteredNiveaux.length === 0
+              }
             >
               <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
                 <SelectValue placeholder="Sélectionne le niveau suivant" />
@@ -405,7 +410,8 @@ export default function SettingsGeneralPage() {
             disabled={
               !canChangeNiveau.allowed ||
               !selectedNiveau ||
-              selectedNiveau === (user?.niveau_id || user?.niveau?.id)?.toString()
+              selectedNiveau ===
+                (user?.niveau_id || user?.niveau?.id)?.toString()
             }
             className="w-full h-12 bg-[#2C3E50] hover:bg-[#1a252f] text-white font-medium rounded-xl shadow-md transition-all hover:shadow-lg"
           >
@@ -538,65 +544,66 @@ export default function SettingsGeneralPage() {
                 : "Enregistrer les modifications"}
             </Button>
           </form>
-         </Form>
-       </div>
+        </Form>
+      </div>
 
-       {/* Section 2.5: Informations du parent */}
-       <div
-         className={cn(
-           "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
-           CARD_COLORS[2],
-         )}
-       >
-         <div className="flex items-center gap-3 mb-6">
-           <div className="p-3 bg-white rounded-2xl shadow-sm">
-             <Users className="w-6 h-6 text-gray-900" />
-           </div>
-           <div>
-             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-               Informations du parent
-             </h2>
-             <p className="text-sm text-gray-600 mt-1">
-               Coordonnées de ton parent référent
-             </p>
-           </div>
-         </div>
+      {/* Section 2.5: Informations du parent */}
+      <div
+        className={cn(
+          "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
+          CARD_COLORS[2],
+        )}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <Users className="w-6 h-6 text-gray-900" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Informations du parent
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Coordonnées de ton parent référent
+            </p>
+          </div>
+        </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           {/* Email du parent */}
-           <div className="space-y-2">
-             <label className="text-sm font-medium text-gray-900">
-               Email du parent
-             </label>
-             <div className="h-12 px-3 bg-white/60 border-2 border-gray-300 rounded-xl flex items-center">
-               <span className="text-gray-700 truncate">
-                 {user?.parent_mail || "Non renseigné"}
-               </span>
-             </div>
-           </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Email du parent */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-900">
+              Email du parent
+            </label>
+            <div className="h-12 px-3 bg-white/60 border-2 border-gray-300 rounded-xl flex items-center">
+              <span className="text-gray-700 truncate">
+                {user?.parent_mail || "Non renseigné"}
+              </span>
+            </div>
+          </div>
 
-           {/* Numéro du parent */}
-           <div className="space-y-2">
-             <label className="text-sm font-medium text-gray-900">
-               Numéro du parent
-             </label>
-             <div className="h-12 px-3 bg-white/60 border-2 border-gray-300 rounded-xl flex items-center">
-               <span className="text-gray-700 truncate">
-                 {user?.parent_numero || "Non renseigné"}
-               </span>
-             </div>
-           </div>
-         </div>
+          {/* Numéro du parent */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-900">
+              Numéro du parent
+            </label>
+            <div className="h-12 px-3 bg-white/60 border-2 border-gray-300 rounded-xl flex items-center">
+              <span className="text-gray-700 truncate">
+                {user?.parent_numero || "Non renseigné"}
+              </span>
+            </div>
+          </div>
+        </div>
 
-         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-           <p className="text-xs text-blue-800">
-             ℹ️ Ces informations ont été saisies lors de ton inscription et ne peuvent pas être modifiées.
-             Contacte l'administrateur si tu dois les mettre à jour.
-           </p>
-         </div>
-       </div>
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-xs text-blue-800">
+            ℹ️ Ces informations ont été saisies lors de ton inscription et ne
+            peuvent pas être modifiées. Contacte l'administrateur si tu dois les
+            mettre à jour.
+          </p>
+        </div>
+      </div>
 
-       {/* Section 3: Changer le mot de passe */}
+      {/* Section 3: Changer le mot de passe */}
       <div
         className={cn(
           "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
@@ -693,7 +700,7 @@ export default function SettingsGeneralPage() {
       </div>
 
       {/* Section 4: Préférences de lecture audio (TTS) */}
-      <div
+      {/*<div
         className={cn(
           "rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:shadow-md",
           CARD_COLORS[0],
@@ -714,10 +721,11 @@ export default function SettingsGeneralPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Activer/Désactiver TTS */}
           <div className="flex items-center justify-between p-4 bg-white/60 rounded-2xl">
             <div>
-              <p className="font-medium text-gray-900">Activer la lecture audio</p>
+              <p className="font-medium text-gray-900">
+                Activer la lecture audio
+              </p>
               <p className="text-sm text-gray-600 mt-1">
                 Permet d'écouter les cours et les questions de quiz
               </p>
@@ -728,17 +736,13 @@ export default function SettingsGeneralPage() {
             />
           </div>
 
-          {/* Choix de la voix */}
           {preferences.enabled && (
             <>
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-900">
                   Voix
                 </label>
-                <Select
-                  value={preferences.voice}
-                  onValueChange={setVoice}
-                >
+                <Select value={preferences.voice} onValueChange={setVoice}>
                   <SelectTrigger className="h-12 bg-white border-2 border-gray-300 rounded-xl">
                     <SelectValue placeholder="Sélectionne une voix" />
                   </SelectTrigger>
@@ -756,7 +760,6 @@ export default function SettingsGeneralPage() {
                 </Select>
               </div>
 
-              {/* Vitesse de lecture */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-900">
                   Vitesse de lecture
@@ -778,7 +781,6 @@ export default function SettingsGeneralPage() {
                 </Select>
               </div>
 
-              {/* Volume */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-900">
                   Volume
@@ -802,7 +804,7 @@ export default function SettingsGeneralPage() {
             </>
           )}
         </div>
-      </div>
+      </div>*/}
 
       {/* Section 5: Contacter l'administrateur */}
       <div
@@ -866,7 +868,10 @@ export default function SettingsGeneralPage() {
 
       {/* AlertDialog pour desktop */}
       {isDesktop ? (
-        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+        >
           <AlertDialogContent className="rounded-2xl">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-xl">
@@ -887,9 +892,9 @@ export default function SettingsGeneralPage() {
                 <br />
                 <span className="text-orange-600 font-medium">
                   ⚠️ Cette action est irréversible durant ton abonnement.
-                </span>
-                {" "}Tu ne pourras plus modifier ton niveau une fois la
-                confirmation effectuée.
+                </span>{" "}
+                Tu ne pourras plus modifier ton niveau une fois la confirmation
+                effectuée.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

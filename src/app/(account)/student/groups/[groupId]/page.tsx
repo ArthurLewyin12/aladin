@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import { QuizCard } from "@/components/pages/quizzes/quiz-card";
 import { useState, useMemo } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, useQueryState, parseAsString } from "nuqs";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 import { InviteUsersModal } from "@/components/pages/groups/invit-member-modal";
 import { CreateQuizModal } from "@/components/pages/groups/create-quiz-modal";
@@ -194,6 +196,12 @@ const GroupPage = () => {
     parseAsInteger.withDefault(1),
   );
 
+  // Recherche avec nuqs
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault(""),
+  );
+
   const { user } = useSession();
   const {
     data: groupDetails,
@@ -204,18 +212,25 @@ const GroupPage = () => {
   const { mutate: startGroupQuiz } = useStartGroupQuiz();
   const queryClient = useQueryClient();
 
-  // Calculer les quiz paginés (doit être avant les returns conditionnels)
-  const { paginatedQuizzes, totalPages } = useMemo(() => {
+  // Calculer les quiz filtrés et paginés (doit être avant les returns conditionnels)
+  const { filteredQuizzes, paginatedQuizzes, totalPages } = useMemo(() => {
     if (!groupDetails?.quizzes) {
-      return { paginatedQuizzes: [], totalPages: 0 };
+      return { filteredQuizzes: [], paginatedQuizzes: [], totalPages: 0 };
     }
+
+    // Filtrer par recherche
+    const filtered = groupDetails.quizzes.filter((quiz) =>
+      quiz.titre.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return {
-      paginatedQuizzes: groupDetails.quizzes.slice(startIndex, endIndex),
-      totalPages: Math.ceil(groupDetails.quizzes.length / ITEMS_PER_PAGE),
+      filteredQuizzes: filtered,
+      paginatedQuizzes: filtered.slice(startIndex, endIndex),
+      totalPages: Math.ceil(filtered.length / ITEMS_PER_PAGE),
     };
-  }, [groupDetails?.quizzes, page]);
+  }, [groupDetails?.quizzes, page, searchQuery]);
 
   const handleStartQuiz = (quizId: number) => {
     startGroupQuiz(
@@ -399,6 +414,25 @@ const GroupPage = () => {
                 <span className="sm:hidden">Créer</span>
               </button>
             )}
+          </div>
+        )}
+
+        {/* Barre de recherche */}
+        {quizzes.length > 0 && (
+          <div className="flex justify-center mb-6 px-4">
+            <div className="relative w-full max-w-lg">
+              <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+              <Input
+                type="text"
+                placeholder="Rechercher un quiz..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1); // Réinitialiser la pagination
+                }}
+                className="pl-14 sm:pl-16 pr-6 py-4 sm:py-5 rounded-3xl border-2 border-gray-300 focus:border-orange-500 focus:outline-none text-base sm:text-lg text-gray-900 placeholder-gray-500 w-full bg-white shadow-md"
+              />
+            </div>
           </div>
         )}
 

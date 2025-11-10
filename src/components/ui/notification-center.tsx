@@ -91,7 +91,6 @@ const formatDate = (dateString: string) => {
 };
 
 export const NotificationCenter = ({ className }: NotificationCenterProps) => {
-  console.log("🔔 NotificationCenter component file loaded");
   const [isOpen, setIsOpen] = useState(false);
   const [loadingState, setLoadingState] = useState<{ invitationId: number; action: "accept" | "decline" } | null>(null);
   const router = useRouter();
@@ -99,7 +98,6 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
 
   // Récupérer les notifications (20 dernières, toutes)
   const { data, isLoading, isError } = useNotifications({ per_page: 20 });
-  console.log("🔔 useNotifications data:", data);
   const { mutate: markAsRead } = useMarkNotificationAsRead();
   const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead();
   const { mutate: acceptInvitation } = useAcceptGroupInvitation();
@@ -108,21 +106,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const notificationsGenerales = data?.notifications_generales?.data || [];
   const unreadCount = data?.notifications_generales?.unread_count || 0;
   const invitationsGroupes = data?.invitations_groupes || [];
-  console.log("🔔 Parsed data:", { notificationsGenerales, unreadCount, invitationsGroupes });
 
   const hasNotifications = notificationsGenerales.length > 0 || invitationsGroupes.length > 0;
   const totalUnread = unreadCount + invitationsGroupes.filter(inv => inv.reponse === "en attente").length;
-
-  // Debug logs
-  if (typeof window !== "undefined") {
-    console.log("Notifications data:", {
-      notificationsGenerales,
-      unreadCount,
-      invitationsGroupes,
-      hasNotifications,
-      totalUnread,
-    });
-  }
 
   // Déterminer le préfixe de route selon le rôle
   const getRolePrefix = (): string => {
@@ -233,7 +219,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
         >
           <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
           {totalUnread > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-blue-600 hover:bg-blue-700 text-white text-xs border-2 border-white dark:border-gray-900">
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-gray-600 hover:bg-gray-700 text-white text-xs border-2 border-white dark:border-gray-900">
               {totalUnread > 9 ? "9+" : totalUnread}
             </Badge>
           )}
@@ -262,7 +248,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
               size="sm"
               onClick={handleMarkAllAsRead}
               disabled={isMarkingAll}
-              className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {isMarkingAll ? (
                 <Spinner size="sm" />
@@ -289,7 +275,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           </div>
         ) : !hasNotifications ? (
           <div className="px-4 py-12 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mb-3">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 mb-3">
               <Bell className="h-6 w-6 text-gray-400 dark:text-gray-500" />
             </div>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -417,7 +403,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                         onClick={() => handleNotificationClick(notification)}
                         className={cn(
                           "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
-                          !notification.is_read && "bg-blue-50/30 dark:bg-blue-900/10",
+                          !notification.is_read && "bg-gray-50/30 dark:bg-gray-800/10",
                         )}
                       >
                         <div className="flex gap-3">
@@ -441,7 +427,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                                 {notification.title}
                               </p>
                               {!notification.is_read && (
-                                <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1" />
+                                <div className="w-2 h-2 rounded-full bg-gray-600 flex-shrink-0 mt-1" />
                               )}
                             </div>
 

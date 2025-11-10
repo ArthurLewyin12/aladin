@@ -497,6 +497,7 @@ const GroupPage = () => {
                     index={(page - 1) * ITEMS_PER_PAGE + index}
                     hasTaken={hasTaken}
                     allMembersTaken={allMembersTaken}
+                    createdAt={quiz.created_at}
                     onStart={() => handleStartQuiz(quiz.id)}
                     onViewGrades={() => {
                       router.push(

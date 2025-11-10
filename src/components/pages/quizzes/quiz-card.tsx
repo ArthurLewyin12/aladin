@@ -19,6 +19,7 @@ interface QuizCardProps {
   onStart?: () => void; // New prop
   hasTaken?: boolean; // New prop
   allMembersTaken?: boolean; // New prop
+  createdAt?: string; // New prop - ISO date string
   className?: string;
 }
 
@@ -43,6 +44,21 @@ const formatDuration = (seconds: number): string => {
   }
 };
 
+// Fonction pour formater la date en français
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return date.toLocaleDateString("fr-FR", options);
+  } catch {
+    return "";
+  }
+};
+
 export const QuizCard = ({
   title,
   subject,
@@ -57,6 +73,7 @@ export const QuizCard = ({
   onStart, // New prop
   hasTaken, // New prop
   allMembersTaken, // New prop
+  createdAt, // New prop
   className,
 }: QuizCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
@@ -103,6 +120,11 @@ export const QuizCard = ({
         <p className="text-sm text-gray-500">
           Durée totale : {formatDuration(duration)}
         </p>
+        {createdAt && (
+          <p className="text-sm text-gray-500 font-medium pt-1">
+            Créé le {formatDate(createdAt)}
+          </p>
+        )}
       </div>
 
       {/* Footer avec boutons */}

@@ -310,6 +310,7 @@ export const GroupList = ({
                 isActive={groupe.groupe.is_active}
                 isChief={groupe.isChief}
                 index={groupe.index}
+                createdAt={groupe.created_at}
                 onDeactivate={() => handleDeactivate(groupe.id)}
                 onActivate={() => handleActivate(groupe.id)}
                 onOpen={() => handleOpen(groupe.id)}

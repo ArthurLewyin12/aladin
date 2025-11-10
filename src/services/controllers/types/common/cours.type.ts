@@ -14,11 +14,12 @@ export interface CoursData {
 export interface UserCours {
   id: number;
   chapitre: Chapitre; // L'API renvoie l'objet chapitre complet, pas juste l'ID
-  text: string; // Le texte du cours directement (pas dans data)
+  text?: string; // Le texte du cours directement (pas dans data)
   questions: QuestionReponse[]; // Les questions directement (pas dans data)
   time: number;
   created_at: string;
   updated_at: string;
+  course_data?: CourseStructuredData; // Optionnel: nouveau format structuré
 }
 
 export interface GenerateCoursPayload {
@@ -96,3 +97,46 @@ export type ProfesseurCourse = {
   created_at: string;
   updated_at: string;
 };
+
+/**
+ * Types pour le nouveau format structuré des cours générés
+ */
+
+export interface CourseExample {
+  exemple?: string;
+  [key: string]: string | undefined;
+}
+
+export interface CourseNotion {
+  titre: string;
+  explication: string;
+  exemples?: {
+    [key: string]: CourseExample | string;
+  };
+}
+
+export interface CourseDeveloppement {
+  [key: string]: CourseNotion;
+}
+
+export interface CourseStructuredData {
+  "Titre de la lecon": string;
+  "Titre de la leçon"?: string; // Support for version with accent
+  Introduction: string;
+  "developpement du cours": CourseDeveloppement;
+  "Synthese ce qu'il faut retenir": string;
+  illustrations?: {
+    [key: string]: string;
+  };
+}
+
+export interface GenerateCoursStructuredSuccessResponse {
+  cours_id: number;
+  questions: QuestionReponse[];
+  served: "existing" | "generated";
+  document: boolean;
+  message?: string;
+  illustrations_pending?: boolean;
+  structured: boolean;
+  course_data: CourseStructuredData;
+}

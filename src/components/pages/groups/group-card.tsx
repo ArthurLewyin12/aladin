@@ -24,6 +24,7 @@ interface GroupCardProps {
   onActivate?: () => void; // Ajouté pour la réactivation
   onOpen?: () => void;
   onInvite?: () => void;
+  createdAt?: string; // New prop - ISO date string
   className?: string;
 }
 
@@ -33,6 +34,21 @@ const CARD_COLORS = [
   "bg-[#E5DFF7]", // Violet clair
   "bg-[#FFE8D6]", // Orange clair
 ];
+
+// Fonction pour formater la date en français
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return date.toLocaleDateString("fr-FR", options);
+  } catch {
+    return "";
+  }
+};
 
 export const GroupCard = ({
   title,
@@ -47,6 +63,7 @@ export const GroupCard = ({
   onActivate,
   onOpen,
   onInvite,
+  createdAt,
   className,
 }: GroupCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
@@ -93,6 +110,13 @@ export const GroupCard = ({
 
       {/* Description */}
       <p className="text-sm text-gray-600 mb-6 line-clamp-3">{description}</p>
+
+      {/* Date de création */}
+      {createdAt && (
+        <p className="text-sm text-gray-600 font-medium mb-4">
+          Créé le {formatDate(createdAt)}
+        </p>
+      )}
 
       {/* Footer avec boutons/avatars */}
       <div className="flex items-center justify-between">

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useGetOneCourse } from "@/services/hooks/cours/useGetOneCourse";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,86 @@ import {
   BookOpen,
   Lightbulb,
   MessageCircleQuestion,
+  ChevronDown,
 } from "lucide-react";
 import { MathText } from "@/components/ui/MathText";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { Spinner } from "@/components/ui/spinner";
 import { TTSButton } from "@/components/ui/tts";
+import { CourseStructuredData } from "@/services/controllers/types/common/cours.type";
 // import { TTSDebug } from "@/components/debug/TTSDebug";
+
+// Composant pour afficher une notion dépliable
+const NotionCard = ({ notion, index }: { notion: any; index: number }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => setIsOpen(!isOpen)}
+    >
+      {/* En-tête de la notion */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-base font-semibold text-orange-500">
+              {index + 1}.
+            </span>
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+              {notion.titre}
+            </h3>
+          </div>
+        </div>
+        <ChevronDown
+          className={`w-5 h-5 text-gray-500 flex-shrink-0 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </div>
+
+      {/* Contenu dépliable */}
+      {isOpen && (
+        <div className="mt-2 space-y-3 border-t border-gray-200 pt-3">
+          {/* Explication */}
+          <div>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              <MathText text={notion.explication} />
+            </p>
+          </div>
+
+          {/* Exemples */}
+          {notion.exemples && Object.keys(notion.exemples).length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                Exemples:
+              </h4>
+              <ul className="space-y-1">
+                {Object.entries(notion.exemples).map(
+                  ([key, exemple]: [string, any]) => {
+                    const text =
+                      typeof exemple === "string"
+                        ? exemple
+                        : exemple?.exemple || "";
+                    return text ? (
+                      <li key={key} className="flex gap-2 text-sm">
+                        <span className="text-orange-500 font-bold flex-shrink-0">
+                          •
+                        </span>
+                        <span className="text-gray-700">
+                          <MathText text={text} />
+                        </span>
+                      </li>
+                    ) : null;
+                  },
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function SavedCoursePage() {
   const router = useRouter();
@@ -22,6 +96,10 @@ export default function SavedCoursePage() {
 
   const { data, isLoading, isError, error } = useGetOneCourse(courseId);
   const { startTracking, stopTracking } = useTimeTracking();
+
+  // Déterminer si c'est le nouveau format structuré
+  const hasStructuredCourseData =
+    data && typeof data === "object" && "course_data" in data;
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
@@ -36,7 +114,7 @@ export default function SavedCoursePage() {
   }, [isLoading, data, startTracking, stopTracking]);
 
   const parsedContent = useMemo(() => {
-    if (!data || !data.text) return [];
+    if (!data || !data.text || typeof data.text !== "string") return [];
 
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
 
@@ -54,7 +132,7 @@ export default function SavedCoursePage() {
 
   // Memoized summary generation
   const summary = useMemo(() => {
-    if (!data || !data.text) return "";
+    if (!data || !data.text || typeof data.text !== "string") return "";
     const conclusionIndex = data.text.indexOf("CONCLUSION");
     if (conclusionIndex !== -1) {
       return data.text.substring(conclusionIndex + "CONCLUSION".length).trim();
@@ -125,49 +203,172 @@ export default function SavedCoursePage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-      {/* Debug Component - Temporaire pour tester le Web Speech API */}
+    <div className="min-h-screen w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div
+          className="mt-2 sm:mt-4 w-full flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          style={{
+            backgroundImage: `url("/bg-2.png")`,
+            backgroundSize: "180px 180px",
+          }}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="rounded-full bg-white hover:bg-gray-50 w-9 h-9 sm:w-10 sm:h-10 shadow-sm flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
 
-      {/* Header Sticky */}
-      <div className="sticky top-0 z-20 backdrop-blur-md bg-white/80 border-b border-gray-200">
-        <div className="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl px-4 py-2 transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="font-medium">Retour</span>
-            </Button>
-
-            <div className="flex items-center gap-3">
-              {/*{data && (
-                <TTSButton
-                  text={data.text}
-                  variant="outline"
-                  size="sm"
-                  showLabel
-                  label="Écouter le cours"
-                />
-              )}*/}
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Cours sauvegardé</span>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
+              Cours sauvegardé
+            </h1>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      {data && (
-        <main className="w-full mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          {/* Course Content Card */}
-          <article className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-10 lg:p-14 mb-6">
-            <div
-              className={`
+        {/* Main Content */}
+        {data && (
+          <main className="w-full max-w-4xl mx-auto py-8 sm:py-12 space-y-6">
+            {/* Vérifier si c'est le nouveau format structuré */}
+            {hasStructuredCourseData ? (
+              <>
+                {/* NOUVEAU FORMAT STRUCTURÉ - Simple et épuré */}
+
+                {/* Titre Principal avec underline */}
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-orange-500 w-fit mx-auto">
+                  {data.course_data?.["Titre de la leçon"] ||
+                    data.course_data?.["Titre de la lecon"]}
+                </h1>
+
+                {/* Introduction */}
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                    Introduction
+                  </h2>
+                  <div className="text-gray-700 leading-relaxed">
+                    <MathText text={data.course_data?.Introduction || ""} />
+                  </div>
+                </div>
+
+                {/* Développement du cours */}
+                {data.course_data &&
+                  Object.keys(data.course_data["developpement du cours"] || {})
+                    .length > 0 && (
+                    <div className="mb-8">
+                      <div className="space-y-6">
+                        {Object.entries(
+                          data.course_data["developpement du cours"],
+                        ).map(([key, notion]: [string, any], index: number) => (
+                          <div key={key}>
+                            <div className="flex items-baseline gap-2 mb-2 pb-2 border-b border-gray-300">
+                              <span className="text-lg font-semibold text-orange-500">
+                                {index + 1}.
+                              </span>
+                              <h3 className="text-base font-semibold text-gray-900">
+                                {notion.titre}
+                              </h3>
+                            </div>
+                            <div className="text-gray-700 leading-relaxed mb-4">
+                              <MathText text={notion.explication} />
+                            </div>
+
+                            {/* Exemples */}
+                            {notion.exemples &&
+                              Object.keys(notion.exemples).length > 0 && (
+                                <div className="ml-4 mb-4">
+                                  <p className="font-medium text-gray-800 mb-2">
+                                    Exemples :
+                                  </p>
+                                  <ul className="space-y-2 text-gray-700">
+                                    {Object.entries(notion.exemples).map(
+                                      ([exKey, exemple]: [string, any]) => {
+                                        const text =
+                                          typeof exemple === "string"
+                                            ? exemple
+                                            : exemple?.exemple || "";
+                                        return text ? (
+                                          <li
+                                            key={exKey}
+                                            className="flex gap-3"
+                                          >
+                                            <span className="flex-shrink-0 text-orange-500">
+                                              •
+                                            </span>
+                                            <MathText text={text} />
+                                          </li>
+                                        ) : null;
+                                      },
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Synthèse */}
+                <div className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
+                  <h2 className="text-lg font-semibold text-amber-900 mb-3">
+                    Synthèse du cours
+                  </h2>
+                  <div className="text-gray-700 leading-relaxed">
+                    <MathText
+                      text={
+                        data.course_data?.["Synthese ce qu'il faut retenir"] ||
+                        ""
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Questions Fréquentes */}
+                {data.questions && data.questions.length > 0 && (
+                  <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                      Questions fréquentes
+                    </h2>
+                    <div className="space-y-3">
+                      {data.questions.map((qa, index) => (
+                        <details
+                          key={index}
+                          className="group border border-gray-300 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                          <summary className="font-medium text-gray-900 flex items-start gap-3 list-none select-none">
+                            <span className="flex-shrink-0 mt-0.5 text-gray-400 group-open:hidden">
+                              ▶
+                            </span>
+                            <span className="flex-shrink-0 mt-0.5 text-gray-400 hidden group-open:block">
+                              ▼
+                            </span>
+                            <MathText
+                              text={qa.question}
+                              className="flex-1 text-gray-900"
+                            />
+                          </summary>
+                          <div className="mt-3 ml-6 pl-3 border-l-2 border-gray-300">
+                            <MathText
+                              text={qa.reponse}
+                              className="text-gray-700 leading-relaxed"
+                            />
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* ANCIEN FORMAT */}
+                {/* Course Content Card */}
+                <article className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-10 lg:p-14 mb-6">
+                  <div
+                    className={`
               prose prose-base sm:prose-base md:prose-lg lg:prose-lg max-w-none
               prose-headings:scroll-mt-28 prose-headings:font-semibold prose-headings:text-orange-600
               prose-p:my-3 prose-p:leading-7 prose-p:text-gray-800
@@ -175,80 +376,124 @@ export default function SavedCoursePage() {
               prose-ul:my-4 prose-li:my-1
               prose-ol:my-4 prose-ol:list-decimal
             `}
-            >
-              {parsedContent.map((line) => (
-                <div key={line.id}>
-                  {line.type === "title" ? (
-                    <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mt-8 first:mt-0 mb-4">
-                      {line.content}
-                    </h2>
-                  ) : line.content.trim() ? (
-                    <MathText
-                      text={line.content}
-                      className="block my-3 leading-7"
-                    />
-                  ) : (
-                    <div className="h-3" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </article>
-
-          {/* Key Takeaways Section */}
-          {summary && (
-            <section className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 mb-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-amber-500 rounded-xl">
-                  <Lightbulb className="w-6 h-6 text-white" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-amber-900">
-                  Points clés à retenir
-                </h2>
-              </div>
-              <MathText
-                text={summary}
-                className="text-base sm:text-lg text-amber-900 leading-relaxed"
-              />
-            </section>
-          )}
-
-          {/* FAQ Section */}
-          {data.questions && data.questions.length > 0 && (
-            <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-orange-500 rounded-xl">
-                  <MessageCircleQuestion className="w-6 h-6 text-white" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  Questions fréquentes
-                </h2>
-              </div>
-              <div className="space-y-4">
-                {data.questions.map((qa, index) => (
-                  <details
-                    key={index}
-                    className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
                   >
-                    <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
-                        {index + 1}
-                      </span>
-                      <MathText text={qa.question} className="flex-1" />
-                    </summary>
-                    <div className="mt-4 pl-9">
-                      <MathText
-                        text={qa.reponse}
-                        className="text-sm sm:text-base text-gray-700 leading-relaxed"
-                      />
+                    {parsedContent.map((line) => (
+                      <div key={line.id}>
+                        {line.type === "title" ? (
+                          <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mt-8 first:mt-0 mb-4">
+                            {line.content}
+                          </h2>
+                        ) : line.content.trim() ? (
+                          <MathText
+                            text={line.content}
+                            className="block my-3 leading-7"
+                          />
+                        ) : (
+                          <div className="h-3" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </article>
+
+                {/* Key Takeaways Section */}
+                {summary && (
+                  <section className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 mb-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-amber-500 rounded-xl">
+                        <Lightbulb className="w-6 h-6 text-white" />
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-amber-900">
+                        Points clés à retenir
+                      </h2>
                     </div>
-                  </details>
-                ))}
-              </div>
-            </section>
-          )}
-        </main>
-      )}
+                    <MathText
+                      text={summary}
+                      className="text-base sm:text-lg text-amber-900 leading-relaxed"
+                    />
+                  </section>
+                )}
+
+                {/* FAQ Section - Ancien Format */}
+                {!hasStructuredCourseData &&
+                  data &&
+                  data.questions &&
+                  data.questions.length > 0 && (
+                    <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-orange-500 rounded-xl">
+                          <MessageCircleQuestion className="w-6 h-6 text-white" />
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                          Questions fréquentes
+                        </h2>
+                      </div>
+                      <div className="space-y-4">
+                        {data.questions.map((qa, index) => (
+                          <details
+                            key={index}
+                            className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
+                          >
+                            <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                                {index + 1}
+                              </span>
+                              <MathText text={qa.question} className="flex-1" />
+                            </summary>
+                            <div className="mt-4 pl-9">
+                              <MathText
+                                text={qa.reponse}
+                                className="text-sm sm:text-base text-gray-700 leading-relaxed"
+                              />
+                            </div>
+                          </details>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+              </>
+            )}
+
+            {/* Questions Fréquentes pour le nouveau format */}
+            {hasStructuredCourseData &&
+              data &&
+              data.questions &&
+              data.questions.length > 0 && (
+                <section className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-orange-500 rounded-xl">
+                      <MessageCircleQuestion className="w-5 h-5 text-white" />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      Questions fréquentes
+                    </h2>
+                  </div>
+                  <div className="space-y-4">
+                    {data.questions.map((qa, index) => (
+                      <details
+                        key={index}
+                        className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
+                      >
+                        <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                            {index + 1}
+                          </span>
+                          <MathText text={qa.question} className="flex-1" />
+                        </summary>
+                        <div className="mt-4 pl-9">
+                          <MathText
+                            text={qa.reponse}
+                            className="text-sm sm:text-base text-gray-700 leading-relaxed"
+                          />
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              )}
+          </main>
+        )}
+      </div>
     </div>
   );
 }

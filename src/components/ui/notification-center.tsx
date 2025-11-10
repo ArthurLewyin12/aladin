@@ -17,8 +17,10 @@ import {
   useNotifications,
   useMarkNotificationAsRead,
   useMarkAllNotificationsAsRead,
+  useAcceptGroupInvitation,
+  useDeclineGroupInvitation,
 } from "@/services/hooks/notifications";
-import { Notification, NotificationType } from "@/services/controllers/types/common/notification.types";
+import { Notification, NotificationType, GroupInvitation } from "@/services/controllers/types/common/notification.types";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { UserRole } from "@/constants/navigation";
 
@@ -89,18 +91,38 @@ const formatDate = (dateString: string) => {
 };
 
 export const NotificationCenter = ({ className }: NotificationCenterProps) => {
+  console.log("🔔 NotificationCenter component file loaded");
   const [isOpen, setIsOpen] = useState(false);
+  const [loadingState, setLoadingState] = useState<{ invitationId: number; action: "accept" | "decline" } | null>(null);
   const router = useRouter();
   const { user } = useSession();
 
   // Récupérer les notifications (20 dernières, toutes)
   const { data, isLoading, isError } = useNotifications({ per_page: 20 });
+  console.log("🔔 useNotifications data:", data);
   const { mutate: markAsRead } = useMarkNotificationAsRead();
   const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead();
+  const { mutate: acceptInvitation } = useAcceptGroupInvitation();
+  const { mutate: declineInvitation } = useDeclineGroupInvitation();
 
-  const notifications = data?.notifications || [];
-  const unreadCount = data?.unread_count || 0;
-  const hasNotifications = notifications.length > 0;
+  const notificationsGenerales = data?.notifications_generales?.data || [];
+  const unreadCount = data?.notifications_generales?.unread_count || 0;
+  const invitationsGroupes = data?.invitations_groupes || [];
+  console.log("🔔 Parsed data:", { notificationsGenerales, unreadCount, invitationsGroupes });
+
+  const hasNotifications = notificationsGenerales.length > 0 || invitationsGroupes.length > 0;
+  const totalUnread = unreadCount + invitationsGroupes.filter(inv => inv.reponse === "en attente").length;
+
+  // Debug logs
+  if (typeof window !== "undefined") {
+    console.log("Notifications data:", {
+      notificationsGenerales,
+      unreadCount,
+      invitationsGroupes,
+      hasNotifications,
+      totalUnread,
+    });
+  }
 
   // Déterminer le préfixe de route selon le rôle
   const getRolePrefix = (): string => {
@@ -210,9 +232,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           )}
         >
           <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-          {unreadCount > 0 && (
+          {totalUnread > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-blue-600 hover:bg-blue-700 text-white text-xs border-2 border-white dark:border-gray-900">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {totalUnread > 9 ? "9+" : totalUnread}
             </Badge>
           )}
         </Button>
@@ -228,9 +250,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
               Notifications
             </h3>
-            {unreadCount > 0 && (
+            {totalUnread > 0 && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {unreadCount} non lue{unreadCount > 1 ? "s" : ""}
+                {totalUnread} non lue{totalUnread > 1 ? "s" : ""}
               </p>
             )}
           </div>
@@ -280,56 +302,163 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
         ) : (
           <ScrollArea className="max-h-[500px]">
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
-              {notifications.map((notification) => {
-                const style = getNotificationStyle(notification.type);
-                const IconComponent = style.icon;
-
-                return (
-                  <div
-                    key={notification.id}
-                    onClick={() => handleNotificationClick(notification)}
-                    className={cn(
-                      "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
-                      !notification.is_read && "bg-blue-50/30 dark:bg-blue-900/10",
-                    )}
-                  >
-                    <div className="flex gap-3">
-                      {/* Icône */}
-                      <div className="flex-shrink-0">
-                        <div
-                          className={cn(
-                            "h-10 w-10 rounded-full flex items-center justify-center ring-2",
-                            style.bgColor,
-                            style.ringColor,
-                          )}
-                        >
-                          <IconComponent className={cn("h-5 w-5", style.iconColor)} />
+              {/* Section Invitations de groupe */}
+              {invitationsGroupes.length > 0 && (
+                <>
+                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/30 sticky top-0">
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                      Invitations de groupe
+                    </p>
+                  </div>
+                  {invitationsGroupes.map((invitation) => (
+                    <div
+                      key={invitation.id}
+                      className={cn(
+                        "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
+                        invitation.reponse === "en attente" && "bg-purple-50/30 dark:bg-purple-900/10",
+                      )}
+                    >
+                      <div className="flex gap-3">
+                        {/* Icône */}
+                        <div className="flex-shrink-0">
+                          <div className="h-10 w-10 rounded-full flex items-center justify-center ring-2 bg-purple-100 dark:bg-purple-900/30 ring-purple-50 dark:ring-purple-900/20">
+                            <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Contenu */}
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            {notification.title}
+                        {/* Contenu */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                Invitation de groupe
+                              </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                De {invitation.userEnvoie.prenom} {invitation.userEnvoie.nom}
+                              </p>
+                            </div>
+                            {invitation.reponse === "en attente" && (
+                              <div className="w-2 h-2 rounded-full bg-purple-600 flex-shrink-0 mt-1" />
+                            )}
+                          </div>
+
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {invitation.groupe.nom}
                           </p>
-                          {!notification.is_read && (
-                            <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1" />
+
+                          {invitation.reponse === "en attente" && (
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-7 text-xs flex-1"
+                                onClick={() => {
+                                  setLoadingState({ invitationId: invitation.id, action: "accept" });
+                                  acceptInvitation(invitation.id, {
+                                    onSettled: () => setLoadingState(null),
+                                  });
+                                }}
+                                disabled={loadingState !== null}
+                              >
+                                {loadingState?.invitationId === invitation.id && loadingState?.action === "accept" ? <Spinner size="sm" /> : <Check className="h-3 w-3 mr-1" />}
+                                Accepter
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs flex-1"
+                                onClick={() => {
+                                  setLoadingState({ invitationId: invitation.id, action: "decline" });
+                                  declineInvitation(invitation.id, {
+                                    onSettled: () => setLoadingState(null),
+                                  });
+                                }}
+                                disabled={loadingState !== null}
+                              >
+                                {loadingState?.invitationId === invitation.id && loadingState?.action === "decline" ? <Spinner size="sm" /> : <X className="h-3 w-3 mr-1" />}
+                                Refuser
+                              </Button>
+                            </div>
                           )}
+
+                          {invitation.reponse !== "en attente" && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                              Invitation {invitation.reponse}
+                            </p>
+                          )}
+
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                            {formatDate(invitation.created_at)}
+                          </p>
                         </div>
-
-                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {notification.message}
-                        </p>
-
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
-                          {formatDate(notification.created_at)}
-                        </p>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  ))}
+                </>
+              )}
+
+              {/* Section Notifications générales */}
+              {notificationsGenerales.length > 0 && (
+                <>
+                  {invitationsGroupes.length > 0 && (
+                    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/30 sticky top-0">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                        Notifications
+                      </p>
+                    </div>
+                  )}
+                  {notificationsGenerales.map((notification) => {
+                    const style = getNotificationStyle(notification.type);
+                    const IconComponent = style.icon;
+
+                    return (
+                      <div
+                        key={notification.id}
+                        onClick={() => handleNotificationClick(notification)}
+                        className={cn(
+                          "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
+                          !notification.is_read && "bg-blue-50/30 dark:bg-blue-900/10",
+                        )}
+                      >
+                        <div className="flex gap-3">
+                          {/* Icône */}
+                          <div className="flex-shrink-0">
+                            <div
+                              className={cn(
+                                "h-10 w-10 rounded-full flex items-center justify-center ring-2",
+                                style.bgColor,
+                                style.ringColor,
+                              )}
+                            >
+                              <IconComponent className={cn("h-5 w-5", style.iconColor)} />
+                            </div>
+                          </div>
+
+                          {/* Contenu */}
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                {notification.title}
+                              </p>
+                              {!notification.is_read && (
+                                <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+
+                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                              {notification.message}
+                            </p>
+
+                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                              {formatDate(notification.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </ScrollArea>
         )}

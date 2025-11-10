@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 
 interface Avatar {
   imageUrl: string;
-  profileUrl: string;
+  profileUrl?: string;
 }
 
 interface GroupCardProps {

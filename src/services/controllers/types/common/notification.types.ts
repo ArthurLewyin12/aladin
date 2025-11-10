@@ -41,12 +41,48 @@ export interface NotificationPagination {
 }
 
 /**
- * Réponse de récupération des notifications
+ * Structure d'une invitation de groupe
  */
-export interface GetNotificationsResponse {
-  notifications: Notification[];
+export interface GroupInvitation {
+  id: number;
+  id_user_envoie: number;
+  id_user_invite: number | null;
+  email: string;
+  groupe_id: number;
+  reponse: "en attente" | "acceptée" | "refusée";
+  token: string;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+  groupe: {
+    id: number;
+    nom: string;
+    description: string;
+    niveau_id: number;
+  };
+  userEnvoie: {
+    id: number;
+    nom: string;
+    prenom: string;
+    mail: string;
+  };
+}
+
+/**
+ * Réponse de récupération des notifications générales
+ */
+export interface NotificationsGeneralesResponse {
+  data: Notification[];
   pagination: NotificationPagination;
   unread_count: number;
+}
+
+/**
+ * Réponse de récupération de toutes les notifications (générales + invitations)
+ */
+export interface GetNotificationsResponse {
+  notifications_generales: NotificationsGeneralesResponse;
+  invitations_groupes: GroupInvitation[];
 }
 
 /**
@@ -70,4 +106,20 @@ export interface MarkNotificationAsReadResponse {
  */
 export interface MarkAllNotificationsAsReadResponse {
   message: string;
+}
+
+/**
+ * Réponse d'acceptation d'une invitation de groupe
+ */
+export interface AcceptGroupInvitationResponse {
+  message: string;
+  invitation: GroupInvitation;
+}
+
+/**
+ * Réponse de refus d'une invitation de groupe
+ */
+export interface DeclineGroupInvitationResponse {
+  message: string;
+  invitation: GroupInvitation;
 }

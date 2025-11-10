@@ -44,8 +44,8 @@ export const GroupList = ({
   const { user: currentUser } = useSession();
 
   // Appeler conditionnellement les hooks en fonction du variant
-  const { data: enfantsData } = useEnfants(); // Pour les parents
-  const { data: elevesData } = useEleves(); // Pour les répétiteurs
+  const { data: enfantsData } = variant === "parent" ? useEnfants() : { data: undefined };
+  const { data: elevesData } = variant === "repetiteur" ? useEleves() : { data: undefined };
 
   console.log("Groupes Data:", JSON.stringify(groupes, null, 2));
   console.log("Current User:", JSON.stringify(currentUser, null, 2));
@@ -94,11 +94,8 @@ export const GroupList = ({
         return currentUser?.id === item.groupe.chief_user;
       })
       .map((item, index) => {
-        const members = item.utilisateurs.filter(
-          (user) => user.id !== item.groupe.chief_user,
-        );
-
-        const displayedMembers = members.slice(0, 6);
+        // Inclure tous les membres (y compris le chef)
+        const displayedMembers = item.utilisateurs.slice(0, 6);
 
         const memberAvatars = displayedMembers.map((user) => {
           const initials =
@@ -106,7 +103,6 @@ export const GroupList = ({
           const imageUrl = `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random&color=fff&size=40`;
           return {
             imageUrl: imageUrl,
-            profileUrl: `#user-${user.id}`,
           };
         });
 
@@ -117,9 +113,10 @@ export const GroupList = ({
         return {
           ...item.groupe,
           ...item,
-          hasMembers: members.length > 0,
+          hasMembers: item.utilisateurs.length > 0,
           memberAvatars,
-          remainingCount: item.members_count > 6 ? item.members_count - 6 : 0,
+          remainingCount:
+            item.utilisateurs.length > 6 ? item.utilisateurs.length - 6 : 0,
           cardColor,
           index,
           isChief, // Explicitly add the isChief property
@@ -287,17 +284,7 @@ export const GroupList = ({
                   title={groupe.nom}
                   description={groupe.description}
                   groupId={groupe.id}
-                  members={
-                    groupe.hasMembers
-                      ? groupe.memberAvatars.map((m, i) => ({
-                          ...m,
-                          name:
-                            groupe.utilisateurs[i]?.prenom +
-                              " " +
-                              groupe.utilisateurs[i]?.nom || "Membre",
-                        }))
-                      : undefined
-                  }
+                  members={groupe.hasMembers ? groupe.memberAvatars : undefined}
                   numPeople={groupe.members_count}
                   isActive={groupe.groupe.is_active}
                   isChief={groupe.isChief}

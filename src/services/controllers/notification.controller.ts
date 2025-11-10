@@ -1,10 +1,12 @@
 import { request } from "@/lib/request";
-import { NotificationEndpoints } from "@/constants/endpoints";
+import { NotificationEndpoints, GroupeEndpoints } from "@/constants/endpoints";
 import {
   GetNotificationsResponse,
   GetNotificationsParams,
   MarkNotificationAsReadResponse,
   MarkAllNotificationsAsReadResponse,
+  AcceptGroupInvitationResponse,
+  DeclineGroupInvitationResponse,
 } from "./types/common/notification.types";
 
 /**
@@ -87,3 +89,35 @@ export const markAllNotificationsAsRead =
       NotificationEndpoints.MARK_ALL_AS_READ,
     );
   };
+
+/**
+ * Accepte une invitation de groupe.
+ * @param {number} invitationId - ID de l'invitation à accepter.
+ * @returns {Promise<AcceptGroupInvitationResponse>} Une promesse résolue avec l'invitation acceptée.
+ */
+export const acceptGroupInvitation = async (
+  invitationId: number,
+): Promise<AcceptGroupInvitationResponse> => {
+  const endpoint = GroupeEndpoints.ACCEPT_INVITATION.replace(
+    "{invitationId}",
+    invitationId.toString(),
+  );
+
+  return request.post<AcceptGroupInvitationResponse>(endpoint);
+};
+
+/**
+ * Refuse une invitation de groupe.
+ * @param {number} invitationId - ID de l'invitation à refuser.
+ * @returns {Promise<DeclineGroupInvitationResponse>} Une promesse résolue avec l'invitation refusée.
+ */
+export const declineGroupInvitation = async (
+  invitationId: number,
+): Promise<DeclineGroupInvitationResponse> => {
+  const endpoint = GroupeEndpoints.DECLINE_INVITATION.replace(
+    "{invitationId}",
+    invitationId.toString(),
+  );
+
+  return request.post<DeclineGroupInvitationResponse>(endpoint);
+};

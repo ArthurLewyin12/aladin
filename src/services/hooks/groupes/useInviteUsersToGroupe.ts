@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inviteUsersToGroupe } from "@/services/controllers/groupe.controller";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createQueryKey } from "@/lib/request";
 import { InviteUsersToGroupePayload } from "@/services/controllers/types/common";
 
@@ -16,15 +16,23 @@ export const useInviteUsersToGroupe = () => {
 
   return useMutation({
     mutationFn: (
-      { groupeId, payload }: 
+      { groupeId, payload }:
       { groupeId: number; payload: InviteUsersToGroupePayload }
     ) =>
       inviteUsersToGroupe(groupeId, payload),
     onSuccess: (data, variables) => {
       if (data.errors && data.errors.length > 0) {
-        data.errors.forEach((error) => toast.error(error));
+        data.errors.forEach((error) =>
+          toast({
+            variant: "error",
+            message: error,
+          })
+        );
       } else {
-        toast.success(data.message || "Invitation(s) envoyée(s) avec succès !");
+        toast({
+          variant: "success",
+          message: data.message || "Invitation(s) envoyée(s) avec succès !",
+        });
       }
       // Invalider la requête qui récupère la liste des groupes pour la mettre à jour
       queryClient.invalidateQueries({ queryKey: createQueryKey("groupes") });
@@ -33,9 +41,20 @@ export const useInviteUsersToGroupe = () => {
         queryKey: createQueryKey("groupes", variables.groupeId),
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Erreur lors de l'envoi des invitations", error);
-      toast.error("Une erreur est survenue lors de l'envoi des invitations.");
+
+      // Extraire le message d'erreur du backend - priorité aux messages spécifiques du tableau errors
+      const errorMessage =
+        (error?.response?.data?.errors && error.response.data.errors[0]) ||
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Une erreur est survenue lors de l'envoi des invitations.";
+
+      toast({
+        variant: "error",
+        message: errorMessage,
+      });
     },
   });
 };

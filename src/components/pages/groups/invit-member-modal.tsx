@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { X, Mail, UserPlus, Plus } from "lucide-react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { X, Mail, UserPlus, Plus, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { useInviteUsersToGroupe } from "@/services/hooks/groupes/useInviteUsersToGroupe";
+import { useCheckEleveByEmail } from "@/services/hooks/eleves/useCheckEleve";
 import { toast } from "@/lib/toast";
+import { EleveInfo } from "@/services/controllers/types/common/eleve.types";
 
 interface InviteUsersModalProps {
   isOpen: boolean;
@@ -35,80 +37,148 @@ interface InviteUsersModalProps {
 
 // Composant FormContent sorti du parent pour éviter les re-renders
 interface FormContentProps {
-  emails: string[];
+  members: InvitedMember[];
   currentEmail: string;
+  searchResults: EleveInfo | null;
+  showDropdown: boolean;
+  isChecking: boolean;
   isPending: boolean;
   groupName: string;
-  setCurrentEmail: (value: string) => void;
+  handleEmailChange: (value: string) => void;
   handleAddEmail: () => void;
-  handleRemoveEmail: (email: string) => void;
+  handleAddUser: (user: EleveInfo) => void;
+  handleRemoveMember: (email: string) => void;
   handleEmailKeyPress: (e: React.KeyboardEvent) => void;
 }
 
 const FormContent = ({
-  emails,
+  members,
   currentEmail,
+  searchResults,
+  showDropdown,
+  isChecking,
   isPending,
   groupName,
-  setCurrentEmail,
+  handleEmailChange,
   handleAddEmail,
-  handleRemoveEmail,
+  handleAddUser,
+  handleRemoveMember,
   handleEmailKeyPress,
 }: FormContentProps) => (
   <div className="space-y-6">
-    {/* Section Email */}
-    <div className="space-y-3">
+    {/* Section Email avec Autocomplete */}
+    <div className="space-y-3 relative">
       <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
         <Mail className="w-4 h-4" />
-        Inviter par email
+        Chercher et inviter
       </Label>
       <div className="flex gap-2">
-        <Input
-          type="email"
-          placeholder="exemple@email.com"
-          value={currentEmail}
-          onChange={(e) => setCurrentEmail(e.target.value)}
-          onKeyPress={handleEmailKeyPress}
-          className="bg-gray-50 border-gray-200"
-          disabled={isPending}
-        />
+        <div className="relative flex-1">
+          <Input
+            type="email"
+            placeholder="Tapez un email pour chercher..."
+            value={currentEmail}
+            onChange={(e) => handleEmailChange(e.target.value)}
+            onKeyPress={handleEmailKeyPress}
+            className="bg-gray-50 border-gray-200"
+            disabled={isPending}
+          />
+
+          {/* Dropdown Autocomplete */}
+          {showDropdown && currentEmail && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              {isChecking && (
+                <div className="p-3 flex items-center gap-2">
+                  <Spinner size="sm" />
+                  <span className="text-sm text-gray-500">Recherche...</span>
+                </div>
+              )}
+
+              {!isChecking && searchResults && (
+                <button
+                  onClick={() => handleAddUser(searchResults)}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                  type="button"
+                >
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {searchResults.prenom} {searchResults.nom}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{searchResults.email}</p>
+                  </div>
+                  <Plus className="w-4 h-4 text-gray-400 dark:text-gray-600" />
+                </button>
+              )}
+
+              {!isChecking && !searchResults && currentEmail && (
+                <div className="p-3">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Aucun élève trouvé</p>
+                  <button
+                    onClick={handleAddEmail}
+                    className="w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 transition-colors"
+                    type="button"
+                  >
+                    Ajouter comme email libre
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <Button
           type="button"
           onClick={handleAddEmail}
           variant="outline"
           size="icon"
-          disabled={isPending}
+          disabled={isPending || isChecking || !currentEmail.trim()}
         >
           <Plus className="w-4 h-4" />
         </Button>
       </div>
-      {emails.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {emails.map((email) => (
-            <Badge
-              key={email}
-              variant="secondary"
-              className="px-3 py-1 bg-white border border-gray-200"
-            >
-              {email}
-              <button
-                onClick={() => handleRemoveEmail(email)}
-                className="ml-2 hover:text-red-600"
-                disabled={isPending}
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
     </div>
 
+    {/* Liste des invités */}
+    {members.length > 0 && (
+      <div className="flex flex-wrap gap-2">
+        {members.map((member) => (
+          <Badge
+            key={member.email}
+            variant="secondary"
+            className={`px-3 py-1 border ${
+              member.type === "user"
+                ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            }`}
+          >
+            {member.type === "user" && (
+              <User className="w-3 h-3 mr-1" />
+            )}
+            {member.type === "user"
+              ? `${member.user?.prenom} ${member.user?.nom}`
+              : member.email}
+            <button
+              onClick={() => handleRemoveMember(member.email)}
+              className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+              disabled={isPending}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+    )}
+
     {/* Résumé */}
-    {emails.length > 0 && (
+    {members.length > 0 && (
       <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
         <p className="text-sm text-gray-600">
-          <span className="font-medium">{emails.length} invitation(s)</span>{" "}
+          <span className="font-medium">{members.length} invitation(s)</span>{" "}
           seront envoyées pour rejoindre{" "}
           <span className="font-semibold">{groupName}</span>
         </p>
@@ -116,6 +186,12 @@ const FormContent = ({
     )}
   </div>
 );
+
+interface InvitedMember {
+  type: "email" | "user";
+  email: string;
+  user?: EleveInfo;
+}
 
 export const InviteUsersModal = ({
   isOpen,
@@ -125,17 +201,74 @@ export const InviteUsersModal = ({
   cardColor = "bg-[#F5E6D3]",
   isMobile = false,
 }: InviteUsersModalProps) => {
-  const [emails, setEmails] = useState<string[]>([]);
+  const [members, setMembers] = useState<InvitedMember[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
+  const [searchResults, setSearchResults] = useState<EleveInfo | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const { mutate: inviteUsers, isPending } = useInviteUsersToGroupe();
+  const { mutate: checkEleve, isPending: isChecking } = useCheckEleveByEmail();
 
   // Validation email simple
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  // Ajouter un email
+  // Gérer le changement d'email avec debounce
+  const handleEmailChange = useCallback((value: string) => {
+    setCurrentEmail(value);
+    setShowDropdown(!!value);
+    setSearchResults(null);
+
+    // Nettoyer le timeout précédent
+    if (debounceTimeout) clearTimeout(debounceTimeout);
+
+    if (!value.trim()) {
+      setShowDropdown(false);
+      return;
+    }
+
+    // Nouveau timeout
+    const timeout = setTimeout(() => {
+      if (isValidEmail(value.trim())) {
+        checkEleve(value.trim(), {
+          onSuccess: (response) => {
+            if ("exists" in response && response.exists) {
+              setSearchResults(response.eleve);
+            } else {
+              setSearchResults(null);
+            }
+          },
+          onError: () => {
+            setSearchResults(null);
+          },
+        });
+      }
+    }, 500); // 500ms debounce
+
+    setDebounceTimeout(timeout);
+  }, [debounceTimeout, checkEleve]);
+
+  // Ajouter un élève trouvé
+  const handleAddUser = useCallback((user: EleveInfo) => {
+    const memberExists = members.some((m) => m.email === user.email);
+    if (memberExists) {
+      toast({
+        variant: "warning",
+        title: "Déjà présent",
+        message: "Cet élève a déjà été ajouté à la liste d'invitation.",
+      });
+      return;
+    }
+
+    setMembers([...members, { type: "user", email: user.email, user }]);
+    setCurrentEmail("");
+    setSearchResults(null);
+    setShowDropdown(false);
+  }, [members]);
+
+  // Ajouter un email libre
   const handleAddEmail = useCallback(() => {
     const trimmedEmail = currentEmail.trim();
     if (!trimmedEmail) return;
@@ -149,40 +282,45 @@ export const InviteUsersModal = ({
       return;
     }
 
-    if (emails.includes(trimmedEmail)) {
+    const memberExists = members.some((m) => m.email === trimmedEmail);
+    if (memberExists) {
       toast({
         variant: "warning",
-        title: "Email déjà présent",
+        title: "Déjà présent",
         message: "Cet email a déjà été ajouté à la liste d'invitation.",
       });
       return;
     }
 
-    setEmails([...emails, trimmedEmail]);
+    setMembers([...members, { type: "email", email: trimmedEmail }]);
     setCurrentEmail("");
-  }, [currentEmail, emails]);
+    setSearchResults(null);
+    setShowDropdown(false);
+  }, [currentEmail, members]);
 
-  // Supprimer un email
-  const handleRemoveEmail = useCallback((emailToRemove: string) => {
-    setEmails((prev) => prev.filter((e) => e !== emailToRemove));
+  // Supprimer un membre
+  const handleRemoveMember = useCallback((emailToRemove: string) => {
+    setMembers((prev) => prev.filter((m) => m.email !== emailToRemove));
   }, []);
 
   // Envoyer les invitations
   const handleInvite = useCallback(() => {
-    if (emails.length === 0) {
+    if (members.length === 0) {
       toast({
         variant: "error",
         title: "Liste vide",
-        message: "Veuillez ajouter au moins un email à inviter.",
+        message: "Veuillez ajouter au moins une personne à inviter.",
       });
       return;
     }
+
+    const memberEmails = members.map((m) => m.email);
 
     inviteUsers(
       {
         groupeId: groupId,
         payload: {
-          member_emails: emails,
+          member_emails: memberEmails,
           invitation_page_url:
             "https://aladin-qze2.vercel.app/student/invitations",
           register_page_url: "https://aladin-qze2.vercel.app/student/register",
@@ -190,18 +328,21 @@ export const InviteUsersModal = ({
       },
       {
         onSuccess: () => {
-          setEmails([]);
+          setMembers([]);
           setCurrentEmail("");
+          setSearchResults(null);
           onClose();
         },
       },
     );
-  }, [emails, groupId, inviteUsers, onClose]);
+  }, [members, groupId, inviteUsers, onClose]);
 
   // Réinitialiser et fermer
   const handleCancel = useCallback(() => {
-    setEmails([]);
+    setMembers([]);
     setCurrentEmail("");
+    setSearchResults(null);
+    setShowDropdown(false);
     onClose();
   }, [onClose]);
 
@@ -230,13 +371,17 @@ export const InviteUsersModal = ({
 
           <div className="mt-4">
             <FormContent
-              emails={emails}
+              members={members}
               currentEmail={currentEmail}
+              searchResults={searchResults}
+              showDropdown={showDropdown}
+              isChecking={isChecking}
               isPending={isPending}
               groupName={groupName}
-              setCurrentEmail={setCurrentEmail}
+              handleEmailChange={handleEmailChange}
               handleAddEmail={handleAddEmail}
-              handleRemoveEmail={handleRemoveEmail}
+              handleAddUser={handleAddUser}
+              handleRemoveMember={handleRemoveMember}
               handleEmailKeyPress={handleEmailKeyPress}
             />
           </div>
@@ -253,7 +398,7 @@ export const InviteUsersModal = ({
             <Button
               onClick={handleInvite}
               className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8"
-              disabled={isPending || emails.length === 0}
+              disabled={isPending || members.length === 0}
             >
               {isPending ? (
                 <>
@@ -290,13 +435,17 @@ export const InviteUsersModal = ({
 
         <div className="px-4 pb-4 overflow-y-auto">
           <FormContent
-            emails={emails}
+            members={members}
             currentEmail={currentEmail}
+            searchResults={searchResults}
+            showDropdown={showDropdown}
+            isChecking={isChecking}
             isPending={isPending}
             groupName={groupName}
-            setCurrentEmail={setCurrentEmail}
+            handleEmailChange={handleEmailChange}
             handleAddEmail={handleAddEmail}
-            handleRemoveEmail={handleRemoveEmail}
+            handleAddUser={handleAddUser}
+            handleRemoveMember={handleRemoveMember}
             handleEmailKeyPress={handleEmailKeyPress}
           />
         </div>
@@ -313,7 +462,7 @@ export const InviteUsersModal = ({
           <Button
             onClick={handleInvite}
             className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
-            disabled={isPending || emails.length === 0}
+            disabled={isPending || members.length === 0}
           >
             {isPending ? (
               <>

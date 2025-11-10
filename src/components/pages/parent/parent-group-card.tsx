@@ -16,8 +16,8 @@ import { Eleve } from "@/services/controllers/types/common/repetiteur.types";
 
 interface Avatar {
   imageUrl: string;
-  profileUrl: string;
-  name: string;
+  profileUrl?: string;
+  name?: string;
 }
 
 interface ParentGroupCardProps {

@@ -147,7 +147,7 @@ export default function StudentHomePage() {
             </h1>
           </div>
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 leading-relaxed max-w-3xl">
-            Je suis Aladin ,je vais t'aider à apprendre à ton rythme et
+            Je suis Aladin, je vais t'aider à apprendre à ton rythme et
             t'accompagner tout le long de ton parcours scolaire.
           </p>
         </div>

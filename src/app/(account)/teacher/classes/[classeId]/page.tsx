@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -8,7 +7,18 @@ import { useActivateQuiz } from "@/services/hooks/professeur/useActivateQuiz";
 import { useDeactivateQuiz } from "@/services/hooks/professeur/useDeactivateQuiz";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Brain, BookText, Upload, Users, MessageSquarePlus, PlusIcon, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowLeft,
+  Brain,
+  BookText,
+  Upload,
+  Users,
+  MessageSquarePlus,
+  PlusIcon,
+  FileQuestion,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { QuizAISection } from "@/components/pages/teacher-classes/quiz-ai-section";
 import { SendMessageModal } from "@/components/pages/teacher-classes/send-message-modal";
@@ -87,7 +97,10 @@ const ClasseDetailPage = () => {
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
               {classeDetails.nom}
             </h1>
-            <Button onClick={() => setMessageModalOpen(true)} className="bg-[#2C3E50] hover:bg-[#1a252f] text-white">
+            <Button
+              onClick={() => setMessageModalOpen(true)}
+              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"
+            >
               <MessageSquarePlus className="w-4 h-4 mr-2" />
               Passer un message
             </Button>
@@ -96,13 +109,18 @@ const ClasseDetailPage = () => {
           {/* Description */}
           <div className="mb-8 px-4">
             <p className="text-gray-600 text-base sm:text-lg max-w-4xl leading-relaxed">
-              {classeDetails.description || "Aucune description pour cette classe."}
+              {classeDetails.description ||
+                "Aucune description pour cette classe."}
             </p>
           </div>
 
           {/* Onglets */}
           <div className="mb-8 flex justify-center">
-            <AnimatedTabs tabs={tabs} onTabChange={setActiveTab} activeTab={activeTab} />
+            <AnimatedTabs
+              tabs={tabs}
+              onTabChange={setActiveTab}
+              activeTab={activeTab}
+            />
           </div>
 
           {/* Contenu des onglets */}
@@ -132,7 +150,6 @@ const ClasseDetailPage = () => {
   );
 };
 
-
 interface ManualQuizSectionProps {
   classeDetails: GetClasseResponse;
 }
@@ -146,13 +163,13 @@ const CARD_COLORS = [
 
 const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
   const router = useRouter();
-  
+
   // Pagination avec nuqs
   const [page, setPage] = useQueryState(
     "manualQuizPage",
     parseAsInteger.withDefault(1),
   );
-  
+
   const ITEMS_PER_PAGE = 6;
 
   const { mutate: activateQuizMutation } = useActivateQuiz();
@@ -167,7 +184,7 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
   const enrichedQuizzes = useMemo(() => {
     // Trier par ID décroissant (les plus récents en premier)
     const sortedQuizzes = [...manualQuizzes].sort((a, b) => b.id - a.id);
-    
+
     return sortedQuizzes.map((quiz, index) => ({
       ...quiz,
       cardColor: CARD_COLORS[index % CARD_COLORS.length],
@@ -256,8 +273,8 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
   return (
     <div className="space-y-6">
       {/* Header avec bouton de création */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm px-4 sm:px-0">
-        <div>
+      <div className="  flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm px-4 sm:px-0">
+        <div className="ml-4">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
             Quiz manuels
           </h2>
@@ -268,7 +285,7 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
         </div>
         <Button
           asChild
-          className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
+          className="mr-4 bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
         >
           <Link href={`/teacher/classes/${classeDetails.id}/quiz/manual`}>
             <PlusIcon className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />

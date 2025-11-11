@@ -114,6 +114,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         path: "/teacher/classes",
         icon: Users,
       },
+      {
+        label: "Notes des élèves",
+        path: "/teacher/notes",
+        icon: ClipboardList,
+      },
     ],
   },
   repetiteur: {

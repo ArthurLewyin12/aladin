@@ -210,13 +210,6 @@ export default function CoursePreviewPage() {
                   )}
                 </div>
 
-                {course.content?.html && (
-                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
-                      <strong>✓ Rendu HTML :</strong> Cette prévisualisation affiche le contenu avec sa mise en forme complète (texte riche, images, tableaux, etc.).
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

@@ -168,7 +168,7 @@ export default function CoursePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header avec bouton retour et titre */}
         <div
-          className="mt-2 sm:mt-4 w-full flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          className="mt-2 sm:mt-4 w-full flex items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
             backgroundSize: "180px 180px",
@@ -183,7 +183,7 @@ export default function CoursePage() {
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
               Cours généré
             </h1>
@@ -299,7 +299,6 @@ export default function CoursePage() {
                     />
                   </div>
                 </div>
-
               </>
             ) : (
               <>

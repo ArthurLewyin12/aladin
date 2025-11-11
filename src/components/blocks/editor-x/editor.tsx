@@ -56,7 +56,7 @@ export function Editor({
         initialConfig={{
           ...editorConfig,
           ...(editorState ? { editorState } : {}),
-          ...(editorSerializedState
+          ...(editorSerializedState && !editorState
             ? { editorState: JSON.stringify(editorSerializedState) }
             : {}),
         }}

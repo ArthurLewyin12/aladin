@@ -30,9 +30,8 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
 
   const { quizzes = [], matieres = [] } = classeDetails;
 
-  // TODO: Filtrer uniquement les quiz générés par IA une fois que le backend ajoute le champ 'type'
-  // Pour le moment, on affiche tous les quiz
-  const aiQuizzes = quizzes;
+  // Filtrer uniquement les quiz générés par IA (is_manual === false)
+  const aiQuizzes = quizzes.filter((quiz) => quiz.is_manual === false);
 
   // Trier les quiz par ID décroissant (plus récents en premier) et calculer la pagination
   const { paginatedQuizzes, totalPages } = useMemo(() => {

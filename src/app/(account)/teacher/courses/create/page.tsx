@@ -25,6 +25,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
 import { useClasse } from "@/services/hooks/professeur/useClasse";
 import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
+import { CoursePreviewModal } from "@/components/pages/teacher-courses/course-preview-modal";
+import { CourseContent } from "@/services/controllers/types/common/professeur.types";
 
 const initialValue = {
   root: {
@@ -64,6 +66,8 @@ export default function CreateCoursePage() {
   const [selectedChapter, setSelectedChapter] = useState("");
   const [editorState, setEditorState] =
     useState<SerializedEditorState>(initialValue);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewContent, setPreviewContent] = useState<CourseContent | null>(null);
   const editorRef = useRef<LexicalEditor | null>(null);
 
   // Hooks
@@ -176,8 +180,15 @@ export default function CreateCoursePage() {
   };
 
   const handlePreview = () => {
-    // TODO: Implement preview functionality
-    console.log("Preview course content");
+    if (!editorRef.current) {
+      toast({ message: "L'éditeur n'est pas encore prêt", variant: "error" });
+      return;
+    }
+
+    // Extract content and show preview modal
+    const content = extractCourseContent(editorRef.current);
+    setPreviewContent(content);
+    setPreviewModalOpen(true);
   };
 
   if (isLoadingClasses || isLoadingSubjects) {
@@ -378,6 +389,14 @@ export default function CreateCoursePage() {
           </div>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      <CoursePreviewModal
+        isOpen={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        title={title || "Sans titre"}
+        content={previewContent}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createQueryKey } from "@/lib/request";
+import { getCourses, getCourse } from "@/services/controllers/professeur.controller";
 
 // Types pour les cours
 export interface Course {
@@ -49,49 +50,8 @@ export const useCourses = (filters?: {
   return useQuery({
     queryKey: createQueryKey("courses", filters),
     queryFn: async (): Promise<CoursesResponse> => {
-      // TODO: Remplacer par l'appel API réel
-      // const response = await request.get<CoursesResponse>(`/prof/courses`, { params: filters });
-
-      // Données mockées pour l'instant
-      const mockCourses: Course[] = [
-        {
-          id: 1,
-          titre: "Introduction aux dérivées",
-          classe: { id: 1, nom: "Terminale S1" },
-          chapitre: { id: 45, libelle: "Dérivées" },
-          matiere: { id: 102, libelle: "Mathématiques" },
-          is_active: true,
-          created_at: "2025-01-15T10:00:00.000000Z",
-          updated_at: "2025-01-16T14:30:00.000000Z",
-        },
-        {
-          id: 2,
-          titre: "Les forces en physique",
-          classe: { id: 2, nom: "Terminale S2" },
-          chapitre: { id: 67, libelle: "Mécanique" },
-          matiere: { id: 103, libelle: "Physique" },
-          is_active: false,
-          created_at: "2025-01-14T09:15:00.000000Z",
-          updated_at: "2025-01-14T09:15:00.000000Z",
-        },
-        {
-          id: 3,
-          titre: "Équations du second degré",
-          classe: { id: 1, nom: "Terminale S1" },
-          chapitre: { id: 23, libelle: "Équations" },
-          matiere: { id: 102, libelle: "Mathématiques" },
-          is_active: true,
-          created_at: "2025-01-13T16:45:00.000000Z",
-          updated_at: "2025-01-15T11:20:00.000000Z",
-        },
-      ];
-
-      return {
-        courses: mockCourses,
-        total: mockCourses.length,
-        page: filters?.page || 1,
-        limit: filters?.limit || 10,
-      };
+      const response = await getCourses();
+      return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -102,31 +62,8 @@ export const useCourse = (courseId: number) => {
   return useQuery({
     queryKey: createQueryKey("course", { id: courseId }),
     queryFn: async (): Promise<Course> => {
-      // TODO: Remplacer par l'appel API réel
-      // const response = await request.get<Course>(`/prof/courses/${courseId}/rich`);
-
-      // Données mockées pour l'instant
-      const mockCourse: Course = {
-        id: courseId,
-        titre: "Introduction aux dérivées",
-        classe: { id: 1, nom: "Terminale S1" },
-        chapitre: { id: 45, libelle: "Dérivées" },
-        matiere: { id: 102, libelle: "Mathématiques" },
-        is_active: true,
-        created_at: "2025-01-15T10:00:00.000000Z",
-        updated_at: "2025-01-16T14:30:00.000000Z",
-        content: {
-          lexical_state: {},
-          plain_text: "Contenu du cours sur les dérivées...",
-          metadata: {
-            word_count: 1250,
-            has_images: true,
-            has_tables: false,
-          },
-        },
-      };
-
-      return mockCourse;
+      const response = await getCourse(courseId);
+      return response;
     },
     enabled: !!courseId,
     staleTime: 5 * 60 * 1000,

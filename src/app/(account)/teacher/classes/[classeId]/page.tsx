@@ -160,9 +160,8 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
 
   const quizzes = classeDetails.quizzes || [];
 
-  // TODO: Filtrer uniquement les quiz manuels une fois que le backend ajoute le champ 'type'
-  // Pour le moment, on affiche tous les quiz
-  const manualQuizzes = quizzes;
+  // Filtrer uniquement les quiz manuels (is_manual === true)
+  const manualQuizzes = quizzes.filter((quiz) => quiz.is_manual === true);
 
   // Trier les quiz par ID décroissant (plus récents en premier) et enrichir avec les couleurs
   const enrichedQuizzes = useMemo(() => {

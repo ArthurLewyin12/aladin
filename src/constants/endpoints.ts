@@ -275,7 +275,7 @@ export enum ProfesseurEndpoints {
   // Cours de classe
   GET_COURSES = "/api/prof/cours",
   GET_COURSE = "/api/prof/cours/{cours_id}",
-  CREATE_MANUAL_COURSE = "/api/prof/classes/{classe_id}/courses/manual",
+  CREATE_MANUAL_COURSE = "/api/prof/classes/{classe_id}/cours",
   GENERATE_COURSE = "/api/prof/classes/{classe_id}/courses/generate",
   UPDATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}",
   ACTIVATE_COURSE = "/api/prof/classes/{classe_id}/courses/{cours_id}/activate",

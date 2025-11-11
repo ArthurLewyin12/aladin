@@ -36,9 +36,7 @@ export default function EditCoursePage() {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedMatiere, setSelectedMatiere] = useState("");
   const [selectedChapter, setSelectedChapter] = useState("");
-  const [editorState, setEditorState] = useState<
-    SerializedEditorState | undefined
-  >();
+  const [editorState, setEditorState] = useState<SerializedEditorState | undefined>(undefined);
   const editorRef = useRef<LexicalEditor | null>(null);
 
   // Fetch data
@@ -62,9 +60,12 @@ export default function EditCoursePage() {
       setSelectedMatiere(course.chapitre?.matiere_id.toString() || "");
       setSelectedChapter(course.chapitre?.id.toString() || "");
 
-      // Load editor state from course.content.lexical_state
-      if (course.content?.lexical_state) {
+      // Load editor state - préférer plain_text ou html si lexical_state est vide
+      if (course.content?.lexical_state && Object.keys(course.content.lexical_state).length > 0) {
         setEditorState(course.content.lexical_state);
+      } else {
+        // Si pas de lexical_state valide, garder undefined pour laisser l'éditeur vide
+        setEditorState(undefined);
       }
     }
   }, [course]);

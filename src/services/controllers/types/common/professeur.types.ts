@@ -207,6 +207,7 @@ export type ClasseQuiz = {
   chapitres_ids: number[];
   classe_id: number;
   is_active: boolean;
+  is_manual: boolean;
   type?: "manual" | "ai"; // Type du quiz: manuel ou généré par IA
   data?: {
     qcm: Array<{

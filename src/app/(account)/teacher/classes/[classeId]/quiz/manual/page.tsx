@@ -38,7 +38,6 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useClasse } from "@/services/hooks/professeur/useClasse";
-import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { useChapitresByMatiere } from "@/services/hooks/chapitres/useChapitres";
 import { useCreateManualQuiz } from "@/services/hooks/professeur/useCreateManualQuiz";
 
@@ -113,19 +112,16 @@ export default function CreateManualQuizPage() {
   const classeId = Number(params?.classeId);
 
   const { data: classeDetails, isLoading: isLoadingClasse } = useClasse(classeId);
-  const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
   const createManualQuizMutation = useCreateManualQuiz();
 
   const availableMatieres = useMemo(() => {
-    if (!classeDetails || !subjectsData?.matieres) return [];
-    const matiereIds = classeDetails.matiere_ids || [];
-    return subjectsData.matieres
-      .filter((matiere) => matiereIds.includes(matiere.id))
-      .map((matiere) => ({
-        id: matiere.id,
-        libelle: matiere.libelle,
-      }));
-  }, [classeDetails, subjectsData]);
+    if (!classeDetails) return [];
+    // Les matières sont déjà incluses dans classeDetails.matieres
+    return classeDetails.matieres?.map((matiere) => ({
+      id: matiere.id,
+      libelle: matiere.libelle,
+    })) || [];
+  }, [classeDetails]);
 
   const defaultValues: ManualQuizFormValues = {
     titre: "",
@@ -214,9 +210,7 @@ export default function CreateManualQuizPage() {
     );
   };
 
-  const isLoadingInitialData = isLoadingClasse || isLoadingSubjects;
-
-  if (isLoadingInitialData) {
+  if (isLoadingClasse) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner size="lg" />

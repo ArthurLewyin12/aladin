@@ -29,7 +29,7 @@ export const expliquerCours = async (
   return request.postFormData<GenerateCoursResponse>(
     CourseEndpoints.COURSES_BY_CHAPITRE,
     formDataPayload,
-    { timeout: 60000 }, // 60 seconds timeout
+    { timeout: 180000 }, // 180 seconds timeout for course generation
   );
 };
 

@@ -33,7 +33,6 @@ import { ClasseList } from "@/components/pages/teacher-classes/classe-list";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useCreateClasse } from "@/services/hooks/professeur/useCreateClasse";
 import { useNiveaux } from "@/services/hooks/niveaux/useNiveaux";
-import { useMatieresByNiveau } from "@/services/hooks/matieres/useMatieresByNiveau";
 import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
@@ -198,13 +197,22 @@ export default function TeacherClassesPage() {
   // Récupérer les matières enseignées du prof
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
   const subjectsResponse = subjectsData || { matieres: [], libelles: [], count: 0, max: 3 };
-  // Vérifier si le prof a défini des matières (nouveau format: libelles contient les IDs)
+  // Vérifier si le prof a défini des matières (nouveau format: libelles contient les noms)
   const hasDefinedSubjects = (subjectsResponse.libelles && subjectsResponse.libelles.length > 0) || subjectsResponse.matieres.length > 0;
 
-  // Récupérer les matières du niveau sélectionné
-  const { data: matieresData, isLoading: isLoadingMatieres } =
-    useMatieresByNiveau(selectedNiveau ? parseInt(selectedNiveau) : null);
-  const matieres = matieresData?.matieres || [];
+  // Noms des matières enseignées par le prof (depuis libelles)
+  const profSubjectNames = subjectsResponse.libelles || [];
+
+  // Filtrer les matières enseignées du prof selon le niveau sélectionné
+  // On utilise les matières de subjectsResponse qui contiennent déjà niveau_id
+  const isLoadingMatieres = isLoadingSubjects;
+  const matieres = selectedNiveau
+    ? subjectsResponse.matieres.filter(
+        (matiere) =>
+          matiere.niveau_id === parseInt(selectedNiveau) &&
+          profSubjectNames.includes(matiere.libelle)
+      )
+    : [];
 
   // Détecter si on est sur mobile
   useEffect(() => {

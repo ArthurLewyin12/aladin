@@ -72,6 +72,7 @@ export type ProfesseurCourse = {
   classe_id: number;
   chapitre_id: number;
   professeur_id: number;
+  type?: "manuel" | "genere"; // Type du cours: manuel ou généré par IA
   classe?: {
     id: number;
     nom: string;
@@ -102,31 +103,74 @@ export type ProfesseurCourse = {
  * Types pour le nouveau format structuré des cours générés
  */
 
+// Exemple avec structure détaillée (titre, contexte, développement)
+export interface CourseExampleDetailed {
+  titre: string;
+  contexte: string;
+  developpement: string;
+}
+
+// Exemple simple ou détaillé
 export interface CourseExample {
   exemple?: string;
+  titre?: string;
+  contexte?: string;
+  developpement?: string;
   [key: string]: string | undefined;
 }
 
+// Explication approfondie avec théorie, analyse et liens
+export interface CourseExplanationDetailed {
+  theorie?: string;
+  analyse?: string;
+  liens_et_applications?: string;
+  [key: string]: string | undefined;
+}
+
+// Notion complète avec tous les champs
 export interface CourseNotion {
   titre: string;
-  explication: string;
+  definition_et_cadrage?: string;
+  explication?: string; // Explication simple (pour compatibilité)
+  explication_approfondie?: CourseExplanationDetailed;
   exemples?: {
-    [key: string]: CourseExample | string;
+    [key: string]: CourseExample | CourseExampleDetailed | string;
   };
+  points_cles?: string[]; // Tableau des points clés
 }
 
 export interface CourseDeveloppement {
   [key: string]: CourseNotion;
 }
 
+// Illustration avec description et placement
+export interface CourseIllustration {
+  notion?: string;
+  description?: string;
+  legende?: string;
+  placement?: string;
+  [key: string]: string | undefined;
+}
+
 export interface CourseStructuredData {
-  "Titre de la lecon": string;
+  "TITRE_DE_LA_LECON"?: string;
+  "Titre de la lecon"?: string;
   "Titre de la leçon"?: string; // Support for version with accent
   Introduction: string;
-  "developpement du cours": CourseDeveloppement;
-  "Synthese ce qu'il faut retenir": string;
+  "DEVELOPPEMENT_DU_COURS"?: CourseDeveloppement;
+  "developpement du cours"?: CourseDeveloppement; // Fallback lowercase
+  "SYNTHESE_DU_COURS"?: {
+    recapitulatif?: string;
+    competences_acquises?: string;
+    points_de_vigilance?: string;
+    ouverture?: string;
+  };
+  "Synthese ce qu'il faut retenir"?: string; // Fallback simple
+  "ILLUSTRATIONS"?: {
+    [key: string]: CourseIllustration;
+  };
   illustrations?: {
-    [key: string]: string;
+    [key: string]: string | CourseIllustration;
   };
 }
 

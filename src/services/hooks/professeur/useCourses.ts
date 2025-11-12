@@ -6,6 +6,7 @@ import { getCourses, getCourse } from "@/services/controllers/professeur.control
 export interface Course {
   id: number;
   titre: string;
+  type?: "manuel" | "genere"; // Type du cours: manuel ou généré par IA
   classe?: {
     id: number;
     nom: string;

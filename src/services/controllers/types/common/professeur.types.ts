@@ -630,3 +630,50 @@ export type UpdateAllGradesResponse = {
   total_updated: number;
   total_errors: number;
 };
+
+/**
+ * Types pour les messages de classe
+ */
+export type ClassMessage = {
+  id: number;
+  classe_id: number;
+  professeur_id: number;
+  message: string;
+  date_debut: string;
+  date_fin: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type GetClassMessagesResponse = {
+  messages: ClassMessage[];
+  total: number;
+};
+
+export type CreateClassMessagePayload = {
+  message: string;
+  date_debut: string;
+  date_fin: string;
+};
+
+export type CreateClassMessageResponse = {
+  message: string;
+  data: ClassMessage;
+};
+
+export type UpdateClassMessagePayload = {
+  message?: string;
+  date_debut?: string;
+  date_fin?: string;
+};
+
+export type UpdateClassMessageResponse = {
+  message: string;
+  data: ClassMessage;
+};
+
+export type ToggleClassMessageResponse = {
+  message: string;
+  is_active: boolean;
+};

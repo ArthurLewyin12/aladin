@@ -61,6 +61,12 @@ import {
   UpdateGradeResponse,
   UpdateAllGradesPayload,
   UpdateAllGradesResponse,
+  GetClassMessagesResponse,
+  CreateClassMessagePayload,
+  CreateClassMessageResponse,
+  UpdateClassMessagePayload,
+  UpdateClassMessageResponse,
+  ToggleClassMessageResponse,
 } from "./types/common/professeur.types";
 
 /**
@@ -821,4 +827,78 @@ export const updateAllGrades = async (
     classeId.toString(),
   ).replace("{evaluation_id}", evaluationId.toString());
   return request.put<UpdateAllGradesResponse>(endpoint, payload);
+};
+
+/**
+ * ===============================
+ * MESSAGES DE CLASSE
+ * ===============================
+ */
+
+/**
+ * Récupère les messages d'une classe.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<GetClassMessagesResponse>} Liste des messages.
+ */
+export const getClassMessages = async (
+  classeId: number,
+): Promise<GetClassMessagesResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_CLASS_MESSAGES.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.get<GetClassMessagesResponse>(endpoint);
+};
+
+/**
+ * Crée un message pour une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {CreateClassMessagePayload} payload - Données du message.
+ * @returns {Promise<CreateClassMessageResponse>} Le message créé.
+ */
+export const createClassMessage = async (
+  classeId: number,
+  payload: CreateClassMessagePayload,
+): Promise<CreateClassMessageResponse> => {
+  const endpoint = ProfesseurEndpoints.CREATE_CLASS_MESSAGE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<CreateClassMessageResponse>(endpoint, payload);
+};
+
+/**
+ * Met à jour un message de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} messageId - ID du message.
+ * @param {UpdateClassMessagePayload} payload - Données à mettre à jour.
+ * @returns {Promise<UpdateClassMessageResponse>} Le message mis à jour.
+ */
+export const updateClassMessage = async (
+  classeId: number,
+  messageId: number,
+  payload: UpdateClassMessagePayload,
+): Promise<UpdateClassMessageResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_CLASS_MESSAGE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{message_id}", messageId.toString());
+  return request.put<UpdateClassMessageResponse>(endpoint, payload);
+};
+
+/**
+ * Active/désactive un message de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} messageId - ID du message.
+ * @returns {Promise<ToggleClassMessageResponse>} Le nouveau statut du message.
+ */
+export const toggleClassMessage = async (
+  classeId: number,
+  messageId: number,
+): Promise<ToggleClassMessageResponse> => {
+  const endpoint = ProfesseurEndpoints.TOGGLE_CLASS_MESSAGE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{message_id}", messageId.toString());
+  return request.post<ToggleClassMessageResponse>(endpoint);
 };

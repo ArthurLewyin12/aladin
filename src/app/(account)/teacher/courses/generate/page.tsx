@@ -256,7 +256,7 @@ export default function GenerateCoursePage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Panneau Gauche - Sélection */}
           <div className="lg:col-span-2 sticky top-6 h-fit z-10">
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
@@ -398,7 +398,7 @@ export default function GenerateCoursePage() {
           {/* Panneau Droit - Affichage du Cours */}
           <div className="lg:col-span-3">
             {!generatedCourse ? (
-              <Card>
+              <Card className="rounded-3xl">
                 <CardContent className="pt-12 pb-12">
                   <div className="flex flex-col items-center justify-center text-center">
                     <AlertCircle className="w-12 h-12 mb-4 text-gray-400" />
@@ -411,7 +411,6 @@ export default function GenerateCoursePage() {
               </Card>
             ) : hasStructuredCourseData ? (
               <>
-                {/* NOUVEAU FORMAT STRUCTURÉ */}
                 <div className="space-y-6">
                   {/* Titre Principal avec underline */}
                   <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">

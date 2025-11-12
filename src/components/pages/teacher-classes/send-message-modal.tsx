@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { X, Calendar as CalendarIcon } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { addDays, format } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ import {
 } from "@/components/ui/popover";
 
 import { useMediaQuery } from "@/services/hooks/use-media-query";
+import { useCreateClassMessage } from "@/services/hooks/professeur/useCreateClassMessage";
 
 interface SendMessageModalProps {
   isOpen: boolean;
@@ -57,18 +59,33 @@ export const SendMessageModal = ({
     addDays(new Date(), 7),
   );
 
+  const { mutate: createMessage, isPending } = useCreateClassMessage();
+
   const form = useForm<MessageFormValues>({
     resolver: zodResolver(messageFormSchema),
   });
 
   const handlePublish = (data: MessageFormValues) => {
-    console.log({
-      classeId,
-      startDate,
-      endDate,
-      message: data.message,
-    });
-    onClose();
+    if (!startDate || !endDate) {
+      return;
+    }
+
+    createMessage(
+      {
+        classeId,
+        payload: {
+          message: data.message,
+          date_debut: format(startDate, "yyyy-MM-dd"),
+          date_fin: format(endDate, "yyyy-MM-dd"),
+        },
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          onClose();
+        },
+      },
+    );
   };
 
   const FormContent = (
@@ -158,13 +175,15 @@ export const SendMessageModal = ({
           </DrawerHeader>
           <div className="px-4 pb-4">{FormContent}</div>
           <DrawerFooter className="flex-row gap-3 justify-end border-t">
-            <Button variant="ghost" onClick={onClose} className="flex-1">
+            <Button variant="ghost" onClick={onClose} className="flex-1" disabled={isPending}>
               Annuler
             </Button>
             <Button
               onClick={form.handleSubmit(handlePublish)}
               className="bg-[#2C3E50] hover:bg-[#1a252f] text-white flex-1"
+              disabled={isPending}
             >
+              {isPending ? <Spinner size="sm" className="mr-2" /> : null}
               Publier
             </Button>
           </DrawerFooter>
@@ -183,13 +202,15 @@ export const SendMessageModal = ({
         </DialogHeader>
         <div className="mt-4">{FormContent}</div>
         <div className="flex gap-3 mt-6 justify-end border-t pt-4">
-          <Button variant="ghost" onClick={onClose} className="px-6">
+          <Button variant="ghost" onClick={onClose} className="px-6" disabled={isPending}>
             Annuler
           </Button>
           <Button
             onClick={form.handleSubmit(handlePublish)}
             className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-8"
+            disabled={isPending}
           >
+            {isPending ? <Spinner size="sm" className="mr-2" /> : null}
             Publier
           </Button>
         </div>

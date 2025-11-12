@@ -14,7 +14,9 @@ import { useSession } from "@/services/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
 import { NotificationCenter } from "@/components/ui/notification-center";
 import { getNavigationForRole, UserRole } from "@/constants/navigation";
-
+import { UserStatus } from "@/constants/user-status";
+import { CacheIndicatorMessage } from "next/dist/server/dev/hot-reloader-types";
+import { ClassMessagesDropdown } from "./class-messages-dropdown";
 export function AccountHeader() {
   const router = useRouter();
   const { user, logout } = useSession();
@@ -57,6 +59,9 @@ export function AccountHeader() {
       {/* Menu utilisateur */}
       <div className="flex items-center gap-4">
         <NotificationCenter />
+        {user?.statut === UserStatus.PROFESSEUR ? (
+          <ClassMessagesDropdown />
+        ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center space-x-3 hover:bg-gray-200 rounded-xl p-2 transition-colors cursor-pointer">
             <Avatar className="h-10 w-10">

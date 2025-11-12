@@ -299,4 +299,10 @@ export enum ProfesseurEndpoints {
 
   // Membres de classe
   GET_CLASS_MEMBERS = "/api/prof/classes/{classe_id}/members",
+
+  // Messages de classe
+  GET_CLASS_MESSAGES = "/api/prof/classes/{classe_id}/messages",
+  CREATE_CLASS_MESSAGE = "/api/prof/classes/{classe_id}/messages",
+  UPDATE_CLASS_MESSAGE = "/api/prof/classes/{classe_id}/messages/{message_id}",
+  TOGGLE_CLASS_MESSAGE = "/api/prof/classes/{classe_id}/messages/{message_id}/toggle",
 }

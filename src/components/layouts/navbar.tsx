@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ClassMessagesDropdown } from "@/components/ui/class-messages-dropdown";
 
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/services/hooks/use-media-query";
@@ -104,7 +105,9 @@ export default function NavBar() {
         {isLoading ? (
           <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
         ) : user ? (
-          <DropdownMenu>
+          <>
+            {user.statut === "professeur" && <ClassMessagesDropdown />}
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -177,6 +180,7 @@ export default function NavBar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </>
         ) : (
           <>
             <Button

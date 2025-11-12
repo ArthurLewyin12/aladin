@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   useSubjects,
   useSubjectsGeneric,
@@ -23,22 +23,43 @@ export default function TeacherSubjects() {
   // Récupérer toutes les matières disponibles (sans filtrage par niveau)
   const { data: matieresGenericData, isLoading: isLoadingMatieres } =
     useSubjectsGeneric();
-  const matieres = matieresGenericData?.matieres || [];
+  const matieres = useMemo(
+    () => matieresGenericData?.matieres || [],
+    [matieresGenericData?.matieres],
+  );
 
-  const subjectsResponse = subjectsData || { matieres: [], count: 0, max: 3 };
-  const currentSubjectIds = subjectsResponse.matieres.map((m) => m.id);
+  const subjectsResponse = subjectsData || { matieres: [], libelles: [], count: 0, max: 3 };
+  // Utiliser libelles pour récupérer les noms des matières sélectionnées
+  const currentLibelles = Array.isArray(subjectsResponse.libelles)
+    ? subjectsResponse.libelles.filter((item) => typeof item === 'string')
+    : [];
+  // Utiliser matieres.map pour les IDs si disponible, sinon matieres contient déjà les IDs
+  const currentSubjectIds =
+    subjectsResponse.matieres.length > 0
+      ? subjectsResponse.matieres.map((m) => m.id)
+      : [];
   const maxSubjects = subjectsResponse.max;
 
   // Initialiser selectedMatieres avec les matières actuelles
   useEffect(() => {
-    setSelectedMatieres(currentSubjectIds);
-  }, [subjectsData]);
+    if (currentLibelles.length > 0 && matieres.length > 0) {
+      // Si on a les libellés, trouver les IDs correspondants
+      const ids = matieres
+        .filter((m) => currentLibelles.includes(m.libelle))
+        .map((m) => m.id);
+      setSelectedMatieres(ids);
+    } else if (currentSubjectIds.length > 0) {
+      // Fallback: utiliser currentSubjectIds
+      setSelectedMatieres(currentSubjectIds);
+    }
+  }, [subjectsData, matieres]);
 
   const toggleMatiere = (matiereId: number) => {
     if (selectedMatieres.includes(matiereId)) {
       setSelectedMatieres(selectedMatieres.filter((id) => id !== matiereId));
     } else {
-      if (selectedMatieres.length >= maxSubjects) {
+      // Vérifier si count === max (limite atteinte selon le backend)
+      if (subjectsResponse.count >= maxSubjects) {
         toast({
           variant: "warning",
           message: `Vous ne pouvez sélectionner que ${maxSubjects} matières maximum.`,
@@ -99,34 +120,42 @@ export default function TeacherSubjects() {
         <p className="text-sm text-gray-600 mt-1">
           Sélectionnez les matières que vous enseignez (maximum {maxSubjects})
         </p>
-        <p className="text-xs text-green-600 mt-2 font-medium">
-          {selectedMatieres.length}/{maxSubjects} matières sélectionnées
-        </p>
-      </div>
-
-      {/* Matières actuellement enseignées */}
-      {currentSubjectIds.length > 0 && (
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold text-gray-700">
-            Matières actuelles
-          </Label>
-          <div className="flex flex-wrap gap-2">
-            {subjectsResponse.matieres.map((matiere) => (
-              <div
-                key={matiere.id}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-green-50 border border-green-200"
+        {currentLibelles.length > 0 && (
+          <p className="text-sm text-green-700 font-medium mt-2">
+            ✓ Vous avez sélectionné{" "}
+            <span className="font-bold text-green-900">
+              {currentLibelles.length}/{maxSubjects}
+            </span>
+            {maxSubjects - currentLibelles.length > 0 && (
+              <>
+                {" "}
+                - Il vous reste{" "}
+                <span className="font-bold text-green-900">
+                  {maxSubjects - currentLibelles.length}
+                </span>{" "}
+                {maxSubjects - currentLibelles.length === 1
+                  ? "matière"
+                  : "matières"}{" "}
+                à sélectionner
+              </>
+            )}
+            {maxSubjects - currentLibelles.length === 0 && " (Limite atteinte)"}
+          </p>
+        )}
+        {currentLibelles.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {currentLibelles.map((libelle, index) => (
+              <span
+                key={index}
+                className="inline-block px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full"
               >
-                <span className="text-sm font-medium text-green-800">
-                  {matiere.libelle}
-                </span>
-                <span className="text-xs text-green-600">
-                  {matiere.niveau.libelle}
-                </span>
-              </div>
+                {libelle}
+              </span>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
 
       {/* Liste de toutes les matières disponibles */}
       <div>
@@ -150,7 +179,7 @@ export default function TeacherSubjects() {
                   onCheckedChange={() => toggleMatiere(matiere.id)}
                   disabled={
                     isSaving ||
-                    (selectedMatieres.length >= maxSubjects &&
+                    (subjectsResponse.count >= maxSubjects &&
                       !selectedMatieres.includes(matiere.id))
                   }
                 />
@@ -174,8 +203,9 @@ export default function TeacherSubjects() {
       <div className="flex gap-3 pt-4">
         <Button
           onClick={handleSave}
-          disabled={isSaving || !hasChanges}
+          disabled={isSaving || !hasChanges || subjectsResponse.count >= maxSubjects}
           className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          title={subjectsResponse.count >= maxSubjects ? "Limite de matières atteinte" : ""}
         >
           {isSaving ? (
             <>
@@ -190,7 +220,7 @@ export default function TeacherSubjects() {
           <Button
             onClick={() => setSelectedMatieres(currentSubjectIds)}
             variant="outline"
-            disabled={isSaving}
+            disabled={isSaving || subjectsResponse.count >= maxSubjects}
             className="flex-1"
           >
             Annuler

@@ -27,6 +27,7 @@ import { useClasse } from "@/services/hooks/professeur/useClasse";
 import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
 import { CoursePreviewModal } from "@/components/pages/teacher-courses/course-preview-modal";
 import { CourseContent } from "@/services/controllers/types/common/professeur.types";
+import { Share } from "lucide-react";
 
 const initialValue = {
   root: {
@@ -364,7 +365,11 @@ export default function CreateCoursePage() {
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    {isSaving ? "Création..." : "Créer le cours"}
+                    {isSaving ? "Enregistrement..." : "Enregistrer le cours"}
+                  </Button>
+                  <Button className="w-full  rounded-3xl bg-green-800">
+                    <Share />
+                    <p>Partager</p>
                   </Button>
                 </div>
               </CardContent>

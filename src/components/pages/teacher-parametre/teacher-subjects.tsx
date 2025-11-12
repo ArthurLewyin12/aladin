@@ -28,10 +28,15 @@ export default function TeacherSubjects() {
     [matieresGenericData?.matieres],
   );
 
-  const subjectsResponse = subjectsData || { matieres: [], libelles: [], count: 0, max: 3 };
+  const subjectsResponse = subjectsData || {
+    matieres: [],
+    libelles: [],
+    count: 0,
+    max: 3,
+  };
   // Utiliser libelles pour récupérer les noms des matières sélectionnées
   const currentLibelles = Array.isArray(subjectsResponse.libelles)
-    ? subjectsResponse.libelles.filter((item) => typeof item === 'string')
+    ? subjectsResponse.libelles.filter((item) => typeof item === "string")
     : [];
   // Utiliser matieres.map pour les IDs si disponible, sinon matieres contient déjà les IDs
   const currentSubjectIds =
@@ -117,6 +122,10 @@ export default function TeacherSubjects() {
         <h2 className="text-lg sm:text-xl font-bold text-gray-900">
           Mes matières
         </h2>
+        <p className="text-red-500 text-[1.1rem]">
+          Nb : Vous pouvez changer vos matières une seule fois pendant la durée
+          de votre abonnement.
+        </p>
         <p className="text-sm text-gray-600 mt-1">
           Sélectionnez les matières que vous enseignez (maximum {maxSubjects})
         </p>
@@ -155,7 +164,6 @@ export default function TeacherSubjects() {
           </div>
         )}
       </div>
-
 
       {/* Liste de toutes les matières disponibles */}
       <div>
@@ -203,9 +211,15 @@ export default function TeacherSubjects() {
       <div className="flex gap-3 pt-4">
         <Button
           onClick={handleSave}
-          disabled={isSaving || !hasChanges || subjectsResponse.count >= maxSubjects}
+          disabled={
+            isSaving || !hasChanges || subjectsResponse.count >= maxSubjects
+          }
           className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          title={subjectsResponse.count >= maxSubjects ? "Limite de matières atteinte" : ""}
+          title={
+            subjectsResponse.count >= maxSubjects
+              ? "Limite de matières atteinte"
+              : ""
+          }
         >
           {isSaving ? (
             <>

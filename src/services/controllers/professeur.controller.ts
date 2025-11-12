@@ -536,17 +536,25 @@ export const generateCourse = async (
 
   // Si un fichier est présent, utiliser FormData
   if (payload.document_file) {
-    return request.postFormData<GenerateCourseResponse>(endpoint, {
-      chapter_id: payload.chapter_id,
-      classe_id: classeId,
-      document_file: payload.document_file,
-    });
+    return request.postFormData<GenerateCourseResponse>(
+      endpoint,
+      {
+        chapter_id: payload.chapter_id,
+        classe_id: classeId,
+        document_file: payload.document_file,
+      },
+      { timeout: 180000 },
+    );
   } else {
     // Sinon, envoi JSON classique
-    return request.post<GenerateCourseResponse>(endpoint, {
-      chapter_id: payload.chapter_id,
-      classe_id: classeId,
-    });
+    return request.post<GenerateCourseResponse>(
+      endpoint,
+      {
+        chapter_id: payload.chapter_id,
+        classe_id: classeId,
+      },
+      { timeout: 180000 },
+    );
   }
 };
 

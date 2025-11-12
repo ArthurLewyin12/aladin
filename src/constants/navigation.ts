@@ -105,15 +105,16 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         icon: BarChart3,
       },
       {
-        label: "Mes cours",
-        path: "/teacher/courses",
-        icon: BookOpen,
-      },
-      {
         label: "Mes classes",
         path: "/teacher/classes",
         icon: Users,
       },
+      {
+        label: "Mes cours",
+        path: "/teacher/courses",
+        icon: BookOpen,
+      },
+
       {
         label: "Notes des élèves",
         path: "/teacher/notes",
@@ -168,7 +169,12 @@ export const hasAccessToRoute = (userRole: UserRole, path: string): boolean => {
     rolePrefix = `/${userRole}`;
   }
 
-  console.log('🔍 hasAccessToRoute check:', { userRole, path, rolePrefix, result: path.startsWith(rolePrefix) });
+  console.log("🔍 hasAccessToRoute check:", {
+    userRole,
+    path,
+    rolePrefix,
+    result: path.startsWith(rolePrefix),
+  });
   return path.startsWith(rolePrefix);
 };
 

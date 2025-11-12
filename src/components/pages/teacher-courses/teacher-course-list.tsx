@@ -8,7 +8,15 @@ import { useCourses, Course } from "@/services/hooks/professeur/useCourses";
 import { useActivateCourse } from "@/services/hooks/professeur/useActivateCourse";
 import { useDeactivateCourse } from "@/services/hooks/professeur/useDeactivateCourse";
 import { EmptyState } from "@/components/ui/empty-state";
-import { BookOpen, FileText, Plus, AlertCircle, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  BookOpen,
+  FileText,
+  Plus,
+  AlertCircle,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { CourseCard } from "./course-card";
@@ -184,6 +192,16 @@ export function TeacherCourseList() {
                 className="rounded-3xl border-0 shadow-xl w-64 p-2 bg-white"
               >
                 <DropdownMenuItem
+                  onClick={() => router.push("/teacher/courses/generate")}
+                  className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors"
+                >
+                  <Sparkles className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900">Cours par IA</p>
+                    <p className="text-xs text-gray-600">Générez avec Aladin</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() =>
                     router.push("/teacher/courses/create?type=manual")
                   }
@@ -195,16 +213,6 @@ export function TeacherCourseList() {
                     <p className="text-xs text-gray-600">
                       Créez votre cours manuellement
                     </p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => router.push("/teacher/courses/generate")}
-                  className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors"
-                >
-                  <Sparkles className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">Cours par IA</p>
-                    <p className="text-xs text-gray-600">Générez avec Aladin</p>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -224,7 +232,8 @@ export function TeacherCourseList() {
             Mes Cours
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {countGenere} généré{countGenere > 1 ? "s" : ""} • {countManuel} manuel{countManuel > 1 ? "s" : ""}
+            {countGenere} généré{countGenere > 1 ? "s" : ""} • {countManuel}{" "}
+            manuel{countManuel > 1 ? "s" : ""}
             {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
           </p>
         </div>
@@ -244,6 +253,16 @@ export function TeacherCourseList() {
             className="rounded-3xl border-0 shadow-xl w-64 p-2 bg-white"
           >
             <DropdownMenuItem
+              onClick={() => router.push("/teacher/courses/generate")}
+              className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors"
+            >
+              <Sparkles className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900">Cours par IA</p>
+                <p className="text-xs text-gray-600">Générez avec Aladin</p>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem
               onClick={() => router.push("/teacher/courses/create?type=manual")}
               className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors mb-2"
             >
@@ -253,16 +272,6 @@ export function TeacherCourseList() {
                 <p className="text-xs text-gray-600">
                   Créez votre cours manuellement
                 </p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push("/teacher/courses/generate")}
-              className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors"
-            >
-              <Sparkles className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-gray-900">Cours par IA</p>
-                <p className="text-xs text-gray-600">Générez avec Aladin</p>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -281,7 +290,9 @@ export function TeacherCourseList() {
             }
             onPreview={(courseId) => {
               // Find the course to check its type
-              const courseData = paginatedCourses.find(c => c.id === courseId);
+              const courseData = paginatedCourses.find(
+                (c) => c.id === courseId,
+              );
               const previewPath =
                 courseData?.type === "genere"
                   ? `/teacher/courses/${courseId}/preview-ia`
@@ -294,8 +305,10 @@ export function TeacherCourseList() {
             }}
             onActivate={() => {
               // Trouver la classe associée au cours
-              const courseClasse = classes?.find(c =>
-                coursesData?.courses.find(cr => cr.id === course.id)?.classe?.id === c.id
+              const courseClasse = classes?.find(
+                (c) =>
+                  coursesData?.courses.find((cr) => cr.id === course.id)?.classe
+                    ?.id === c.id,
               );
               if (courseClasse) {
                 activateCourseMutation({
@@ -306,8 +319,10 @@ export function TeacherCourseList() {
             }}
             onDeactivate={() => {
               // Trouver la classe associée au cours
-              const courseClasse = classes?.find(c =>
-                coursesData?.courses.find(cr => cr.id === course.id)?.classe?.id === c.id
+              const courseClasse = classes?.find(
+                (c) =>
+                  coursesData?.courses.find((cr) => cr.id === course.id)?.classe
+                    ?.id === c.id,
               );
               if (courseClasse) {
                 deactivateCourseMutation({
@@ -334,44 +349,44 @@ export function TeacherCourseList() {
           </Button>
 
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-              const showPage =
-                pageNum <= 2 ||
-                pageNum >= totalPages - 1 ||
-                (pageNum >= page - 1 && pageNum <= page + 1);
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (pageNum) => {
+                const showPage =
+                  pageNum <= 2 ||
+                  pageNum >= totalPages - 1 ||
+                  (pageNum >= page - 1 && pageNum <= page + 1);
 
-              const showEllipsisBefore = pageNum === 3 && page > 4;
-              const showEllipsisAfter =
-                pageNum === totalPages - 2 && page < totalPages - 3;
+                const showEllipsisBefore = pageNum === 3 && page > 4;
+                const showEllipsisAfter =
+                  pageNum === totalPages - 2 && page < totalPages - 3;
 
-              if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                return null;
-              }
+                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                  return null;
+                }
 
-              if (showEllipsisBefore || showEllipsisAfter) {
+                if (showEllipsisBefore || showEllipsisAfter) {
+                  return (
+                    <span key={pageNum} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+
                 return (
-                  <span key={pageNum} className="px-2 text-gray-400">
-                    ...
-                  </span>
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                    className={`rounded-full min-w-[2.5rem] ${
+                      pageNum === page ? "bg-[#2C3E50] hover:bg-[#1a252f]" : ""
+                    }`}
+                  >
+                    {pageNum}
+                  </Button>
                 );
-              }
-
-              return (
-                <Button
-                  key={pageNum}
-                  variant={pageNum === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPage(pageNum)}
-                  className={`rounded-full min-w-[2.5rem] ${
-                    pageNum === page
-                      ? "bg-[#2C3E50] hover:bg-[#1a252f]"
-                      : ""
-                  }`}
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
+              },
+            )}
           </div>
 
           <Button

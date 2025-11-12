@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Sparkles, Save, AlertCircle } from "lucide-react";
+import { ArrowLeft, Sparkles, Save, AlertCircle, Share } from "lucide-react";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useClasse } from "@/services/hooks/professeur/useClasse";
 import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
@@ -382,13 +382,20 @@ export default function GenerateCoursePage() {
                   </Button>
 
                   {generatedCourse && (
-                    <Button
-                      onClick={handleSaveCourse}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      Sauvegarder
-                    </Button>
+                    <div className="flex flex-col gap-4">
+                      <Button
+                        onClick={handleSaveCourse}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Editer ( facultatif)
+                      </Button>
+
+                      <Button className="w-full  rounded-3xl bg-green-800">
+                        <Share />
+                        <p>Partager</p>
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -415,9 +422,11 @@ export default function GenerateCoursePage() {
                   {/* Titre Principal avec underline */}
                   <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">
                     <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-green-500 w-fit mx-auto">
+                      Chapitre "
                       {generatedCourse.course_data?.["TITRE_DE_LA_LECON"] ||
                         generatedCourse.course_data?.["Titre de la leçon"] ||
                         generatedCourse.course_data?.["Titre de la lecon"]}
+                      "
                     </h1>
                   </div>
 

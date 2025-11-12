@@ -57,19 +57,20 @@ export default function TeacherHomePage() {
       handler: () => router.push("/teacher/dashboard"),
     },
     {
-      id: "courses",
-      title: "Je consulte mes cours",
-      description: "Gérez vos cours de classe",
-      icon: BookOpen,
-      handler: () => router.push("/teacher/courses"),
-    },
-    {
       id: "classes",
       title: "Je gère mes classes",
       description: "Gérer efficacement les classes dont vous êtes en charge",
       icon: UsersRound,
       handler: () => router.push("/teacher/classes"),
     },
+    {
+      id: "courses",
+      title: "Je consulte mes cours",
+      description: "Gérez vos cours de classe",
+      icon: BookOpen,
+      handler: () => router.push("/teacher/courses"),
+    },
+
     {
       id: "share",
       title: "Je partage Aladin",

@@ -40,7 +40,9 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export const ClassMessagesDropdown = ({ className }: ClassMessagesDropdownProps) => {
+export const ClassMessagesDropdown = ({
+  className,
+}: ClassMessagesDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: messages = [], isLoading, isError } = useGetAllActiveMessages();
 
@@ -79,7 +81,8 @@ export const ClassMessagesDropdown = ({ className }: ClassMessagesDropdownProps)
             </h3>
             {messageCount > 0 && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {messageCount} message{messageCount > 1 ? "s" : ""} actif{messageCount > 1 ? "s" : ""}
+                {messageCount} message{messageCount > 1 ? "s" : ""} actif
+                {messageCount > 1 ? "s" : ""}
               </p>
             )}
           </div>
@@ -132,7 +135,12 @@ export const ClassMessagesDropdown = ({ className }: ClassMessagesDropdownProps)
                             {message.classe_nom}
                           </p>
                           <p className="text-xs text-green-600 dark:text-green-400">
-                            Valide jusqu&apos;au {format(new Date(message.date_fin), "dd MMMM yyyy", { locale: fr })}
+                            Valide jusqu&apos;au{" "}
+                            {format(
+                              new Date(message.date_fin),
+                              "dd MMMM yyyy",
+                              { locale: fr },
+                            )}
                           </p>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-green-600 flex-shrink-0 mt-1" />

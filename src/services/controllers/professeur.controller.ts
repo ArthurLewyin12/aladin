@@ -48,6 +48,19 @@ import {
   SaveGradesResponse,
   CreateClassEvaluationPayload,
   CreateClassEvaluationResponse,
+  GetClassMembersResponse,
+  CreateEvaluationPayload,
+  CreateEvaluationResponse,
+  GetEvaluationsResponse,
+  GetEvaluationNotesResponse,
+  AddGradesToEvaluationPayload,
+  AddGradesToEvaluationResponse,
+  UpdateEvaluationPayload,
+  UpdateEvaluationResponse,
+  UpdateGradePayload,
+  UpdateGradeResponse,
+  UpdateAllGradesPayload,
+  UpdateAllGradesResponse,
 } from "./types/common/professeur.types";
 
 /**
@@ -668,4 +681,144 @@ export const createClassEvaluation = async (
     classeId.toString(),
   );
   return request.post<CreateClassEvaluationResponse>(endpoint, payload);
+};
+
+/**
+ * Récupère les élèves d'une classe.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<GetClassMembersResponse>} Liste des élèves de la classe.
+ */
+export const getClassMembers = async (
+  classeId: number,
+): Promise<GetClassMembersResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_CLASS_MEMBERS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.get<GetClassMembersResponse>(endpoint);
+};
+
+/**
+ * Crée une évaluation (sans notes).
+ * @param {number} classeId - ID de la classe.
+ * @param {CreateEvaluationPayload} payload - Données de l'évaluation.
+ * @returns {Promise<CreateEvaluationResponse>} L'évaluation créée.
+ */
+export const createEvaluation = async (
+  classeId: number,
+  payload: CreateEvaluationPayload,
+): Promise<CreateEvaluationResponse> => {
+  const endpoint = ProfesseurEndpoints.CREATE_EVALUATION.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.post<CreateEvaluationResponse>(endpoint, payload);
+};
+
+/**
+ * Récupère les évaluations d'une classe.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<GetEvaluationsResponse>} Liste des évaluations.
+ */
+export const getEvaluations = async (
+  classeId: number,
+): Promise<GetEvaluationsResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_EVALUATIONS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.get<GetEvaluationsResponse>(endpoint);
+};
+
+/**
+ * Récupère les notes d'une évaluation.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} evaluationId - ID de l'évaluation.
+ * @returns {Promise<GetEvaluationNotesResponse>} Les notes de l'évaluation.
+ */
+export const getEvaluationNotes = async (
+  classeId: number,
+  evaluationId: number,
+): Promise<GetEvaluationNotesResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_EVALUATION_NOTES.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{evaluation_id}", evaluationId.toString());
+  return request.get<GetEvaluationNotesResponse>(endpoint);
+};
+
+/**
+ * Met à jour une évaluation.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} evaluationId - ID de l'évaluation.
+ * @param {UpdateEvaluationPayload} payload - Données à mettre à jour.
+ * @returns {Promise<UpdateEvaluationResponse>} L'évaluation mise à jour.
+ */
+export const updateEvaluation = async (
+  classeId: number,
+  evaluationId: number,
+  payload: UpdateEvaluationPayload,
+): Promise<UpdateEvaluationResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_EVALUATION.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{evaluation_id}", evaluationId.toString());
+  return request.put<UpdateEvaluationResponse>(endpoint, payload);
+};
+
+/**
+ * Ajoute des notes à une évaluation existante.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} evaluationId - ID de l'évaluation.
+ * @param {AddGradesToEvaluationPayload} payload - Les notes à ajouter.
+ * @returns {Promise<AddGradesToEvaluationResponse>} Les notes ajoutées.
+ */
+export const addGradesToEvaluation = async (
+  classeId: number,
+  evaluationId: number,
+  payload: AddGradesToEvaluationPayload,
+): Promise<AddGradesToEvaluationResponse> => {
+  const endpoint = ProfesseurEndpoints.ADD_GRADES_TO_EVALUATION.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{evaluation_id}", evaluationId.toString());
+  return request.post<AddGradesToEvaluationResponse>(endpoint, payload);
+};
+
+/**
+ * Met à jour une note individuelle.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} noteId - ID de la note.
+ * @param {UpdateGradePayload} payload - La nouvelle note.
+ * @returns {Promise<UpdateGradeResponse>} La note mise à jour.
+ */
+export const updateGrade = async (
+  classeId: number,
+  noteId: number,
+  payload: UpdateGradePayload,
+): Promise<UpdateGradeResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_GRADE.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{note_id}", noteId.toString());
+  return request.put<UpdateGradeResponse>(endpoint, payload);
+};
+
+/**
+ * Met à jour toutes les notes d'une évaluation.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} evaluationId - ID de l'évaluation.
+ * @param {UpdateAllGradesPayload} payload - Les notes à mettre à jour.
+ * @returns {Promise<UpdateAllGradesResponse>} Les notes mises à jour avec erreurs éventuelles.
+ */
+export const updateAllGrades = async (
+  classeId: number,
+  evaluationId: number,
+  payload: UpdateAllGradesPayload,
+): Promise<UpdateAllGradesResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_ALL_GRADES.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{evaluation_id}", evaluationId.toString());
+  return request.put<UpdateAllGradesResponse>(endpoint, payload);
 };

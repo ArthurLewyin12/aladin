@@ -18,11 +18,13 @@ import {
   FileQuestion,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { QuizAISection } from "@/components/pages/teacher-classes/quiz-ai-section";
 import { SendMessageModal } from "@/components/pages/teacher-classes/send-message-modal";
 import { StudentSection } from "@/components/pages/teacher-classes/student-section";
+import { GradesSection } from "@/components/pages/teacher-classes/grades-section";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ManualQuizCard } from "@/components/pages/teacher-classes/manual-quiz-card";
 import { GetClasseResponse } from "@/services/controllers/types/common/professeur.types";
@@ -48,6 +50,7 @@ const ClasseDetailPage = () => {
     { label: "Quiz manuelle", icon: <BookText className="w-4 h-4" /> },
     { label: "Document téléchargé", icon: <Upload className="w-4 h-4" /> },
     { label: "Elève", icon: <Users className="w-4 h-4" /> },
+    { label: "Notes", icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   if (isLoading) {
@@ -136,6 +139,9 @@ const ClasseDetailPage = () => {
             )}
             {activeTab === "Elève" && (
               <StudentSection classeDetails={classeDetails} />
+            )}
+            {activeTab === "Notes" && (
+              <GradesSection classeDetails={classeDetails} />
             )}
           </div>
         </div>

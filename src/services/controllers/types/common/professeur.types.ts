@@ -469,3 +469,164 @@ export type CreateClassEvaluationResponse = {
     created_at: string;
   }>;
 };
+
+/**
+ * Types pour la gestion complète des évaluations et notes
+ */
+
+// Types pour les élèves d'une classe
+export type ClassStudentMember = {
+  id: number;
+  nom: string;
+  prenom: string;
+  mail: string;
+  numero?: string;
+  statut: string;
+  is_active: boolean;
+  is_active_in_classe: boolean;
+  niveau?: {
+    id: number;
+    libelle: string;
+  };
+  created_at: string;
+};
+
+export type GetClassMembersResponse = {
+  eleves: ClassStudentMember[];
+  total: number;
+  classe: {
+    id: number;
+    nom: string;
+  };
+};
+
+// Types pour les évaluations
+export type Evaluation = {
+  id: number;
+  classe_id: number;
+  professeur_id: number;
+  matiere_id: number;
+  type_evaluation: string;
+  date_evaluation: string;
+  commentaire?: string;
+  chapitres_ids: number[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  matiere?: {
+    id: number;
+    libelle: string;
+  };
+  classe?: {
+    id: number;
+    nom: string;
+  };
+  notes_count?: number;
+  moyenne?: number;
+};
+
+export type CreateEvaluationPayload = {
+  type_evaluation: string;
+  matiere_id: number;
+  chapitres_ids?: number[];
+  date_evaluation?: string;
+  commentaire?: string;
+};
+
+export type CreateEvaluationResponse = {
+  message: string;
+  evaluation: Evaluation;
+};
+
+export type GetEvaluationsResponse = {
+  evaluations: Evaluation[];
+  total: number;
+};
+
+// Types pour les notes
+export type Grade = {
+  id: number;
+  evaluation_id: number;
+  eleve_id: number;
+  note: number;
+  notifie_parent: boolean;
+  created_at: string;
+  updated_at?: string;
+  eleve?: {
+    id: number;
+    nom: string;
+    prenom: string;
+    mail: string;
+  };
+  evaluation?: {
+    id: number;
+    type_evaluation: string;
+    matiere?: {
+      id: number;
+      libelle: string;
+    };
+  };
+};
+
+export type GetEvaluationNotesResponse = {
+  evaluation: Evaluation & {
+    chapitres?: Array<{
+      id: number;
+      libelle: string;
+    }>;
+  };
+  notes: Grade[];
+  total_notes: number;
+  moyenne: number;
+};
+
+export type AddGradesToEvaluationPayload = {
+  grades: Array<{
+    user_id: number;
+    note: number;
+  }>;
+};
+
+export type AddGradesToEvaluationResponse = {
+  message: string;
+  notes: Grade[];
+  total_notes: number;
+};
+
+export type UpdateEvaluationPayload = {
+  type_evaluation?: string;
+  matiere_id?: number;
+  chapitres_ids?: number[];
+  date_evaluation?: string;
+  commentaire?: string;
+  is_active?: boolean;
+};
+
+export type UpdateEvaluationResponse = {
+  message: string;
+  evaluation: Evaluation;
+};
+
+export type UpdateGradePayload = {
+  note: number;
+};
+
+export type UpdateGradeResponse = {
+  message: string;
+  note: Grade;
+};
+
+export type UpdateAllGradesPayload = {
+  grades: Array<{
+    note_classe_id: number;
+    note: number;
+  }>;
+};
+
+export type UpdateAllGradesResponse = {
+  message: string;
+  notes: Grade[];
+  errors: string[];
+  total_updated: number;
+  total_errors: number;
+};

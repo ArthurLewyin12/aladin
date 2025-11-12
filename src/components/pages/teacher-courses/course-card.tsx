@@ -1,8 +1,11 @@
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Edit, Trash2, BookOpen, Calendar, Users } from "lucide-react";
+import { Eye, Edit, BookOpen, Calendar, Users } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -31,6 +34,8 @@ interface CourseCardProps {
   onEdit?: (courseId: number) => void;
   onDelete?: (courseId: number) => void;
   onPreview?: (courseId: number) => void;
+  onActivate?: () => void;
+  onDeactivate?: () => void;
 }
 
 const CARD_COLORS = [
@@ -42,8 +47,9 @@ const CARD_COLORS = [
   "bg-[#FEF3C7]", // Jaune clair
 ];
 
-export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: CourseCardProps) {
+export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onActivate, onDeactivate }: CourseCardProps) {
   const router = useRouter();
+  const [isActive, setIsActive] = useState(course.is_active);
 
   const handleEdit = () => {
     if (onEdit) {
@@ -72,6 +78,17 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: C
     }
   };
 
+  const handleStatusChange = (newStatus: boolean) => {
+    // Optimistic update - change the UI immediately
+    setIsActive(newStatus);
+
+    if (newStatus && onActivate) {
+      onActivate();
+    } else if (!newStatus && onDeactivate) {
+      onDeactivate();
+    }
+  };
+
   return (
     <Card className={`${cardColor} border-2 border-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] overflow-hidden`}>
       <CardHeader className="pb-3">
@@ -82,14 +99,14 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: C
             </h3>
             <div className="flex flex-wrap gap-2 mb-3">
               <Badge
-                variant={course.is_active ? "default" : "secondary"}
+                variant={isActive ? "default" : "secondary"}
                 className={`text-xs ${
-                  course.is_active
+                  isActive
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-gray-500 text-white"
                 }`}
               >
-                {course.is_active ? "Publié" : "Brouillon"}
+                {isActive ? "Publié" : "Brouillon"}
               </Badge>
               {course.type && (
                 <Badge
@@ -104,8 +121,19 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: C
               )}
             </div>
           </div>
-          <div className="flex-shrink-0">
-            <BookOpen className="w-8 h-8 text-gray-600" />
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <Label
+              htmlFor={`course-status-${course.id}`}
+              className="text-sm font-medium whitespace-nowrap"
+            >
+              {isActive ? "Actif" : "Inactif"}
+            </Label>
+            <Switch
+              id={`course-status-${course.id}`}
+              checked={isActive}
+              onCheckedChange={handleStatusChange}
+              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+            />
           </div>
         </div>
       </CardHeader>
@@ -158,14 +186,6 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: C
             >
               <Edit className="w-4 h-4 mr-1" />
               Éditer
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDelete}
-              className="bg-white/80 hover:bg-red-50 border-red-300 text-red-600 hover:text-red-700 hover:border-red-400"
-            >
-              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>

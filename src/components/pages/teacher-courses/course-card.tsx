@@ -10,6 +10,7 @@ interface CourseCardProps {
   course: {
     id: number;
     titre: string;
+    type?: "manuel" | "genere";
     classe?: {
       id: number;
       nom: string;
@@ -56,7 +57,12 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: C
     if (onPreview) {
       onPreview(course.id);
     } else {
-      router.push(`/teacher/courses/${course.id}/preview`);
+      // Route to appropriate preview page based on course type
+      const previewPath =
+        course.type === "genere"
+          ? `/teacher/courses/${course.id}/preview-ia`
+          : `/teacher/courses/${course.id}/preview`;
+      router.push(previewPath);
     }
   };
 
@@ -85,6 +91,17 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview }: C
               >
                 {course.is_active ? "Publié" : "Brouillon"}
               </Badge>
+              {course.type && (
+                <Badge
+                  className={`text-xs font-medium ${
+                    course.type === "genere"
+                      ? "bg-[#D4EBE8] text-gray-700 hover:bg-[#C5DED9]"
+                      : "bg-[#FFE8D6] text-gray-700 hover:bg-[#FFD9C2]"
+                  }`}
+                >
+                  {course.type === "genere" ? "IA" : "Manuel"}
+                </Badge>
+              )}
             </div>
           </div>
           <div className="flex-shrink-0">

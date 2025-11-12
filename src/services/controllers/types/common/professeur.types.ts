@@ -17,7 +17,7 @@ export type MatiereEnseignee = {
 
 export type GetSubjectsResponse = {
   matieres: MatiereEnseignee[];
-  libelles?: number[]; // IDs des matières enseignées (nouveau format backend)
+  libelles?: string[]; // Noms des matières enseignées par le prof (ex: ["Mathematiques", "Physique-Chimie", "SVT"])
   count: number;
   max: number;
 };
@@ -370,7 +370,15 @@ export type GenerateCoursePayload = {
 
 export type GenerateCourseResponse = {
   message: string;
-  cours: Course & { classe_id: number };
+  cours: (Course & {
+    classe_id: number;
+    text?: string;
+    questions?: Array<{
+      question: string;
+      reponse: string;
+    }>;
+    course_data?: any; // Optionnel: nouveau format structuré des cours IA
+  });
 };
 
 /**

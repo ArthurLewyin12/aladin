@@ -1,122 +1,30 @@
 "use client";
 import { useMemo, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useCourse } from "@/services/hooks/cours/useCourses";
+import { useCourse } from "@/services/hooks/professeur/useCourse";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { ArrowLeft, BookOpen, MessageCircleQuestion } from "lucide-react";
-import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
+import { ArrowLeft, Edit, MessageCircleQuestion } from "lucide-react";
 import { MathText } from "@/components/ui/MathText";
-import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
-import { useTimeTracking } from "@/stores/useTimeTracking";
-import { useDocumentUpload } from "@/stores/useDocumentUpload";
-import { DeepeeningQuestions } from "@/components/pages/cours/deepening-questions";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
 
-const courseLoadingMessages = [
-  "Génération de votre cours personnalisé...",
-  "Analyse des concepts clés du chapitre...",
-  "Synthèse des informations importantes...",
-  "Préparation des exemples et illustrations...",
-  "Finalisation du cours...",
-];
-
-export default function CoursePage() {
-  const router = useRouter();
+export default function CoursePreviewIAPage() {
   const params = useParams();
-  const chapterId = params.chapterId as string;
-  const [showCourseChoiceModal, setShowCourseChoiceModal] = useState(false);
-  const [courseIsExisting, setCourseIsExisting] = useState(false);
-  const [showDeepeeningQuestions, setShowDeepeeningQuestions] = useState(false);
+  const router = useRouter();
+  const courseId = parseInt(params.courseId as string);
 
-  // Récupérer le document depuis le store Zustand
-  const { pendingDocument, clearPendingDocument } = useDocumentUpload();
-
-  const { data, isLoading, isError, error } = useCourse(
-    chapterId,
-    pendingDocument || undefined,
-  );
-  const { startTracking, stopTracking } = useTimeTracking();
-
-  // Nettoyer le document après avoir chargé le cours
-  useEffect(() => {
-    if (!isLoading && data) {
-      clearPendingDocument();
-    }
-  }, [isLoading, data, clearPendingDocument]);
-
-  // Détecter si le cours est déjà généré et afficher la modal
-  useEffect(() => {
-    if (!isLoading && data && "served" in data) {
-      const courseData = data as GenerateCoursSuccessResponse;
-      if (courseData.served === "existing") {
-        setCourseIsExisting(true);
-        setShowCourseChoiceModal(true);
-      }
-    }
-  }, [isLoading, data]);
-
-  // Démarrer le tracking quand le cours est chargé
-  useEffect(() => {
-    if (!isLoading && data && "cours_id" in data && !showCourseChoiceModal) {
-      const courseData = data as GenerateCoursSuccessResponse;
-      startTracking("revision", courseData.cours_id, Number(chapterId));
-    }
-
-    // Arrêter le tracking au démontage
-    return () => {
-      stopTracking();
-    };
-  }, [isLoading, data, chapterId, showCourseChoiceModal]);
-
-  const parsedContent = useMemo(() => {
-    if (!data || !("text" in data)) return [];
-
-    const courseData = data as GenerateCoursSuccessResponse;
-    const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
-
-    return courseData.text.split("\n").map((line, index) => {
-      const isTitle =
-        romanNumeralRegex.test(line) ||
-        (line.toUpperCase() === line && line.length > 0 && line.length < 100);
-      return {
-        id: index,
-        type: isTitle && line.length < 100 ? "title" : "paragraph",
-        content: line,
-      };
-    });
-  }, [data]);
-
-  // Memoized summary generation
-  const summary = useMemo(() => {
-    if (!data || !("text" in data)) return "";
-    const courseData = data as GenerateCoursSuccessResponse;
-    const conclusionIndex = courseData.text.indexOf("CONCLUSION");
-    if (conclusionIndex !== -1) {
-      return courseData.text
-        .substring(conclusionIndex + "CONCLUSION".length)
-        .trim();
-    }
-    // Fallback: take first 3 non-title lines
-    return parsedContent
-      .filter((line) => line.type === "paragraph" && line.content.length > 20)
-      .slice(0, 3)
-      .map((line) => line.content)
-      .join(" ");
-  }, [data, parsedContent]);
+  const { data: course, isLoading, isError, error } = useCourse(courseId);
 
   const handleBack = () => router.back();
 
-  if (isError || (data && !("text" in data) && !("course_data" in data))) {
+  const handleEdit = () => {
+    router.push(`/teacher/courses/${courseId}/edit`);
+  };
+
+  // Déterminer si c'est le nouveau format structuré
+  const hasStructuredCourseData =
+    course && typeof course === "object" && "course_data" in course;
+
+  if (isError) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center">
@@ -136,7 +44,7 @@ export default function CoursePage() {
   }
 
   // On ne peut pas afficher la page si les données ne sont pas prêtes (et pas en chargement)
-  if (!isLoading && !data) {
+  if (!isLoading && !course) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-gray-50 border-2 border-gray-200 rounded-3xl p-8 text-center">
@@ -145,7 +53,7 @@ export default function CoursePage() {
           </p>
           <Button
             onClick={handleBack}
-            className="bg-gray-600 hover:bg-gray-700 text-white rounded-xl w-12 h-12 p-0 flex items-center justify-center"
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl w-12 h-12 p-0 justify-center transition-all"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
@@ -154,19 +62,27 @@ export default function CoursePage() {
     );
   }
 
-  const courseData = data as GenerateCoursSuccessResponse;
-  const hasStructuredCourseData =
-    data && typeof data === "object" && "course_data" in data;
+  // Loader simple pour récupération depuis BD
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center px-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+        <div className="text-center space-y-4">
+          <Spinner size="lg" />
+          <p className="text-lg font-medium text-gray-700">
+            Chargement de votre cours...
+          </p>
+          <p className="text-sm text-gray-500">
+            Récupération du contenu généré
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <GenerationLoadingOverlay
-        isLoading={isLoading}
-        messages={courseLoadingMessages}
-      />
-
+    <div className="min-h-screen w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header avec bouton retour et titre */}
+        {/* Header */}
         <div
           className="mt-2 sm:mt-4 w-full flex items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
           style={{
@@ -191,22 +107,16 @@ export default function CoursePage() {
         </div>
 
         {/* Main Content */}
-        {data && (
-          <main className="w-full max-w-4xl mx-auto py-8 sm:py-12">
-            {showDeepeeningQuestions ? (
-              <DeepeeningQuestions
-                questions={courseData.questions || []}
-                onBack={() => setShowDeepeeningQuestions(false)}
-              />
-            ) : hasStructuredCourseData ? (
+        {course && (
+          <main className="w-full max-w-4xl mx-auto py-8 sm:py-12 space-y-6">
+            {/* NOUVEAU FORMAT STRUCTURÉ */}
+            {hasStructuredCourseData ? (
               <>
-                {/* NOUVEAU FORMAT STRUCTURÉ - Complet avec tous les champs */}
-
                 {/* Titre Principal avec underline */}
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-orange-500 w-fit mx-auto">
-                  {(courseData as any)?.course_data?.["TITRE_DE_LA_LECON"] ||
-                    (courseData as any)?.course_data?.["Titre de la leçon"] ||
-                    (courseData as any)?.course_data?.["Titre de la lecon"]}
+                  {course.course_data?.["TITRE_DE_LA_LECON"] ||
+                    course.course_data?.["Titre de la leçon"] ||
+                    course.course_data?.["Titre de la lecon"]}
                 </h1>
 
                 {/* Introduction */}
@@ -215,21 +125,15 @@ export default function CoursePage() {
                     Introduction
                   </h2>
                   <div className="text-gray-700 leading-relaxed">
-                    <MathText
-                      text={
-                        (courseData as any)?.course_data?.Introduction || ""
-                      }
-                    />
+                    <MathText text={course.course_data?.Introduction || ""} />
                   </div>
                 </div>
 
                 {/* Développement du cours */}
-                {(courseData as any)?.course_data &&
+                {course.course_data &&
                   Object.keys(
-                    (courseData as any).course_data["DEVELOPPEMENT_DU_COURS"] ||
-                      (courseData as any).course_data[
-                        "developpement du cours"
-                      ] ||
+                    course.course_data["DEVELOPPEMENT_DU_COURS"] ||
+                      course.course_data["developpement du cours"] ||
                       {},
                   ).length > 0 && (
                     <div className="mb-8">
@@ -238,12 +142,10 @@ export default function CoursePage() {
                       </h2>
                       <div className="space-y-8">
                         {Object.entries(
-                          (courseData as any).course_data[
-                            "DEVELOPPEMENT_DU_COURS"
-                          ] ||
-                            (courseData as any).course_data[
+                          (course.course_data["DEVELOPPEMENT_DU_COURS"] ||
+                            course.course_data[
                               "developpement du cours"
-                            ],
+                            ]) as Record<string, any>,
                         ).map(([key, notion]: [string, any], index: number) => (
                           <div
                             key={key}
@@ -441,21 +343,17 @@ export default function CoursePage() {
                   )}
 
                 {/* Synthèse */}
-                {((courseData as any)?.course_data?.["SYNTHESE_DU_COURS"] ||
-                  (courseData as any)?.course_data?.[
-                    "Synthese ce qu'il faut retenir"
-                  ]) && (
+                {(course.course_data?.["SYNTHESE_DU_COURS"] ||
+                  course.course_data?.["Synthese ce qu'il faut retenir"]) && (
                   <div className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
                     <h2 className="text-xl font-bold text-amber-900 mb-4">
                       Synthèse du cours
                     </h2>
 
                     {/* Synthèse structurée */}
-                    {(courseData as any)?.course_data?.[
-                      "SYNTHESE_DU_COURS"
-                    ] && (
+                    {course.course_data?.["SYNTHESE_DU_COURS"] && (
                       <div className="space-y-4">
-                        {(courseData as any).course_data["SYNTHESE_DU_COURS"]
+                        {course.course_data["SYNTHESE_DU_COURS"]
                           .recapitulatif && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -464,16 +362,15 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  (courseData as any).course_data[
-                                    "SYNTHESE_DU_COURS"
-                                  ].recapitulatif
+                                  course.course_data["SYNTHESE_DU_COURS"]
+                                    .recapitulatif
                                 }
                               />
                             </div>
                           </div>
                         )}
 
-                        {(courseData as any).course_data["SYNTHESE_DU_COURS"]
+                        {course.course_data["SYNTHESE_DU_COURS"]
                           .competences_acquises && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -482,16 +379,15 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  (courseData as any).course_data[
-                                    "SYNTHESE_DU_COURS"
-                                  ].competences_acquises
+                                  course.course_data["SYNTHESE_DU_COURS"]
+                                    .competences_acquises
                                 }
                               />
                             </div>
                           </div>
                         )}
 
-                        {(courseData as any).course_data["SYNTHESE_DU_COURS"]
+                        {course.course_data["SYNTHESE_DU_COURS"]
                           .points_de_vigilance && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -500,17 +396,15 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  (courseData as any).course_data[
-                                    "SYNTHESE_DU_COURS"
-                                  ].points_de_vigilance
+                                  course.course_data["SYNTHESE_DU_COURS"]
+                                    .points_de_vigilance
                                 }
                               />
                             </div>
                           </div>
                         )}
 
-                        {(courseData as any).course_data["SYNTHESE_DU_COURS"]
-                          .ouverture && (
+                        {course.course_data["SYNTHESE_DU_COURS"].ouverture && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
                               Ouverture
@@ -518,9 +412,8 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  (courseData as any).course_data[
-                                    "SYNTHESE_DU_COURS"
-                                  ].ouverture
+                                  course.course_data["SYNTHESE_DU_COURS"]
+                                    .ouverture
                                 }
                               />
                             </div>
@@ -530,14 +423,14 @@ export default function CoursePage() {
                     )}
 
                     {/* Synthèse simple (fallback) */}
-                    {!(courseData as any)?.course_data?.["SYNTHESE_DU_COURS"] &&
-                      (courseData as any)?.course_data?.[
+                    {!course.course_data?.["SYNTHESE_DU_COURS"] &&
+                      course.course_data?.[
                         "Synthese ce qu'il faut retenir"
                       ] && (
                         <div className="text-amber-950 leading-relaxed">
                           <MathText
                             text={
-                              (courseData as any).course_data[
+                              course.course_data[
                                 "Synthese ce qu'il faut retenir"
                               ]
                             }
@@ -546,67 +439,40 @@ export default function CoursePage() {
                       )}
                   </div>
                 )}
-              </>
-            ) : (
-              <>
-                {/* ANCIEN FORMAT */}
-                <article className="prose prose-base sm:prose-base max-w-none text-gray-800">
-                  {parsedContent.map((line) => (
-                    <div key={line.id}>
-                      {line.type === "title" ? (
-                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-8 first:mt-0 mb-4">
-                          {line.content}
-                        </h2>
-                      ) : line.content.trim() ? (
-                        <MathText
-                          text={line.content}
-                          className="block my-3 leading-7"
-                        />
-                      ) : (
-                        <div className="h-3" />
-                      )}
+
+                {/* Questions d'approfondissement */}
+                {course && course.questions && course.questions.length > 0 && (
+                  <section className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-orange-500 rounded-xl">
+                        <MessageCircleQuestion className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                        Questions d'approfondissements
+                      </h2>
                     </div>
-                  ))}
-                </article>
-
-                {/* Key Takeaways Section */}
-                <section className="mt-8 pt-6 border-t border-gray-300">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                    Points clés à retenir
-                  </h2>
-                  <div className="text-gray-700 leading-relaxed">
-                    <MathText text={summary} />
-                  </div>
-                </section>
-
-                {/* FAQ Section */}
-                {courseData.questions && courseData.questions.length > 0 && (
-                  <section className="mt-8 pt-6 border-t border-gray-300">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                      Questions fréquentes
-                    </h2>
-                    <div className="space-y-3">
-                      {courseData.questions.map((qa, index) => (
+                    <div className="space-y-4">
+                      {course.questions.map((qa: any, index: number) => (
                         <details
                           key={index}
-                          className="group border border-gray-300 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
                         >
-                          <summary className="font-medium text-gray-900 flex items-start gap-3 list-none select-none">
-                            <span className="flex-shrink-0 mt-0.5 text-gray-400 group-open:hidden">
+                          <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                            <span className="flex-shrink-0 mt-0.5 text-orange-500 group-open:hidden">
                               ▶
                             </span>
-                            <span className="flex-shrink-0 mt-0.5 text-gray-400 hidden group-open:block">
+                            <span className="flex-shrink-0 mt-0.5 text-orange-500 hidden group-open:block">
                               ▼
                             </span>
-                            <MathText
-                              text={qa.question}
-                              className="flex-1 text-gray-900"
-                            />
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                              {index + 1}
+                            </span>
+                            <MathText text={qa.question} className="flex-1" />
                           </summary>
-                          <div className="mt-3 ml-6 pl-3 border-l-2 border-gray-300">
+                          <div className="mt-4 pl-9">
                             <MathText
                               text={qa.reponse}
-                              className="text-gray-700 leading-relaxed"
+                              className="text-sm sm:text-base text-gray-700 leading-relaxed"
                             />
                           </div>
                         </details>
@@ -614,67 +480,36 @@ export default function CoursePage() {
                     </div>
                   </section>
                 )}
+
+                {/* Edit Button */}
+                <div className="flex justify-center pt-4">
+                  <Button
+                    onClick={handleEdit}
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-3xl"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Éditer ce cours
+                  </Button>
+                </div>
               </>
+            ) : (
+              // Fallback pour ancien format
+              <div className="flex flex-col items-center justify-center py-12">
+                <p className="text-gray-600 mb-4">
+                  Format de cours non reconnu ou cours non généré par IA
+                </p>
+                <Button
+                  onClick={handleEdit}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Éditer ce cours
+                </Button>
+              </div>
             )}
           </main>
         )}
       </div>
-
-      {/* Modal pour choix du cours */}
-      {courseIsExisting && data && "cours_id" in data && (
-        <AlertDialog
-          open={showCourseChoiceModal}
-          onOpenChange={setShowCourseChoiceModal}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Cours déjà généré</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tu as déjà généré ce cours, Que souhaite-tu faire ?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            {/*<div className="space-y-3">
-              <p className="text-sm text-gray-600">
-                <strong>Approfondir :</strong> Voir les 5 questions
-                d'approfondissement pour mieux comprendre le sujet.
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Voir :</strong> Accédez au cours complet précédemment
-                généré.
-              </p>
-            </div>*/}
-            <div className="flex items-center justify-between gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleBack}
-                className="rounded-full bg-white hover:bg-gray-50 w-9 h-9 sm:w-10 sm:h-10 shadow-sm flex-shrink-0"
-              >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
-              <AlertDialogFooter>
-                <AlertDialogAction
-                  onClick={() => {
-                    router.push(
-                      `/student/cours/saved/${(data as GenerateCoursSuccessResponse).cours_id}`,
-                    );
-                  }}
-                >
-                  Voir le cours
-                </AlertDialogAction>
-                <AlertDialogCancel
-                  onClick={() => {
-                    setShowCourseChoiceModal(false);
-                    setShowDeepeeningQuestions(true);
-                  }}
-                >
-                  Approfondir
-                </AlertDialogCancel>
-              </AlertDialogFooter>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
     </div>
   );
 }

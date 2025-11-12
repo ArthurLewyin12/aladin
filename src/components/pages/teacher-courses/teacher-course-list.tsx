@@ -1,16 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useCourses, Course } from "@/services/hooks/professeur/useCourses";
 import { EmptyState } from "@/components/ui/empty-state";
-import { BookOpen, FileText, Plus, AlertCircle } from "lucide-react";
+import { BookOpen, FileText, Plus, AlertCircle, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { CourseCard } from "./course-card";
 import Image from "next/image";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { parseAsInteger, useQueryState } from "nuqs";
 
 const CARD_COLORS = [
   "bg-[#F5E6D3]", // Beige/Pêche
@@ -21,14 +28,24 @@ const CARD_COLORS = [
   "bg-[#FEF3C7]", // Jaune clair
 ];
 
+const ITEMS_PER_PAGE = 6;
+
 export function TeacherCourseList() {
   const router = useRouter();
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   // Récupérer les matières enseignées du prof
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
-  const subjectsResponse = subjectsData || { matieres: [], libelles: [], count: 0, max: 3 };
+  const subjectsResponse = subjectsData || {
+    matieres: [],
+    libelles: [],
+    count: 0,
+    max: 3,
+  };
   // Vérifier si le prof a défini des matières (nouveau format: libelles contient les IDs)
-  const hasDefinedSubjects = (subjectsResponse.libelles && subjectsResponse.libelles.length > 0) || subjectsResponse.matieres.length > 0;
+  const hasDefinedSubjects =
+    (subjectsResponse.libelles && subjectsResponse.libelles.length > 0) ||
+    subjectsResponse.matieres.length > 0;
 
   // Récupérer les classes du prof
   const { data: classes, isLoading: isLoadingClasses } = useClasses();
@@ -38,13 +55,27 @@ export function TeacherCourseList() {
   const { data: coursesData, isLoading: isLoadingCourses } = useCourses();
   const courses = coursesData?.courses || [];
 
-  // Enrichir les cours avec les couleurs
-  const enrichedCourses = useMemo(() => {
-    return courses.map((course: Course, index: number) => ({
+  // Compter les cours générés et manuels
+  const { countGenere, countManuel } = useMemo(() => {
+    const genere = courses.filter((c: any) => c.type === "genere").length;
+    const manuel = courses.filter((c: any) => c.type === "manuel").length;
+    return { countGenere: genere, countManuel: manuel };
+  }, [courses]);
+
+  // Enrichir les cours avec les couleurs et paginer
+  const { paginatedCourses, totalPages } = useMemo(() => {
+    const enriched = courses.map((course: Course, index: number) => ({
       ...course,
       cardColor: CARD_COLORS[index % CARD_COLORS.length],
     }));
-  }, [courses]);
+
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return {
+      paginatedCourses: enriched.slice(startIndex, endIndex),
+      totalPages: Math.ceil(enriched.length / ITEMS_PER_PAGE),
+    };
+  }, [courses, page]);
 
   if (isLoadingSubjects || isLoadingClasses || isLoadingCourses) {
     return (
@@ -65,7 +96,9 @@ export function TeacherCourseList() {
               Définissez vos matières d'abord
             </h3>
             <p className="text-sm text-amber-800 mb-3">
-              Vous devez définir les matières que vous enseignez avant de créer des cours. Cela garantira que les cours correspondent à vos domaines d'enseignement.
+              Vous devez définir les matières que vous enseignez avant de créer
+              des cours. Cela garantira que les cours correspondent à vos
+              domaines d'enseignement.
             </p>
             <Button
               onClick={() => router.push("/teacher/settings")}
@@ -90,7 +123,8 @@ export function TeacherCourseList() {
               Créez une classe d'abord
             </h3>
             <p className="text-sm text-blue-800 mb-3">
-              Les cours doivent être associés à une classe. Créez au moins une classe avant de créer des cours.
+              Les cours doivent être associés à une classe. Créez au moins une
+              classe avant de créer des cours.
             </p>
             <Button
               onClick={() => router.push("/teacher/classes")}
@@ -125,18 +159,50 @@ export function TeacherCourseList() {
           {/* Texte et bouton CTA */}
           <div className="text-center px-4">
             <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
-              Créez vos premiers cours pour vos classes et partagez vos connaissances
-              avec vos élèves !
+              Créez vos premiers cours pour vos classes et partagez vos
+              connaissances avec vos élèves !
             </p>
 
-              <Button
-                size="lg"
-                onClick={() => router.push("/teacher/courses/create")}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-3xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+                >
+                  <Plus className="w-4 sm:w-5 h-5 mr-2" />
+                  Créer un cours
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="rounded-3xl border-0 shadow-xl w-64 p-2 bg-white"
               >
-                <Plus className="w-4 sm:w-5 h-5 mr-2" />
-                Créer un cours
-              </Button>
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push("/teacher/courses/create?type=manual")
+                  }
+                  className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors mb-2"
+                >
+                  <BookOpen className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900">Cours Manuel</p>
+                    <p className="text-xs text-gray-600">
+                      Créez votre cours manuellement
+                    </p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push("/teacher/courses/generate")}
+                  className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors"
+                >
+                  <Sparkles className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900">Cours par IA</p>
+                    <p className="text-xs text-gray-600">Générez avec Aladin</p>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -152,29 +218,70 @@ export function TeacherCourseList() {
             Mes Cours
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {courses.length} cours {courses.length > 1 ? "disponibles" : "disponible"}
+            {countGenere} généré{countGenere > 1 ? "s" : ""} • {countManuel} manuel{countManuel > 1 ? "s" : ""}
+            {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
           </p>
         </div>
-        <Button
-          size="lg"
-          onClick={() => router.push("/teacher/courses/create")}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
-        >
-          <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Nouveau cours</span>
-          <span className="sm:hidden">Créer</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="lg"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-sm sm:text-base md:text-lg rounded-3xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap"
+            >
+              <Plus className="w-4 sm:w-5 h-5 mr-2 flex-shrink-0" />
+              <span className="hidden sm:inline">Nouveau cours</span>
+              <span className="sm:hidden">Créer</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="rounded-3xl border-0 shadow-xl w-64 p-2 bg-white"
+          >
+            <DropdownMenuItem
+              onClick={() => router.push("/teacher/courses/create?type=manual")}
+              className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors mb-2"
+            >
+              <BookOpen className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900">Cours Manuel</p>
+                <p className="text-xs text-gray-600">
+                  Créez votre cours manuellement
+                </p>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => router.push("/teacher/courses/generate")}
+              className="rounded-2xl cursor-pointer p-4 hover:bg-green-50 focus:bg-green-50 transition-colors"
+            >
+              <Sparkles className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900">Cours par IA</p>
+                <p className="text-xs text-gray-600">Générez avec Aladin</p>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {/* Grille des cours */}
+      {/* Grille des cours paginés */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {enrichedCourses.map((course) => (
+        {paginatedCourses.map((course) => (
           <CourseCard
             key={`course-${course.id}`}
             course={course}
             cardColor={course.cardColor}
-            onEdit={(courseId) => router.push(`/teacher/courses/${courseId}/edit`)}
-            onPreview={(courseId) => router.push(`/teacher/courses/${courseId}/preview`)}
+            onEdit={(courseId) =>
+              router.push(`/teacher/courses/${courseId}/edit`)
+            }
+            onPreview={(courseId) => {
+              // Find the course to check its type
+              const courseData = paginatedCourses.find(c => c.id === courseId);
+              const previewPath =
+                courseData?.type === "genere"
+                  ? `/teacher/courses/${courseId}/preview-ia`
+                  : `/teacher/courses/${courseId}/preview`;
+              router.push(previewPath);
+            }}
             onDelete={(courseId) => {
               // TODO: Implémenter la suppression
               console.log("Supprimer cours", courseId);
@@ -182,6 +289,72 @@ export function TeacherCourseList() {
           />
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="rounded-full"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+              const showPage =
+                pageNum <= 2 ||
+                pageNum >= totalPages - 1 ||
+                (pageNum >= page - 1 && pageNum <= page + 1);
+
+              const showEllipsisBefore = pageNum === 3 && page > 4;
+              const showEllipsisAfter =
+                pageNum === totalPages - 2 && page < totalPages - 3;
+
+              if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                return null;
+              }
+
+              if (showEllipsisBefore || showEllipsisAfter) {
+                return (
+                  <span key={pageNum} className="px-2 text-gray-400">
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPage(pageNum)}
+                  className={`rounded-full min-w-[2.5rem] ${
+                    pageNum === page
+                      ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                      : ""
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            disabled={page === totalPages}
+            className="rounded-full"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -67,17 +67,19 @@ export default function CreateCoursePage() {
   const [editorState, setEditorState] =
     useState<SerializedEditorState>(initialValue);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [previewContent, setPreviewContent] = useState<CourseContent | null>(null);
+  const [previewContent, setPreviewContent] = useState<CourseContent | null>(
+    null,
+  );
   const editorRef = useRef<LexicalEditor | null>(null);
 
   // Hooks
   const { data: classes, isLoading: isLoadingClasses } = useClasses();
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
   const { data: classeDetails, isLoading: isLoadingClasseDetails } = useClasse(
-    selectedClass ? Number(selectedClass) : null
+    selectedClass ? Number(selectedClass) : null,
   );
   const { data: chapitres, isLoading: isLoadingChapitres } = useChapitres(
-    selectedMatiere ? Number(selectedMatiere) : null
+    selectedMatiere ? Number(selectedMatiere) : null,
   );
   const { mutate: createCourseMutation, isPending: isSaving } =
     useCreateManualCourse();
@@ -229,8 +231,8 @@ export default function CreateCoursePage() {
         {/* Course Form */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form Panel */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
+          <div className="lg:col-span-1 space-y-6 ">
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
@@ -245,7 +247,7 @@ export default function CreateCoursePage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Ex: Introduction aux dérivées"
-                    className="mt-1"
+                    className="mt-1 w-full rounded-3xl"
                   />
                 </div>
 
@@ -255,10 +257,10 @@ export default function CreateCoursePage() {
                     value={selectedClass}
                     onValueChange={setSelectedClass}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 rounded-3xl w-full">
                       <SelectValue placeholder="Sélectionner une classe" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-3xl">
                       {classes?.map((classe) => (
                         <SelectItem
                           key={classe.id}
@@ -278,15 +280,16 @@ export default function CreateCoursePage() {
                     onValueChange={setSelectedMatiere}
                     disabled={!selectedClass || isLoadingClasseDetails}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 rounded-3xl w-full">
                       <SelectValue placeholder="Sélectionner une matière" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-3xl">
                       {isLoadingClasseDetails ? (
                         <div className="flex items-center justify-center p-4">
                           <Spinner className="w-4 h-4" />
                         </div>
-                      ) : classeDetails?.matieres && classeDetails.matieres.length > 0 ? (
+                      ) : classeDetails?.matieres &&
+                        classeDetails.matieres.length > 0 ? (
                         classeDetails.matieres.map((matiere) => (
                           <SelectItem
                             key={matiere.id}
@@ -311,10 +314,10 @@ export default function CreateCoursePage() {
                     onValueChange={setSelectedChapter}
                     disabled={!selectedMatiere || isLoadingChapitres}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 w-full rounded-3xl">
                       <SelectValue placeholder="Sélectionner un chapitre" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-3xl">
                       {isLoadingChapitres ? (
                         <div className="flex items-center justify-center p-4">
                           <Spinner className="w-4 h-4" />
@@ -340,13 +343,13 @@ export default function CreateCoursePage() {
             </Card>
 
             {/* Action Buttons */}
-            <Card>
+            <Card className="rounded-3xl">
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-3">
                   <Button
                     onClick={handlePreview}
                     variant="outline"
-                    className="w-full"
+                    className="w-full rounded-3xl"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     Aperçu
@@ -354,7 +357,7 @@ export default function CreateCoursePage() {
                   <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="w-full bg-green-600 hover:bg-green-700"
+                    className="w-full bg-green-600 hover:bg-green-700 rounded-3xl"
                   >
                     {isSaving ? (
                       <Spinner className="w-4 h-4 mr-2" />
@@ -370,7 +373,7 @@ export default function CreateCoursePage() {
 
           {/* Editor Panel */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle>Contenu du cours</CardTitle>
               </CardHeader>

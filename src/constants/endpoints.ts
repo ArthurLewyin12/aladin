@@ -285,4 +285,18 @@ export enum ProfesseurEndpoints {
   // Notes et évaluations
   SAVE_GRADES = "/api/prof/classes/{classe_id}/grades",
   CREATE_CLASS_EVALUATION = "/api/prof/classes/{classe_id}/class-evaluation",
+
+  // Évaluations - CRUD
+  CREATE_EVALUATION = "/api/prof/classes/{classe_id}/evaluations",
+  GET_EVALUATIONS = "/api/prof/classes/{classe_id}/evaluations",
+  GET_EVALUATION_NOTES = "/api/prof/classes/{classe_id}/evaluations/{evaluation_id}/notes",
+  UPDATE_EVALUATION = "/api/prof/classes/{classe_id}/evaluations/{evaluation_id}",
+  ADD_GRADES_TO_EVALUATION = "/api/prof/classes/{classe_id}/evaluations/{evaluation_id}/grades",
+
+  // Grades - Modification
+  UPDATE_GRADE = "/api/prof/classes/{classe_id}/grades/{note_id}",
+  UPDATE_ALL_GRADES = "/api/prof/classes/{classe_id}/evaluations/{evaluation_id}/grades",
+
+  // Membres de classe
+  GET_CLASS_MEMBERS = "/api/prof/classes/{classe_id}/members",
 }

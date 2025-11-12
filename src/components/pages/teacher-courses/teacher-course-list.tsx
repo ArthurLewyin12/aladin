@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useCourses, Course } from "@/services/hooks/professeur/useCourses";
+import { useActivateCourse } from "@/services/hooks/professeur/useActivateCourse";
+import { useDeactivateCourse } from "@/services/hooks/professeur/useDeactivateCourse";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BookOpen, FileText, Plus, AlertCircle, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,10 @@ export function TeacherCourseList() {
   // Récupérer les cours du professeur
   const { data: coursesData, isLoading: isLoadingCourses } = useCourses();
   const courses = coursesData?.courses || [];
+
+  // Hooks pour activer/désactiver les cours
+  const { mutate: activateCourseMutation } = useActivateCourse();
+  const { mutate: deactivateCourseMutation } = useDeactivateCourse();
 
   // Compter les cours générés et manuels
   const { countGenere, countManuel } = useMemo(() => {
@@ -285,6 +291,30 @@ export function TeacherCourseList() {
             onDelete={(courseId) => {
               // TODO: Implémenter la suppression
               console.log("Supprimer cours", courseId);
+            }}
+            onActivate={() => {
+              // Trouver la classe associée au cours
+              const courseClasse = classes?.find(c =>
+                coursesData?.courses.find(cr => cr.id === course.id)?.classe?.id === c.id
+              );
+              if (courseClasse) {
+                activateCourseMutation({
+                  classeId: courseClasse.id,
+                  coursId: course.id,
+                });
+              }
+            }}
+            onDeactivate={() => {
+              // Trouver la classe associée au cours
+              const courseClasse = classes?.find(c =>
+                coursesData?.courses.find(cr => cr.id === course.id)?.classe?.id === c.id
+              );
+              if (courseClasse) {
+                deactivateCourseMutation({
+                  classeId: courseClasse.id,
+                  coursId: course.id,
+                });
+              }
             }}
           />
         ))}

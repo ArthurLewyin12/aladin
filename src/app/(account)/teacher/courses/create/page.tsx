@@ -19,6 +19,7 @@ import { SerializedEditorState, LexicalEditor } from "lexical";
 import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { useCreateManualCourse } from "@/services/hooks/professeur/useCreateManualCourse";
+import { useActivateCourse } from "@/services/hooks/professeur/useActivateCourse";
 import { useCourseEditor } from "@/stores/useCourseEditor";
 import { extractCourseContent } from "@/lib/lexical-utils";
 import { Spinner } from "@/components/ui/spinner";
@@ -84,6 +85,8 @@ export default function CreateCoursePage() {
   );
   const { mutate: createCourseMutation, isPending: isSaving } =
     useCreateManualCourse();
+  const { mutate: activateCourseMutation, isPending: isActivatingCourse } =
+    useActivateCourse();
   const { updateDraft, clearDraft, hasUnsavedChanges } = useCourseEditor();
 
   // Reset matiere and chapter when class changes
@@ -192,6 +195,78 @@ export default function CreateCoursePage() {
     const content = extractCourseContent(editorRef.current);
     setPreviewContent(content);
     setPreviewModalOpen(true);
+  };
+
+  const handleShareCourse = async () => {
+    // Même validation que handleSave
+    if (!title.trim()) {
+      toast({ message: "Le titre du cours est requis", variant: "warning" });
+      return;
+    }
+    if (!selectedClass) {
+      toast({
+        message: "Veuillez sélectionner une classe",
+        variant: "warning",
+      });
+      return;
+    }
+    if (!selectedMatiere) {
+      toast({
+        message: "Veuillez sélectionner une matière",
+        variant: "warning",
+      });
+      return;
+    }
+    if (!selectedChapter) {
+      toast({
+        message: "Veuillez sélectionner un chapitre",
+        variant: "warning",
+      });
+      return;
+    }
+
+    if (!editorRef.current) {
+      toast({ message: "L'éditeur n'est pas encore prêt", variant: "error" });
+      return;
+    }
+
+    try {
+      // Extract complete content from Lexical editor
+      const content = extractCourseContent(editorRef.current);
+
+      // Create course and activate it immediately
+      createCourseMutation(
+        {
+          classeId: Number(selectedClass),
+          payload: {
+            titre: title,
+            chapitre_id: Number(selectedChapter),
+            content,
+          },
+        },
+        {
+          onSuccess: (data) => {
+            // Une fois le cours créé, l'activer immédiatement
+            if (data?.cours?.id) {
+              activateCourseMutation({
+                classeId: Number(selectedClass),
+                coursId: data.cours.id,
+              }, {
+                onSuccess: () => {
+                  clearDraft();
+                  router.push("/teacher/courses");
+                }
+              });
+            } else {
+              clearDraft();
+              router.push("/teacher/courses");
+            }
+          },
+        },
+      );
+    } catch (error) {
+      console.error("Course creation error:", error);
+    }
   };
 
   if (isLoadingClasses || isLoadingSubjects) {
@@ -367,9 +442,22 @@ export default function CreateCoursePage() {
                     )}
                     {isSaving ? "Enregistrement..." : "Enregistrer le cours"}
                   </Button>
-                  <Button className="w-full  rounded-3xl bg-green-800">
-                    <Share />
-                    <p>Partager</p>
+                  <Button
+                    onClick={handleShareCourse}
+                    disabled={isSaving || isActivatingCourse}
+                    className="w-full rounded-3xl bg-green-800 hover:bg-green-900"
+                  >
+                    {isSaving || isActivatingCourse ? (
+                      <>
+                        <Spinner className="w-4 h-4 mr-2" />
+                        {isSaving ? "Création..." : "Activation..."}
+                      </>
+                    ) : (
+                      <>
+                        <Share className="w-4 h-4 mr-2" />
+                        Partager
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>

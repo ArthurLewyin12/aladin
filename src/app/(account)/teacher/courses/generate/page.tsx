@@ -18,6 +18,7 @@ import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useClasse } from "@/services/hooks/professeur/useClasse";
 import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
 import { useGenerateCourse } from "@/services/hooks/professeur/useGenerateCourse";
+import { useActivateCourse } from "@/services/hooks/professeur/useActivateCourse";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
 import { MathText } from "@/components/ui/MathText";
 import { toast } from "@/lib/toast";
@@ -44,6 +45,13 @@ export default function GenerateCoursePage() {
   // State de cours généré
   const [generatedCourse, setGeneratedCourse] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // State pour l'édition
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedIntro, setEditedIntro] = useState("");
+  const [editedDevelopment, setEditedDevelopment] = useState<any>({});
+  const [editedSynthesis, setEditedSynthesis] = useState<any>({});
 
   // Store Zustand pour persister les données
   const {
@@ -87,6 +95,8 @@ export default function GenerateCoursePage() {
   );
   const { mutate: generateCourseMutation, isPending: isGeneratingCourse } =
     useGenerateCourse();
+  const { mutate: activateCourseMutation, isPending: isActivatingCourse } =
+    useActivateCourse();
 
   // Reset matiere et chapter quand classe change
   useEffect(() => {
@@ -211,6 +221,96 @@ export default function GenerateCoursePage() {
     router.push("/teacher/courses");
   };
 
+  const handleShareCourse = () => {
+    if (!generatedCourse || !selectedClass) {
+      toast({
+        message: "Aucun cours à partager",
+        variant: "warning",
+      });
+      return;
+    }
+
+    // Activer le cours pour le rendre visible aux élèves
+    activateCourseMutation({
+      classeId: Number(selectedClass),
+      coursId: generatedCourse.id,
+    }, {
+      onSuccess: () => {
+        // Rediriger vers la liste des cours après activation
+        router.push("/teacher/courses");
+      }
+    });
+  };
+
+  // Fonctions utilitaires pour récupérer les noms
+  const getClasseName = (classId: string) => {
+    return classes?.find(c => c.id.toString() === classId)?.nom || "";
+  };
+
+  const getMatiereName = (matiereId: string) => {
+    return classeDetails?.matieres?.find(m => m.id.toString() === matiereId)?.libelle || "";
+  };
+
+  // Titre dynamique selon l'état
+  const getPageTitle = () => {
+    if (generatedCourse && selectedClass && selectedMatiere) {
+      const classeName = getClasseName(selectedClass);
+      const matiereName = getMatiereName(selectedMatiere);
+      return `Cours IA - ${classeName} - ${matiereName}`;
+    }
+    return "Générer un cours avec IA";
+  };
+
+  // Gestion de l'édition
+  const handleEditSection = (section: string) => {
+    setEditingSection(section);
+    if (generatedCourse?.course_data) {
+      setEditedTitle(
+        generatedCourse.course_data["TITRE_DE_LA_LECON"] ||
+          generatedCourse.course_data["Titre de la leçon"] ||
+          generatedCourse.course_data["Titre de la lecon"] ||
+          "",
+      );
+      setEditedIntro(generatedCourse.course_data.Introduction || "");
+      setEditedDevelopment(
+        generatedCourse.course_data["DEVELOPPEMENT_DU_COURS"] ||
+          generatedCourse.course_data["developpement du cours"] ||
+          {},
+      );
+      setEditedSynthesis(
+        generatedCourse.course_data["SYNTHESE_DU_COURS"] ||
+          generatedCourse.course_data["Synthese ce qu'il faut retenir"] ||
+          {},
+      );
+    }
+  };
+
+  const handleSaveSection = () => {
+    if (generatedCourse?.course_data) {
+      const updatedCourseData = {
+        ...generatedCourse.course_data,
+        TITRE_DE_LA_LECON: editedTitle,
+        "Titre de la leçon": editedTitle,
+        "Titre de la lecon": editedTitle,
+        Introduction: editedIntro,
+        DEVELOPPEMENT_DU_COURS: editedDevelopment,
+        "developpement du cours": editedDevelopment,
+        SYNTHESE_DU_COURS: editedSynthesis,
+        "Synthese ce qu'il faut retenir": editedSynthesis,
+      };
+
+      setGeneratedCourse({
+        ...generatedCourse,
+        course_data: updatedCourseData,
+      });
+    }
+    setEditingSection(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSection(null);
+  };
+
   if (isLoadingClasses) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -247,7 +347,7 @@ export default function GenerateCoursePage() {
           <div className="flex items-center gap-2 sm:gap-3">
             <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 flex-shrink-0" />
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
-              Générer un cours avec IA
+              {getPageTitle()}
             </h1>
           </div>
         </div>
@@ -364,14 +464,24 @@ export default function GenerateCoursePage() {
                       isGeneratingCourse ||
                       !selectedClass ||
                       !selectedMatiere ||
-                      !selectedChapter
+                      !selectedChapter ||
+                      !!generatedCourse // Désactiver si un cours est déjà généré
                     }
-                    className="w-full bg-green-600 hover:bg-green-700 text-white rounded-3xl"
+                    className={`w-full text-white rounded-3xl ${
+                      generatedCourse
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
                   >
                     {isGeneratingCourse ? (
                       <>
                         <Spinner className="w-4 h-4 mr-2" />
                         Génération en cours...
+                      </>
+                    ) : generatedCourse ? (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Cours généré ✓
                       </>
                     ) : (
                       <>
@@ -391,9 +501,22 @@ export default function GenerateCoursePage() {
                         Editer ( facultatif)
                       </Button>
 
-                      <Button className="w-full  rounded-3xl bg-green-800">
-                        <Share />
-                        <p>Partager</p>
+                      <Button
+                        onClick={handleShareCourse}
+                        disabled={isActivatingCourse}
+                        className="w-full rounded-3xl bg-green-800 hover:bg-green-900"
+                      >
+                        {isActivatingCourse ? (
+                          <>
+                            <Spinner className="w-4 h-4 mr-2" />
+                            Activation...
+                          </>
+                        ) : (
+                          <>
+                            <Share className="w-4 h-4 mr-2" />
+                            Partager
+                          </>
+                        )}
                       </Button>
                     </div>
                   )}

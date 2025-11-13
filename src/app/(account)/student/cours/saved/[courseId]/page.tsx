@@ -238,7 +238,7 @@ export default function SavedCoursePage() {
                 {/* NOUVEAU FORMAT STRUCTURÉ - Simple et épuré */}
 
                 {/* Titre Principal avec underline */}
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-orange-500 w-fit mx-auto">
+                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
                   {data.course_data?.["TITRE_DE_LA_LECON"] ||
                     data.course_data?.["Titre de la leçon"] ||
                     data.course_data?.["Titre de la lecon"]}
@@ -272,10 +272,10 @@ export default function SavedCoursePage() {
                               "developpement du cours"
                             ]) as Record<string, any>,
                         ).map(([key, notion]: [string, any], index: number) => (
-                          <div
-                            key={key}
-                            className="border-l-4 border-orange-500 pl-6 py-4"
-                          >
+                           <div
+                             key={key}
+                             className="pl-6 py-4"
+                           >
                             {/* Numéro et titre de la notion */}
                             <div className="flex items-baseline gap-2 mb-4">
                               <span className="text-2xl font-bold text-orange-500">

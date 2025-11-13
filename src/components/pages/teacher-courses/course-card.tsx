@@ -126,7 +126,7 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
               htmlFor={`course-status-${course.id}`}
               className="text-sm font-medium whitespace-nowrap"
             >
-              {isActive ? "Actif" : "Inactif"}
+              {isActive ? "Publié" : "Partager"}
             </Label>
             <Switch
               id={`course-status-${course.id}`}

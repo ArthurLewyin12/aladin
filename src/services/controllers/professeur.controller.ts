@@ -216,16 +216,28 @@ export const getClasse = async (
     return rawResponse as unknown as GetClasseResponse;
   }
 
-  // Sinon, transformer la structure avec eleves en members
+  // Transformer la structure avec eleves en members
   const normalizedResponse: GetClasseResponse = {
     ...rawResponse.classe,
     members:
-      rawResponse.eleves?.map((eleve) => ({
-        id: eleve.id,
-        eleve_id: eleve.eleve_id,
-        classe_id: eleve.classe_id,
+      rawResponse.eleves?.map((eleve: any) => ({
+        id: eleve.id, // Utiliser l'id de l'élève comme id de membre temporairement
+        eleve_id: eleve.id,
+        classe_id: rawResponse.classe.id,
         is_active: eleve.is_active,
-        eleve: eleve.eleve,
+        eleve: {
+          id: eleve.id,
+          nom: eleve.nom,
+          prenom: eleve.prenom,
+          email: eleve.mail,
+          numero: eleve.numero,
+          parent_mail: eleve.parent_mail,
+          parent_numero: eleve.parent_numero,
+          niveau_id: eleve.niveau?.id,
+          type: "utilisateur" as const,
+          user_id: eleve.id,
+          is_active: eleve.is_active,
+        },
       })) || [],
     niveau: rawResponse.niveau
       ? {

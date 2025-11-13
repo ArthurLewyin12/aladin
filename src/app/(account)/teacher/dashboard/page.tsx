@@ -19,10 +19,11 @@ import {
   GraduationCap,
   ArrowLeft,
   TrendingUp,
-  Clock,
+  ChevronLeft,
+  ChevronRight,
   Award,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import {
   BarChart,
@@ -39,8 +40,27 @@ import {
   Line,
   Legend,
 } from "recharts";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  createColumnHelper,
+} from "@tanstack/react-table";
 
-// Données statiques pour le dashboard
+// Type pour les moyennes des élèves
+type StudentAverage = {
+  eleve: string;
+  classe: string;
+  moyenneGenerale: number;
+  mathematiques: number;
+  physique: number;
+  chimie: number;
+  quizRealises: number;
+};
+
+const columnHelper = createColumnHelper<StudentAverage>();
+
 const STATIC_DATA = {
   stats: {
     totalClasses: 8,
@@ -66,80 +86,96 @@ const STATIC_DATA = {
       "Terminale S1": 14.2,
       "Terminale S2": 13.5,
       "Première S": 15.0,
+      "Seconde A": 12.8,
+      "Seconde B": 11.9,
     },
     {
       jour: "Mar",
       "Terminale S1": 14.8,
       "Terminale S2": 13.1,
       "Première S": 15.3,
+      "Seconde A": 13.2,
+      "Seconde B": 12.1,
     },
     {
       jour: "Mer",
       "Terminale S1": 14.5,
       "Terminale S2": 13.8,
-      "Première S": 14.9,
+      "Première S": 15.9,
+      "Seconde A": 13.5,
+      "Seconde B": 12.4,
     },
     {
       jour: "Jeu",
       "Terminale S1": 15.1,
       "Terminale S2": 14.2,
       "Première S": 15.5,
+      "Seconde A": 13.8,
+      "Seconde B": 12.7,
     },
     {
       jour: "Ven",
       "Terminale S1": 14.9,
       "Terminale S2": 13.9,
       "Première S": 15.2,
+      "Seconde A": 13.3,
+      "Seconde B": 12.2,
     },
   ],
-  recentActivities: [
+  studentAverages: [
     {
       eleve: "Konan Yao",
       classe: "Terminale S1",
-      quiz: "Dérivées et primitives",
-      matiere: "Mathématiques",
-      note: 16.5,
-      date: "2024-01-15T10:30:00",
+      moyenneGenerale: 15.8,
+      mathematiques: 16.2,
+      physique: 15.5,
+      chimie: 15.9,
+      quizRealises: 12,
     },
     {
       eleve: "Aya Kouassi",
       classe: "Première S",
-      quiz: "Thermodynamique",
-      matiere: "Physique",
-      note: 18.0,
-      date: "2024-01-15T09:15:00",
+      moyenneGenerale: 17.2,
+      mathematiques: 17.8,
+      physique: 18.0,
+      chimie: 16.8,
+      quizRealises: 15,
     },
     {
       eleve: "Ibrahim Traoré",
       classe: "Terminale S2",
-      quiz: "Oxydoréduction",
-      matiere: "Chimie",
-      note: 14.5,
-      date: "2024-01-15T08:45:00",
+      moyenneGenerale: 14.1,
+      mathematiques: 13.5,
+      physique: 14.8,
+      chimie: 14.5,
+      quizRealises: 10,
     },
     {
       eleve: "Fatou Diallo",
       classe: "Seconde A",
-      quiz: "Révolution française",
-      matiere: "Histoire",
-      note: 15.5,
-      date: "2024-01-14T16:20:00",
+      moyenneGenerale: 13.9,
+      mathematiques: 14.2,
+      physique: 13.5,
+      chimie: 14.0,
+      quizRealises: 8,
     },
     {
       eleve: "Mamadou Coulibaly",
       classe: "Terminale S1",
-      quiz: "Probabilités",
-      matiere: "Mathématiques",
-      note: 13.0,
-      date: "2024-01-14T14:30:00",
+      moyenneGenerale: 12.8,
+      mathematiques: 13.0,
+      physique: 12.5,
+      chimie: 12.9,
+      quizRealises: 9,
     },
     {
       eleve: "Aminata Bamba",
       classe: "Première S",
-      quiz: "Mécanique",
-      matiere: "Physique",
-      note: 17.5,
-      date: "2024-01-14T11:00:00",
+      moyenneGenerale: 16.5,
+      mathematiques: 16.8,
+      physique: 17.5,
+      chimie: 15.2,
+      quizRealises: 14,
     },
   ],
   engagement: {
@@ -173,6 +209,83 @@ export default function TeacherDashboardPage() {
     if (note >= 10) return "bg-orange-500";
     return "bg-red-500";
   };
+
+  // Colonnes pour le tableau des moyennes
+  const studentAverageColumns = useMemo(
+    () => [
+      columnHelper.accessor("eleve", {
+        header: "Élève",
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("classe", {
+        header: "Classe",
+        cell: (info) => <Badge variant="outline">{info.getValue()}</Badge>,
+      }),
+      columnHelper.accessor("moyenneGenerale", {
+        header: "Moyenne Générale",
+        cell: (info) => {
+          const note = info.getValue();
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <div
+                className={`w-2 h-2 rounded-full ${getNoteBadgeColor(note)}`}
+              />
+              <span className="font-bold text-lg">
+                {note.toFixed(1)}
+                <span className="text-sm text-gray-500">/20</span>
+              </span>
+            </div>
+          );
+        },
+      }),
+      columnHelper.accessor("mathematiques", {
+        header: "Mathématiques",
+        cell: (info) => (
+          <span className="font-semibold text-center block">
+            {info.getValue().toFixed(1)}
+          </span>
+        ),
+      }),
+      columnHelper.accessor("physique", {
+        header: "Physique",
+        cell: (info) => (
+          <span className="font-semibold text-center block">
+            {info.getValue().toFixed(1)}
+          </span>
+        ),
+      }),
+      columnHelper.accessor("chimie", {
+        header: "Chimie",
+        cell: (info) => (
+          <span className="font-semibold text-center block">
+            {info.getValue().toFixed(1)}
+          </span>
+        ),
+      }),
+      columnHelper.accessor("quizRealises", {
+        header: "Quiz Réalisés",
+        cell: (info) => (
+          <span className="font-semibold text-blue-600 text-center block">
+            {info.getValue()}
+          </span>
+        ),
+      }),
+    ],
+    [],
+  );
+
+  // Table avec pagination
+  const studentAverageTable = useReactTable({
+    data: STATIC_DATA.studentAverages,
+    columns: studentAverageColumns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
+  });
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -329,7 +442,7 @@ export default function TeacherDashboardPage() {
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">
-              Évolution des performances (Top 3 classes)
+              Évolution des performances (Toutes les classes)
             </h2>
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -357,74 +470,112 @@ export default function TeacherDashboardPage() {
                 stroke="#8b5cf6"
                 strokeWidth={2}
               />
+              <Line
+                type="monotone"
+                dataKey="Seconde A"
+                stroke="#f59e0b"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="Seconde B"
+                stroke="#ef4444"
+                strokeWidth={2}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Dernières activités des élèves */}
+        {/* Moyennes des élèves */}
         <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-orange-100">
-              <Clock className="h-5 w-5 text-orange-600" />
+            <div className="p-2 rounded-lg bg-blue-100">
+              <Award className="h-5 w-5 text-blue-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">
-              Dernières activités des élèves
+              Performance des élèves
             </h2>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold">Élève</TableHead>
-                  <TableHead className="font-semibold">Classe</TableHead>
-                  <TableHead className="font-semibold">Quiz</TableHead>
-                  <TableHead className="font-semibold">Matière</TableHead>
-                  <TableHead className="font-semibold">Date</TableHead>
-                  <TableHead className="text-right font-semibold">
-                    Note
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {STATIC_DATA.recentActivities.map((activity, index) => (
-                  <TableRow
-                    key={index}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <TableCell className="font-medium">
-                      {activity.eleve}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{activity.classe}</Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {activity.quiz}
-                    </TableCell>
-                    <TableCell>{activity.matiere}</TableCell>
-                    <TableCell className="text-gray-600 text-sm">
-                      {new Date(activity.date).toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${getNoteBadgeColor(activity.note)}`}
-                        />
-                        <span className="font-bold text-lg">
-                          {activity.note.toFixed(1)}
-                          <span className="text-sm text-gray-500">/20</span>
-                        </span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  {studentAverageTable.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="bg-gray-50">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} className="font-semibold">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {studentAverageTable.getRowModel().rows?.length ? (
+                    studentAverageTable.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={studentAverageColumns.length}
+                        className="h-24 text-center"
+                      >
+                        Aucun élève trouvé.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Page {studentAverageTable.getState().pagination.pageIndex + 1}{" "}
+                sur {studentAverageTable.getPageCount()}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => studentAverageTable.previousPage()}
+                  disabled={!studentAverageTable.getCanPreviousPage()}
+                  className="rounded-full"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Précédent
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => studentAverageTable.nextPage()}
+                  disabled={!studentAverageTable.getCanNextPage()}
+                  className="rounded-full"
+                >
+                  Suivant
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

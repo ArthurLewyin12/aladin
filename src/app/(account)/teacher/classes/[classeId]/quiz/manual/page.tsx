@@ -2,7 +2,12 @@
 
 import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useForm, useFieldArray, Controller, type Control } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  type Control,
+} from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -44,9 +49,7 @@ import { useCreateManualQuiz } from "@/services/hooks/professeur/useCreateManual
 import { ArrowLeft, PlusIcon, Trash2 } from "lucide-react";
 
 const answerSchema = z.object({
-  texte: z
-    .string()
-    .min(1, "La réponse ne peut pas être vide."),
+  texte: z.string().min(1, "La réponse ne peut pas être vide."),
   correct: z.boolean(),
 });
 
@@ -89,12 +92,8 @@ const manualQuizSchema = z.object({
       message: "Indiquez un temps valide (en minutes).",
     }),
   matiere_id: z.string().min(1, "La matière est requise."),
-  chapitres_ids: z
-    .array(z.string())
-    .min(1, "Choisissez au moins un chapitre."),
-  qcm: z
-    .array(questionSchema)
-    .min(1, "Ajoutez au moins une question."),
+  chapitres_ids: z.array(z.string()).min(1, "Choisissez au moins un chapitre."),
+  qcm: z.array(questionSchema).min(1, "Ajoutez au moins une question."),
   questions_approfondissement: z.array(approfondissementSchema),
 });
 
@@ -111,16 +110,19 @@ export default function CreateManualQuizPage() {
   const params = useParams();
   const classeId = Number(params?.classeId);
 
-  const { data: classeDetails, isLoading: isLoadingClasse } = useClasse(classeId);
+  const { data: classeDetails, isLoading: isLoadingClasse } =
+    useClasse(classeId);
   const createManualQuizMutation = useCreateManualQuiz();
 
   const availableMatieres = useMemo(() => {
     if (!classeDetails) return [];
     // Les matières sont déjà incluses dans classeDetails.matieres
-    return classeDetails.matieres?.map((matiere) => ({
-      id: matiere.id,
-      libelle: matiere.libelle,
-    })) || [];
+    return (
+      classeDetails.matieres?.map((matiere) => ({
+        id: matiere.id,
+        libelle: matiere.libelle,
+      })) || []
+    );
   }, [classeDetails]);
 
   const defaultValues: ManualQuizFormValues = {
@@ -239,12 +241,14 @@ export default function CreateManualQuizPage() {
           <CardHeader>
             <CardTitle>Pas de matière disponible</CardTitle>
             <CardDescription>
-              Définis les matières que tu enseignes et associe-les à cette classe
-              avant de créer un quiz manuel.
+              Définis les matières que tu enseignes et associe-les à cette
+              classe avant de créer un quiz manuel.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <Button onClick={() => router.push("/teacher/classes")}>Retour aux classes</Button>
+            <Button onClick={() => router.push("/teacher/classes")}>
+              Retour aux classes
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -257,59 +261,60 @@ export default function CreateManualQuizPage() {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white"
       >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleGoBack}
-              className="rounded-full bg-white hover:bg-gray-100 shadow-sm"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Créer un quiz manuel
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Classe : {classeDetails.nom}
-              </p>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleGoBack}
+                className="rounded-full bg-white hover:bg-gray-100 shadow-sm"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  Créer un quiz manuel
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Classe : {classeDetails.nom}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset(defaultValues)}
+                disabled={createManualQuizMutation.isPending}
+              >
+                Réinitialiser
+              </Button>
+              <Button
+                type="submit"
+                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"
+                disabled={createManualQuizMutation.isPending}
+              >
+                {createManualQuizMutation.isPending ? (
+                  <Spinner size="sm" className="mr-2" />
+                ) : (
+                  <PlusIcon className="w-4 h-4 mr-2" />
+                )}
+                Créer le quiz
+              </Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => form.reset(defaultValues)}
-              disabled={createManualQuizMutation.isPending}
-            >
-              Réinitialiser
-            </Button>
-            <Button
-              type="submit"
-              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"
-              disabled={createManualQuizMutation.isPending}
-            >
-              {createManualQuizMutation.isPending ? (
-                <Spinner size="sm" className="mr-2" />
-              ) : (
-                <PlusIcon className="w-4 h-4 mr-2" />
-              )}
-              Créer le quiz
-            </Button>
-          </div>
-        </div>
 
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>Informations générales</CardTitle>
-            <CardDescription>
-              Configure les réglages de base du quiz avant d’ajouter les questions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle>Informations générales</CardTitle>
+              <CardDescription>
+                Configure les réglages de base du quiz avant d’ajouter les
+                questions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="titre"
@@ -395,7 +400,10 @@ export default function CreateManualQuizPage() {
                         </FormControl>
                         <SelectContent>
                           {availableMatieres.map((matiere) => (
-                            <SelectItem key={matiere.id} value={matiere.id.toString()}>
+                            <SelectItem
+                              key={matiere.id}
+                              value={matiere.id.toString()}
+                            >
                               {matiere.libelle}
                             </SelectItem>
                           ))}
@@ -441,7 +449,8 @@ export default function CreateManualQuizPage() {
                                     } else {
                                       field.onChange(
                                         field.value.filter(
-                                          (value) => value !== chapitre.id.toString(),
+                                          (value) =>
+                                            value !== chapitre.id.toString(),
                                         ),
                                       );
                                     }
@@ -467,92 +476,93 @@ export default function CreateManualQuizPage() {
                   )}
                 />
               </div>
-          </CardContent>
-        </Card>
-
-        <div className="mt-8 space-y-6">
-          <Card className="shadow-md">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle>Questions QCM</CardTitle>
-                <CardDescription>
-                  Ajoutez les questions à choix multiples. Chaque question doit
-                  comporter au moins deux réponses et une réponse correcte.
-                </CardDescription>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  appendQuestion({
-                    question: "",
-                    reponses: [
-                      { texte: "", correct: true },
-                      { texte: "", correct: false },
-                    ],
-                  })
-                }
-                className="flex items-center gap-2"
-              >
-                <PlusIcon className="w-4 h-4" /> Ajouter une question
-              </Button>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              {questionFields.map((questionField, questionIndex) => (
-                <div
-                  key={questionField.id}
-                  className="rounded-xl border border-gray-200 bg-white/60 p-5 space-y-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <FormField
-                      control={form.control}
-                      name={`qcm.${questionIndex}.question`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel className="inline-flex items-center gap-1 text-sm font-medium text-gray-700">
-                            Question {questionIndex + 1}
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              rows={3}
-                              placeholder="Saisissez l'énoncé de la question"
-                              className="bg-gray-50 border-gray-200 resize-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {questionFields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeQuestion(questionIndex)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <FormLabel className="text-sm font-medium text-gray-700">
-                      Réponses possibles
-                    </FormLabel>
-                    <QuestionAnswersFields
-                      control={form.control}
-                      questionIndex={questionIndex}
-                    />
-                  </div>
-                </div>
-              ))}
             </CardContent>
           </Card>
 
-          <Card className="shadow-md">
+          <div className="mt-8 space-y-6">
+            <Card className="shadow-md">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle>Questions QCM</CardTitle>
+                  <CardDescription>
+                    Ajoutez les questions à choix multiples. Chaque question
+                    doit comporter au moins deux réponses et une réponse
+                    correcte.
+                  </CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    appendQuestion({
+                      question: "",
+                      reponses: [
+                        { texte: "", correct: true },
+                        { texte: "", correct: false },
+                      ],
+                    })
+                  }
+                  className="flex items-center gap-2"
+                >
+                  <PlusIcon className="w-4 h-4" /> Ajouter une question
+                </Button>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {questionFields.map((questionField, questionIndex) => (
+                  <div
+                    key={questionField.id}
+                    className="rounded-xl border border-gray-200 bg-white/60 p-5 space-y-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <FormField
+                        control={form.control}
+                        name={`qcm.${questionIndex}.question`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel className="inline-flex items-center gap-1 text-sm font-medium text-gray-700">
+                              Question {questionIndex + 1}
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                rows={3}
+                                placeholder="Saisissez l'énoncé de la question"
+                                className="bg-gray-50 border-gray-200 resize-none"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {questionFields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeQuestion(questionIndex)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Réponses possibles
+                      </FormLabel>
+                      <QuestionAnswersFields
+                        control={form.control}
+                        questionIndex={questionIndex}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/*<Card className="shadow-md">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle>Questions d'approfondissement (optionnel)</CardTitle>
@@ -639,9 +649,9 @@ export default function CreateManualQuizPage() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </Card>*/}
+          </div>
         </div>
-      </div>
       </form>
     </Form>
   );
@@ -688,7 +698,9 @@ const QuestionAnswersFields = ({
               <div className="flex items-center justify-between sm:w-auto mt-3 sm:mt-0">
                 <Controller
                   control={control}
-                  name={`qcm.${questionIndex}.reponses.${answerIndex}.correct` as const}
+                  name={
+                    `qcm.${questionIndex}.reponses.${answerIndex}.correct` as const
+                  }
                   render={({ field: switchField }) => (
                     <div className="flex items-center gap-2">
                       <Switch
@@ -698,7 +710,9 @@ const QuestionAnswersFields = ({
                           switchField.onChange(checked);
                         }}
                       />
-                      <span className="text-xs text-gray-600">Bonne réponse</span>
+                      <span className="text-xs text-gray-600">
+                        Bonne réponse
+                      </span>
                     </div>
                   )}
                 />
@@ -723,9 +737,7 @@ const QuestionAnswersFields = ({
       <Button
         type="button"
         variant="outline"
-        onClick={() =>
-          append({ texte: "", correct: false })
-        }
+        onClick={() => append({ texte: "", correct: false })}
         disabled={fields.length >= 6}
       >
         <PlusIcon className="w-4 h-4 mr-2" /> Ajouter une réponse

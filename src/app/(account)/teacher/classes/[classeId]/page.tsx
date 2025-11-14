@@ -36,7 +36,7 @@ const ClasseDetailPage = () => {
   const router = useRouter();
   const classeId = Number(params.classeId);
 
-  const [activeTab, setActiveTab] = useState("Quiz Spontané avec AI");
+  const [activeTab, setActiveTab] = useState("Quiz avec AI");
   const [isMessageModalOpen, setMessageModalOpen] = useState(false);
 
   const { data: classeDetails, isLoading, isError } = useClasse(classeId);
@@ -46,9 +46,9 @@ const ClasseDetailPage = () => {
   };
 
   const tabs = [
-    { label: "Quiz Spontané avec AI", icon: <Brain className="w-4 h-4" /> },
+    { label: "Quiz avec AI", icon: <Brain className="w-4 h-4" /> },
     { label: "Quiz manuelle", icon: <BookText className="w-4 h-4" /> },
-    { label: "Document téléchargé", icon: <Upload className="w-4 h-4" /> },
+    { label: "Documents", icon: <Upload className="w-4 h-4" /> },
     { label: "Elève", icon: <Users className="w-4 h-4" /> },
     { label: "Notes", icon: <BarChart3 className="w-4 h-4" /> },
   ];
@@ -128,13 +128,13 @@ const ClasseDetailPage = () => {
 
           {/* Contenu des onglets */}
           <div>
-            {activeTab === "Quiz Spontané avec AI" && (
+            {activeTab === "Quiz avec AI" && (
               <QuizAISection classeDetails={classeDetails} />
             )}
             {activeTab === "Quiz manuelle" && (
               <ManualQuizSection classeDetails={classeDetails} />
             )}
-            {activeTab === "Document téléchargé" && (
+            {activeTab === "Documents" && (
               <div>Contenu pour Document téléchargé</div>
             )}
             {activeTab === "Elève" && (

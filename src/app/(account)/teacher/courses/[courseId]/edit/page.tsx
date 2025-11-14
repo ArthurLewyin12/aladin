@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Eye, FileText, AlertCircle } from "lucide-react";
 import { Editor } from "@/components/blocks/editor-x/editor";
 import { SerializedEditorState, LexicalEditor } from "lexical";
-import { useClasses } from "@/services/hooks/professeur/useClasses";
 import { useCourse } from "@/services/hooks/professeur/useCourse";
 import { useUpdateCourse } from "@/services/hooks/professeur/useUpdateCourse";
 import { useCourseEditor } from "@/stores/useCourseEditor";
@@ -33,21 +32,18 @@ export default function EditCoursePage() {
   const courseId = Number(params.courseId);
 
   const [title, setTitle] = useState("");
-  const [selectedClass, setSelectedClass] = useState("");
-  const [selectedMatiere, setSelectedMatiere] = useState("");
-  const [selectedChapter, setSelectedChapter] = useState("");
-  const [editorState, setEditorState] = useState<SerializedEditorState | undefined>(undefined);
+  const [editorState, setEditorState] = useState<
+    SerializedEditorState | undefined
+  >(undefined);
   const editorRef = useRef<LexicalEditor | null>(null);
 
   // Fetch data
-  const { data: classes, isLoading: isLoadingClasses } = useClasses();
   const { data: course, isLoading: isLoadingCourse } = useCourse(courseId);
   const { data: classeDetails, isLoading: isLoadingClasseDetails } = useClasse(
-    selectedClass ? Number(selectedClass) : null
+    course?.classe_id || null
   );
-  const { data: chapitres, isLoading: isLoadingChapitres } = useChapitres(
-    selectedMatiere ? Number(selectedMatiere) : null
-  );
+  // Pour l'instant, on récupère tous les chapitres (TODO: optimiser plus tard)
+  const { data: chapitres, isLoading: isLoadingChapitres } = useChapitres(null);
   const { mutate: updateCourseMutation, isPending: isSaving } =
     useUpdateCourse();
   const { updateDraft, markAsSaved, hasUnsavedChanges } = useCourseEditor();
@@ -55,39 +51,29 @@ export default function EditCoursePage() {
   // Initialize form with course data
   useEffect(() => {
     if (course) {
-      setTitle(course.titre);
-      setSelectedClass(course.classe?.id.toString() || "");
-      setSelectedMatiere(course.chapitre?.matiere_id.toString() || "");
-      setSelectedChapter(course.chapitre?.id.toString() || "");
+      console.log("🔍 Course data received:", course);
+      console.log("📚 Course.classe:", course.classe);
+      console.log("📖 Course.chapitre:", course.chapitre);
+      console.log("📖 Course.chapitre?.matiere:", course.chapitre?.matiere);
 
-      // Load editor state - préférer plain_text ou html si lexical_state est vide
-      if (course.content?.lexical_state && Object.keys(course.content.lexical_state).length > 0) {
+      setTitle(course.titre);
+
+      // Load editor state - essayer plusieurs formats si lexical_state est vide
+      if (
+        course.content?.lexical_state &&
+        Object.keys(course.content.lexical_state).length > 0
+      ) {
         setEditorState(course.content.lexical_state);
       } else {
-        // Si pas de lexical_state valide, garder undefined pour laisser l'éditeur vide
+        // Si pas de lexical_state valide, l'éditeur commencera vide
+        // L'utilisateur devra rééditer le contenu
         setEditorState(undefined);
+        console.warn(
+          "Cours sans lexical_state valide - contenu devra être réédité",
+        );
       }
     }
   }, [course]);
-
-  // Reset matiere and chapter when class changes
-  useEffect(() => {
-    if (!isLoadingCourse && course) {
-      // Only reset if we're not loading initial data
-      return;
-    }
-    setSelectedMatiere("");
-    setSelectedChapter("");
-  }, [selectedClass, isLoadingCourse, course]);
-
-  // Reset chapter when matiere changes
-  useEffect(() => {
-    if (!isLoadingCourse && course) {
-      // Only reset if we're not loading initial data
-      return;
-    }
-    setSelectedChapter("");
-  }, [selectedMatiere, isLoadingCourse, course]);
 
   // Track changes for autosave
   useEffect(() => {
@@ -95,12 +81,12 @@ export default function EditCoursePage() {
       updateDraft({
         id: courseId,
         titre: title,
-        chapitre_id: selectedChapter ? Number(selectedChapter) : null,
-        classe_id: selectedClass ? Number(selectedClass) : null,
+        chapitre_id: course?.chapitre_id || null,
+        classe_id: course?.classe_id || null,
         lexical_state: editorState,
       });
     }
-  }, [title, selectedClass, selectedChapter, editorState]);
+  }, [title, editorState, course]);
 
   const handleBack = () => {
     if (hasUnsavedChanges) {
@@ -125,14 +111,6 @@ export default function EditCoursePage() {
       return;
     }
 
-    if (!selectedClass || !selectedChapter) {
-      toast({
-        variant: "warning",
-        message: "Veuillez sélectionner une classe et un chapitre",
-      });
-      return;
-    }
-
     if (!editorRef.current) {
       toast({
         variant: "error",
@@ -145,10 +123,10 @@ export default function EditCoursePage() {
       // Extract complete content from Lexical editor
       const content = extractCourseContent(editorRef.current);
 
-      // Update course via API
+      // Update course via API - utiliser la classe du cours existant
       updateCourseMutation(
         {
-          classeId: Number(selectedClass),
+          classeId: course?.classe_id!,
           coursId: courseId,
           payload: {
             titre: title,
@@ -171,7 +149,7 @@ export default function EditCoursePage() {
     router.push(`/teacher/courses/${courseId}/preview`);
   };
 
-  if (isLoadingClasses || isLoadingCourse) {
+  if (isLoadingCourse || isLoadingClasseDetails || isLoadingChapitres) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner />
@@ -242,46 +220,20 @@ export default function EditCoursePage() {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="class">Classe *</Label>
-                  <Select
-                    value={selectedClass}
-                    onValueChange={setSelectedClass}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Sélectionner une classe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes?.map((classe) => (
-                        <SelectItem
-                          key={classe.id}
-                          value={classe.id.toString()}
-                        >
-                          {classe.nom}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="chapter">Chapitre *</Label>
-                  <Select
-                    value={selectedChapter}
-                    onValueChange={setSelectedChapter}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Sélectionner un chapitre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* TODO: Load chapters based on selected class/subject */}
-                      <SelectItem value="45">Chapitre: Dérivées</SelectItem>
-                      <SelectItem value="46">
-                        Chapitre: Applications des dérivées
-                      </SelectItem>
-                      <SelectItem value="67">Chapitre: Mécanique</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Informations en lecture seule pour l'édition */}
+                <div className="bg-gray-50 p-3 rounded-lg border">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Informations du cours existant
+                  </h4>
+                   <div className="space-y-1 text-sm text-gray-600">
+                     <p><span className="font-medium">Classe :</span> {classeDetails?.nom || 'Chargement...'}</p>
+                     <p><span className="font-medium">Chapitre :</span> {chapitres?.find(c => c.id === course?.chapitre_id)?.libelle || 'Chargement...'}</p>
+                     <p><span className="font-medium">Matière :</span> {chapitres?.find(c => c.id === course?.chapitre_id)?.matiere?.libelle || 'Chargement...'}</p>
+                   </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Ces informations ne peuvent pas être modifiées lors de
+                    l'édition.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -322,6 +274,26 @@ export default function EditCoursePage() {
                 <CardTitle>Contenu du cours</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Afficher un avertissement si le contenu ne peut pas être pré-rempli */}
+                {course && course.content && !course.content.lexical_state && (
+                  <Alert className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Le contenu de ce cours ne peut pas être pré-rempli
+                      automatiquement. Veuillez rééditer le contenu dans
+                      l'éditeur ci-dessous.
+                      {course.content.plain_text && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
+                          <strong>Aperçu du contenu existant :</strong>
+                          <br />
+                          {course.content.plain_text.substring(0, 200)}
+                          {course.content.plain_text.length > 200 && "..."}
+                        </div>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="min-h-[600px]">
                   <Editor
                     editorSerializedState={editorState}

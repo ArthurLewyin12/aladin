@@ -228,14 +228,14 @@ export const GradesSection = ({ classeDetails }: GradesSectionProps) => {
                     </div>
                   )}
 
-                  {evaluation.moyenne !== undefined && (
+                  {/*{evaluation.moyenne !== undefined && (
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-gray-500" />
                       <span className="font-semibold">
                         Moyenne: {evaluation.moyenne.toFixed(2)}/20
                       </span>
                     </div>
-                  )}
+                  )}*/}
 
                   {evaluation.commentaire && (
                     <div className="text-xs text-gray-600 mt-2 line-clamp-2">

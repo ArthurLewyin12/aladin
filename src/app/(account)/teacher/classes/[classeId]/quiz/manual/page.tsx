@@ -88,8 +88,11 @@ const manualQuizSchema = z.object({
   temps: z
     .string()
     .min(1, "Le temps est requis.")
-    .refine((value) => !isNaN(Number(value)) && Number(value) > 0, {
-      message: "Indiquez un temps valide (en minutes).",
+    .refine((value) => !isNaN(Number(value)), {
+      message: "Indiquez un nombre valide.",
+    })
+    .refine((value) => Number(value) >= 30 && Number(value) <= 60, {
+      message: "Le temps par question doit être entre 30 et 60 secondes.",
     }),
   matiere_id: z.string().min(1, "La matière est requise."),
   chapitres_ids: z.array(z.string()).min(1, "Choisissez au moins un chapitre."),
@@ -128,7 +131,7 @@ export default function CreateManualQuizPage() {
   const defaultValues: ManualQuizFormValues = {
     titre: "",
     difficulte: "Moyen",
-    temps: "30",
+    temps: "30", // 30 secondes par défaut
     matiere_id: "",
     chapitres_ids: [],
     qcm: [
@@ -338,15 +341,26 @@ export default function CreateManualQuizPage() {
                   name="temps"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Durée (minutes)</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="number"
-                          min={1}
-                          className="bg-gray-50 border-gray-200"
-                        />
-                      </FormControl>
+                      <FormLabel>Temps par question (secondes)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-gray-50 border-gray-200 w-full">
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 31 }, (_, i) => 30 + i).map(
+                            (second) => (
+                              <SelectItem
+                                key={second}
+                                value={second.toString()}
+                              >
+                                {second} secondes
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

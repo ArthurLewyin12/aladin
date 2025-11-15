@@ -726,7 +726,7 @@ export const createEvaluation = async (
   classeId: number,
   payload: CreateEvaluationPayload,
 ): Promise<CreateEvaluationResponse> => {
-  const endpoint = ProfesseurEndpoints.CREATE_EVALUATION.replace(
+  const endpoint = ProfesseurEndpoints.CREATE_CLASS_EVALUATION.replace(
     "{classe_id}",
     classeId.toString(),
   );

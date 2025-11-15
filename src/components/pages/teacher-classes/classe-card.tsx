@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon, GraduationCap, BookOpen } from "lucide-react";
+import { PlusIcon, GraduationCap, BookOpen, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -62,6 +62,20 @@ export const ClasseCard = ({
 
   const descriptionText = classe.description || "Aucune description";
 
+  // Formater la date de création
+  const formatCreatedDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(date);
+    } catch {
+      return "Date inconnue";
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -105,13 +119,21 @@ export const ClasseCard = ({
       )}
 
       {/* Matières de la classe */}
-      <div className="flex items-center gap-2 text-sm text-gray-700 mb-6">
+      <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
         <BookOpen className="w-4 h-4" />
         <span className="underline">Matières</span>:{" "}
         {classe.matiere_ids.length === 0
           ? "Aucune"
           : `${classe.matiere_ids.length} matière(s)`}
       </div>
+
+      {/* Date de création */}
+      {classe.created_at && (
+        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+          <Calendar className="w-3 h-3" />
+          <span>Créée le {formatCreatedDate(classe.created_at)}</span>
+        </div>
+      )}
 
       {/* Footer avec avatars et bouton Ouvrir */}
       <div className="flex items-center justify-between">

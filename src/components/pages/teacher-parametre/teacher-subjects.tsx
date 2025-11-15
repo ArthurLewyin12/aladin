@@ -152,7 +152,7 @@ export default function TeacherSubjects() {
           </p>
         )}
         {currentLibelles.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2 items-center">
             {currentLibelles.map((libelle, index) => (
               <span
                 key={index}
@@ -161,86 +161,93 @@ export default function TeacherSubjects() {
                 {libelle}
               </span>
             ))}
-          </div>
-        )}
-      </div>
-
-      {/* Liste de toutes les matières disponibles */}
-      <div>
-        <Label className="text-sm font-semibold text-gray-700">
-          Sélectionnez vos matières
-        </Label>
-        {isLoadingMatieres ? (
-          <div className="flex justify-center py-8">
-            <Spinner size="sm" />
-          </div>
-        ) : matieres.length > 0 ? (
-          <div className="mt-2 space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 rounded-lg border border-gray-200">
-            {matieres.map((matiere) => (
-              <div
-                key={matiere.id}
-                className="flex items-center space-x-3 p-3 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-green-200"
+            {maxSubjects - currentLibelles.length === 0 && (
+              <Button
+                onClick={() => {
+                  toast({
+                    variant: "warning",
+                    message: "⚠️ C'est votre unique chance de modification. Veuillez bien vérifier vos sélections avant de sauvegarder.",
+                  });
+                  setSelectedMatieres(currentSubjectIds);
+                }}
+                variant="outline"
+                size="sm"
+                className="ml-2 text-blue-600 border-blue-200 hover:bg-blue-50"
               >
-                <Checkbox
-                  id={`matiere-${matiere.id}`}
-                  checked={selectedMatieres.includes(matiere.id)}
-                  onCheckedChange={() => toggleMatiere(matiere.id)}
-                  disabled={
-                    isSaving ||
-                    (subjectsResponse.count >= maxSubjects &&
-                      !selectedMatieres.includes(matiere.id))
-                  }
-                />
-                <label
-                  htmlFor={`matiere-${matiere.id}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer flex-1"
-                >
-                  {matiere.libelle}
-                </label>
-              </div>
-            ))}
+                Modifier
+              </Button>
+            )}
           </div>
-        ) : (
-          <p className="text-sm text-gray-500 mt-2 p-3 bg-gray-50 rounded-lg">
-            Aucune matière disponible
-          </p>
         )}
       </div>
 
-      {/* Boutons d'action */}
-      <div className="flex gap-3 pt-4">
-        <Button
-          onClick={handleSave}
-          disabled={
-            isSaving || !hasChanges || subjectsResponse.count >= maxSubjects
-          }
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          title={
-            subjectsResponse.count >= maxSubjects
-              ? "Limite de matières atteinte"
-              : ""
-          }
-        >
-          {isSaving ? (
-            <>
-              <Spinner size="sm" className="mr-2" />
-              Enregistrement...
-            </>
+      {/* Liste de toutes les matières disponibles - Caché si limite atteinte */}
+      {maxSubjects - currentLibelles.length > 0 && (
+        <div>
+          <Label className="text-sm font-semibold text-gray-700">
+            Sélectionnez vos matières
+          </Label>
+          {isLoadingMatieres ? (
+            <div className="flex justify-center py-8">
+              <Spinner size="sm" />
+            </div>
+          ) : matieres.length > 0 ? (
+            <div className="mt-2 space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 rounded-lg border border-gray-200">
+              {matieres.map((matiere) => (
+                <div
+                  key={matiere.id}
+                  className="flex items-center space-x-3 p-3 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-green-200"
+                >
+                  <Checkbox
+                    id={`matiere-${matiere.id}`}
+                    checked={selectedMatieres.includes(matiere.id)}
+                    onCheckedChange={() => toggleMatiere(matiere.id)}
+                    disabled={isSaving}
+                  />
+                  <label
+                    htmlFor={`matiere-${matiere.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer flex-1"
+                  >
+                    {matiere.libelle}
+                  </label>
+                </div>
+              ))}
+            </div>
           ) : (
-            "Enregistrer les matières"
+            <p className="text-sm text-gray-500 mt-2 p-3 bg-gray-50 rounded-lg">
+              Aucune matière disponible
+            </p>
           )}
-        </Button>
-        {hasChanges && (
+        </div>
+      )}
+
+      {/* Boutons d'action - Visible seulement s'il y a des changements ET la limite n'est pas atteinte */}
+      {hasChanges && maxSubjects - currentLibelles.length > 0 && (
+        <div className="flex gap-3 pt-4">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                Enregistrement...
+              </>
+            ) : (
+              "Enregistrer les matières"
+            )}
+          </Button>
           <Button
             onClick={() => setSelectedMatieres(currentSubjectIds)}
             variant="outline"
-            disabled={isSaving || subjectsResponse.count >= maxSubjects}
+            disabled={isSaving}
             className="flex-1"
           >
             Annuler
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Message d'information */}
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">

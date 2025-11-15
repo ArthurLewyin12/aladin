@@ -457,30 +457,35 @@ export default function TeacherDashboardPage() {
                 dataKey="Terminale S1"
                 stroke="#10b981"
                 strokeWidth={2}
+                dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="Terminale S2"
                 stroke="#3b82f6"
                 strokeWidth={2}
+                dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="Première S"
                 stroke="#8b5cf6"
                 strokeWidth={2}
+                dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="Seconde A"
                 stroke="#f59e0b"
                 strokeWidth={2}
+                dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="Seconde B"
                 stroke="#ef4444"
                 strokeWidth={2}
+                dot={false}
               />
             </LineChart>
           </ResponsiveContainer>

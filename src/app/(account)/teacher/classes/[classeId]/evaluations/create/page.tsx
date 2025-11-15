@@ -51,7 +51,7 @@ const CreateEvaluationPage = () => {
 
   const [selectedChapitres, setSelectedChapitres] = useState<number[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [grades, setGrades] = useState<Record<number, number>>({});
+  const [grades, setGrades] = useState<Record<number, number | undefined>>({});
 
   const {
     register,
@@ -82,7 +82,7 @@ const CreateEvaluationPage = () => {
   const onSubmit = (data: EvaluationFormData) => {
     // Convertir les grades en array de { user_id, note }
     const gradesArray = Object.entries(grades)
-      .filter(([, note]) => note !== undefined && note !== null && note !== "")
+      .filter(([, note]) => note !== undefined && note !== null)
       .map(([userId, note]) => ({
         user_id: Number(userId),
         note: Number(note),

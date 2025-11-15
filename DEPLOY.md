@@ -1,0 +1,152 @@
+# Guide de déploiement Docker - Aladin Frontend
+
+## Prérequis
+
+- Docker et Docker Compose installés sur le serveur
+- Accès git au dépôt
+- Port 12000 disponible (ou modifier dans docker-compose.yml)
+
+## Déploiement rapide
+
+### 1. Sur le serveur Ubuntu
+
+```bash
+# Se placer dans le répertoire du projet
+cd /home/akilyum/domains/aladin.akilyum.site/public_html/aladin
+
+# Pull les dernières modifications (incluant package-lock.json)
+git pull
+
+# Configurer les variables d'environnement (optionnel)
+# Si non configurées, les valeurs par défaut seront utilisées
+export NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro
+export NEXT_PUBLIC_UNIVERSE=PROD
+
+# Build et lancer (SANS CACHE pour éviter les problèmes)
+docker compose -f docker-compose.npm.yml build --no-cache
+docker compose -f docker-compose.npm.yml up -d
+```
+
+### 2. Vérifier le déploiement
+
+```bash
+# Voir les logs
+docker compose -f docker-compose.npm.yml logs -f
+
+# Vérifier que le conteneur tourne
+docker compose -f docker-compose.npm.yml ps
+
+# Tester l'application
+curl http://localhost:12000
+```
+
+### 3. Accès
+
+L'application sera accessible sur:
+- **Local**: http://localhost:12000
+- **Externe**: http://aladin.akilyum.site:12000 (si le port est ouvert)
+
+## Configuration DNS Docker (Solution permanente aux problèmes réseau)
+
+Si vous rencontrez toujours des erreurs DNS, configurez les DNS de Docker:
+
+```bash
+# Créer ou éditer la configuration Docker
+sudo nano /etc/docker/daemon.json
+```
+
+Contenu:
+```json
+{
+  "dns": ["8.8.8.8", "8.8.4.4", "1.1.1.1"]
+}
+```
+
+Redémarrer Docker:
+```bash
+sudo systemctl restart docker
+```
+
+Après cela, vous pourrez utiliser le Dockerfile standard avec pnpm:
+```bash
+docker compose up -d --build
+```
+
+## Commandes utiles
+
+### Gestion du conteneur
+
+```bash
+# Arrêter
+docker compose -f docker-compose.npm.yml down
+
+# Redémarrer
+docker compose -f docker-compose.npm.yml restart
+
+# Voir les logs en temps réel
+docker compose -f docker-compose.npm.yml logs -f aladin-frontend
+
+# Rebuild complet
+docker compose -f docker-compose.npm.yml down
+docker compose -f docker-compose.npm.yml build --no-cache
+docker compose -f docker-compose.npm.yml up -d
+```
+
+### Debug
+
+```bash
+# Entrer dans le conteneur
+docker compose -f docker-compose.npm.yml exec aladin-frontend sh
+
+# Voir les ressources utilisées
+docker stats
+
+# Nettoyer les images inutilisées
+docker system prune -a
+```
+
+## Mise à jour de l'application
+
+```bash
+cd /home/akilyum/domains/aladin.akilyum.site/public_html/aladin
+git pull
+docker compose -f docker-compose.npm.yml build --no-cache
+docker compose -f docker-compose.npm.yml up -d
+```
+
+## Configuration Nginx (reverse proxy)
+
+Pour exposer l'application via un nom de domaine:
+
+```nginx
+server {
+    listen 80;
+    server_name aladin.akilyum.site;
+
+    location / {
+        proxy_pass http://localhost:12000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Troubleshooting
+
+Voir [DOCKER_TROUBLESHOOTING.md](DOCKER_TROUBLESHOOTING.md) pour les problèmes courants.
+
+### Erreur "next: not found"
+- Rebuild sans cache: `docker compose -f docker-compose.npm.yml build --no-cache`
+
+### Erreur DNS / EAI_AGAIN
+- Configurer les DNS Docker (voir section "Configuration DNS Docker")
+- Ou augmenter les timeouts dans .npmrc
+
+### Port déjà utilisé
+- Modifier le port dans docker-compose.npm.yml (ligne `"12000:3000"`)

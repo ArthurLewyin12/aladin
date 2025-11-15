@@ -16,10 +16,13 @@ RUN npm config set fetch-timeout 300000 && \
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies using npm with legacy peer deps
-RUN npm ci --legacy-peer-deps || \
-    (sleep 5 && npm ci --legacy-peer-deps) || \
-    (sleep 10 && npm install --legacy-peer-deps)
+# Install dependencies using npm
+# Si package-lock.json n'existe pas, npm install créera les node_modules
+RUN if [ -f package-lock.json ]; then \
+        npm ci --legacy-peer-deps || npm install --legacy-peer-deps; \
+    else \
+        npm install --legacy-peer-deps; \
+    fi
 
 # Stage 2: Build the application
 FROM base AS builder

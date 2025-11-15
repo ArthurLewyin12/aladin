@@ -18,7 +18,10 @@ export function AnimatedTabs({ tabs, onTabChange, activeTab: controlledActiveTab
   const activeTab = controlledActiveTab ?? internalActiveTab;
 
   const handleTabChange = (label: string) => {
-    setInternalActiveTab(label);
+    // Si une prop contrôlée est fournie, ne pas mettre à jour l'état interne
+    if (!controlledActiveTab) {
+      setInternalActiveTab(label);
+    }
     onTabChange?.(label);
   };
 

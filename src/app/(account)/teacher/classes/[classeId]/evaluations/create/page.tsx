@@ -273,7 +273,7 @@ const CreateEvaluationPage = () => {
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {classeDetails.members.map((member) => (
                       <div
-                        key={member.eleve.id}
+                        key={member.eleve.user_id}
                         className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl"
                       >
                         <Label className="flex-1 text-sm font-medium text-gray-700">
@@ -286,13 +286,15 @@ const CreateEvaluationPage = () => {
                             max="20"
                             step="0.5"
                             placeholder="Note"
-                            value={grades[member.eleve.id] ?? ""}
+                            value={member.eleve.user_id ? (grades[member.eleve.user_id] ?? "") : ""}
                             onChange={(e) => {
                               const value = e.target.value;
-                              setGrades((prev) => ({
-                                ...prev,
-                                [member.eleve.id]: value ? Number(value) : undefined,
-                              }));
+                              if (member.eleve.user_id) {
+                                setGrades((prev) => ({
+                                  ...prev,
+                                  [member.eleve.user_id!]: value ? Number(value) : undefined,
+                                }));
+                              }
                             }}
                             className="w-20 text-center"
                           />

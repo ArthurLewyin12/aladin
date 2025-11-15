@@ -14,14 +14,14 @@ export const useCreateEvaluation = () => {
 
   return useMutation<CreateEvaluationResponse, unknown, UseCreateEvaluationParams>({
     mutationFn: ({ classeId, payload }) => createEvaluation(classeId, payload),
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       toast({
         variant: "success",
         message: data.message || "Évaluation créée avec succès !",
       });
 
-      // Invalider les queries pour rafraîchir les données
-      queryClient.invalidateQueries({
+      // Invalider et attendre le refetch pour s'assurer que les données sont à jour
+      await queryClient.invalidateQueries({
         queryKey: createQueryKey("professeur", "classes", variables.classeId.toString(), "evaluations"),
       });
     },

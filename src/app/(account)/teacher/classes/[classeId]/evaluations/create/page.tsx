@@ -8,6 +8,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -23,12 +24,18 @@ import { useCreateEvaluation } from "@/services/hooks/professeur/useCreateEvalua
 import { Spinner } from "@/components/ui/spinner";
 import { format } from "date-fns";
 
+const gradeSchema = z.object({
+  user_id: z.number(),
+  note: z.number().min(0).max(20, "La note doit être entre 0 et 20"),
+});
+
 const evaluationSchema = z.object({
   type_evaluation: z.string().min(1, "Le type d'évaluation est requis"),
   matiere_id: z.number().min(1, "La matière est requise"),
   chapitres_ids: z.array(z.number()).optional(),
   date_evaluation: z.string().optional(),
   commentaire: z.string().optional(),
+  grades: z.array(gradeSchema).optional(),
 });
 
 type EvaluationFormData = z.infer<typeof evaluationSchema>;
@@ -44,6 +51,7 @@ const CreateEvaluationPage = () => {
 
   const [selectedChapitres, setSelectedChapitres] = useState<number[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [grades, setGrades] = useState<Record<number, number>>({});
 
   const {
     register,
@@ -72,13 +80,29 @@ const CreateEvaluationPage = () => {
   };
 
   const onSubmit = (data: EvaluationFormData) => {
+    // Convertir les grades en array de { user_id, note }
+    const gradesArray = Object.entries(grades)
+      .filter(([, note]) => note !== undefined && note !== null && note !== "")
+      .map(([userId, note]) => ({
+        user_id: Number(userId),
+        note: Number(note),
+      }));
+
+    // Ne pas inclure grades si aucune note saisie
+    const payload = {
+      ...data,
+      chapitres_ids: selectedChapitres.length > 0 ? selectedChapitres : undefined,
+    };
+
+    // Ajouter grades seulement s'il y en a
+    if (gradesArray.length > 0) {
+      (payload as any).grades = gradesArray;
+    }
+
     createEvaluation(
       {
         classeId,
-        payload: {
-          ...data,
-          chapitres_ids: selectedChapitres.length > 0 ? selectedChapitres : undefined,
-        },
+        payload: payload as EvaluationFormData,
       },
       {
         onSuccess: () => {
@@ -239,6 +263,46 @@ const CreateEvaluationPage = () => {
                   </p>
                 )}
               </div>
+
+              {/* Notes des élèves */}
+              {classeDetails.members && classeDetails.members.length > 0 && (
+                <div className="space-y-3 border-t-2 pt-6">
+                  <Label className="text-sm font-medium">
+                    Notes des élèves (optionnel)
+                  </Label>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {classeDetails.members.map((member) => (
+                      <div
+                        key={member.eleve.id}
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl"
+                      >
+                        <Label className="flex-1 text-sm font-medium text-gray-700">
+                          {member.eleve.prenom} {member.eleve.nom}
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="20"
+                            step="0.5"
+                            placeholder="Note"
+                            value={grades[member.eleve.id] ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setGrades((prev) => ({
+                                ...prev,
+                                [member.eleve.id]: value ? Number(value) : undefined,
+                              }));
+                            }}
+                            className="w-20 text-center"
+                          />
+                          <span className="text-xs text-gray-600">/20</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">

@@ -55,6 +55,7 @@ docker compose up -d
 ## Caractéristiques
 
 - ✅ Multi-stage build optimisé
+- ✅ **Multi-architecture : AMD64 + ARM64**
 - ✅ Image basée sur Node.js 20 Slim
 - ✅ Utilisateur non-root pour la sécurité
 - ✅ Healthcheck intégré
@@ -64,6 +65,7 @@ docker compose up -d
 ## Architecture
 
 ```
+- Plateformes: linux/amd64, linux/arm64
 - Base: node:20-slim
 - Runtime: Next.js 15 standalone
 - User: nextjs (UID 1001)

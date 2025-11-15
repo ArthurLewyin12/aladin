@@ -13,6 +13,7 @@ docker pull sminth/aladin-frontend:latest
 - **Tag:** `latest`
 - **Base:** node:20-slim (Debian)
 - **Taille:** ~200MB (compressée)
+- **Plateformes:** linux/amd64, linux/arm64
 - **Architecture:** Multi-stage build
 - **Sécurité:** Utilisateur non-root (nextjs:1001)
 - **Healthcheck:** Intégré
@@ -139,18 +140,29 @@ docker inspect aladin-frontend
 # 1. Faire les modifications dans le code
 # 2. Commit et push vers git
 
-# 3. Builder la nouvelle image
-docker build -t sminth/aladin-frontend:latest \
+# 3. Builder la nouvelle image (multi-plateforme: AMD64 + ARM64)
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
   --build-arg NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro \
   --build-arg NEXT_PUBLIC_UNIVERSE=PROD \
-  -f Dockerfile.npm .
+  -t sminth/aladin-frontend:latest \
+  -f Dockerfile.npm \
+  --push \
+  .
 
-# 4. Pousser sur Docker Hub
-docker push sminth/aladin-frontend:latest
+# 4. Optionnel: créer un tag de version
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --build-arg NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro \
+  --build-arg NEXT_PUBLIC_UNIVERSE=PROD \
+  -t sminth/aladin-frontend:v1.0.0 \
+  -t sminth/aladin-frontend:latest \
+  -f Dockerfile.npm \
+  --push \
+  .
 
-# 5. Optionnel: créer un tag de version
-docker tag sminth/aladin-frontend:latest sminth/aladin-frontend:v1.0.0
-docker push sminth/aladin-frontend:v1.0.0
+# 5. Vérifier les plateformes
+docker buildx imagetools inspect sminth/aladin-frontend:latest
 
 # 6. Informer l'équipe du nouveau déploiement
 ```

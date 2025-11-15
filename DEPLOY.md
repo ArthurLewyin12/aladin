@@ -149,21 +149,33 @@ docker compose -f docker-compose.npm.yml up -d
 
 ## Publication d'une nouvelle version (Développeur)
 
-Pour builder et publier une nouvelle version de l'image :
+Pour builder et publier une nouvelle version de l'image (multi-architecture) :
 
 ```bash
 # Sur votre machine de développement
-docker build -t sminth/aladin-frontend:latest \
+# Build multi-plateforme (AMD64 + ARM64) et push direct
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
   --build-arg NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro \
   --build-arg NEXT_PUBLIC_UNIVERSE=PROD \
-  -f Dockerfile.npm .
-
-# Pousser sur Docker Hub
-docker push sminth/aladin-frontend:latest
+  -t sminth/aladin-frontend:latest \
+  -f Dockerfile.npm \
+  --push \
+  .
 
 # Optionnel: créer un tag de version
-docker tag sminth/aladin-frontend:latest sminth/aladin-frontend:v1.0.0
-docker push sminth/aladin-frontend:v1.0.0
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --build-arg NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro \
+  --build-arg NEXT_PUBLIC_UNIVERSE=PROD \
+  -t sminth/aladin-frontend:v1.0.0 \
+  -t sminth/aladin-frontend:latest \
+  -f Dockerfile.npm \
+  --push \
+  .
+
+# Vérifier les plateformes supportées
+docker buildx imagetools inspect sminth/aladin-frontend:latest
 ```
 
 ## Configuration Nginx (reverse proxy)

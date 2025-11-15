@@ -97,9 +97,14 @@ export default function SavedCoursePage() {
   const { data, isLoading, isError, error } = useGetOneCourse(courseId);
   const { startTracking, stopTracking } = useTimeTracking();
 
+  // Helper function to get course_data or cours_data
+  const getCourseData = (courseData: any) => {
+    return courseData?.course_data || courseData?.cours_data;
+  };
+
   // Déterminer si c'est le nouveau format structuré
   const hasStructuredCourseData =
-    data && typeof data === "object" && "course_data" in data;
+    data && typeof data === "object" && ("course_data" in data || "cours_data" in data);
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
@@ -239,9 +244,9 @@ export default function SavedCoursePage() {
 
                 {/* Titre Principal avec underline */}
                  <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
-                  {data.course_data?.["TITRE_DE_LA_LECON"] ||
-                    data.course_data?.["Titre de la leçon"] ||
-                    data.course_data?.["Titre de la lecon"]}
+                  {getCourseData(data)?.["TITRE_DE_LA_LECON"] ||
+                    getCourseData(data)?.["Titre de la leçon"] ||
+                    getCourseData(data)?.["Titre de la lecon"]}
                 </h1>
 
                 {/* Introduction */}
@@ -250,15 +255,15 @@ export default function SavedCoursePage() {
                     Introduction
                   </h2>
                   <div className="text-gray-700 leading-relaxed">
-                    <MathText text={data.course_data?.Introduction || ""} />
+                    <MathText text={getCourseData(data)?.Introduction || ""} />
                   </div>
                 </div>
 
                 {/* Développement du cours */}
-                {data.course_data &&
+                {getCourseData(data) &&
                   Object.keys(
-                    data.course_data["DEVELOPPEMENT_DU_COURS"] ||
-                      data.course_data["developpement du cours"] ||
+                    getCourseData(data)["DEVELOPPEMENT_DU_COURS"] ||
+                      getCourseData(data)["developpement du cours"] ||
                       {},
                   ).length > 0 && (
                     <div className="mb-8">
@@ -267,8 +272,8 @@ export default function SavedCoursePage() {
                       </h2>
                       <div className="space-y-8">
                         {Object.entries(
-                          (data.course_data["DEVELOPPEMENT_DU_COURS"] ||
-                            data.course_data[
+                          (getCourseData(data)["DEVELOPPEMENT_DU_COURS"] ||
+                            getCourseData(data)[
                               "developpement du cours"
                             ]) as Record<string, any>,
                         ).map(([key, notion]: [string, any], index: number) => (
@@ -468,17 +473,17 @@ export default function SavedCoursePage() {
                   )}
 
                 {/* Synthèse */}
-                {(data.course_data?.["SYNTHESE_DU_COURS"] ||
-                  data.course_data?.["Synthese ce qu'il faut retenir"]) && (
+                {(getCourseData(data)?.["SYNTHESE_DU_COURS"] ||
+                  getCourseData(data)?.["Synthese ce qu'il faut retenir"]) && (
                   <div className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
                     <h2 className="text-xl font-bold text-amber-900 mb-4">
                       Synthèse du cours
                     </h2>
 
                     {/* Synthèse structurée */}
-                    {data.course_data?.["SYNTHESE_DU_COURS"] && (
+                    {getCourseData(data)?.["SYNTHESE_DU_COURS"] && (
                       <div className="space-y-4">
-                        {data.course_data["SYNTHESE_DU_COURS"]
+                        {getCourseData(data)["SYNTHESE_DU_COURS"]
                           .recapitulatif && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -487,7 +492,7 @@ export default function SavedCoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  data.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(data)["SYNTHESE_DU_COURS"]
                                     .recapitulatif
                                 }
                               />
@@ -495,7 +500,7 @@ export default function SavedCoursePage() {
                           </div>
                         )}
 
-                        {data.course_data["SYNTHESE_DU_COURS"]
+                        {getCourseData(data)["SYNTHESE_DU_COURS"]
                           .competences_acquises && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -504,7 +509,7 @@ export default function SavedCoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  data.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(data)["SYNTHESE_DU_COURS"]
                                     .competences_acquises
                                 }
                               />
@@ -512,7 +517,7 @@ export default function SavedCoursePage() {
                           </div>
                         )}
 
-                        {data.course_data["SYNTHESE_DU_COURS"]
+                        {getCourseData(data)["SYNTHESE_DU_COURS"]
                           .points_de_vigilance && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -521,7 +526,7 @@ export default function SavedCoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  data.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(data)["SYNTHESE_DU_COURS"]
                                     .points_de_vigilance
                                 }
                               />
@@ -529,7 +534,7 @@ export default function SavedCoursePage() {
                           </div>
                         )}
 
-                        {data.course_data["SYNTHESE_DU_COURS"].ouverture && (
+                        {getCourseData(data)["SYNTHESE_DU_COURS"].ouverture && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
                               Ouverture
@@ -537,7 +542,7 @@ export default function SavedCoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  data.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(data)["SYNTHESE_DU_COURS"]
                                     .ouverture
                                 }
                               />
@@ -548,12 +553,12 @@ export default function SavedCoursePage() {
                     )}
 
                     {/* Synthèse simple (fallback) */}
-                    {!data.course_data?.["SYNTHESE_DU_COURS"] &&
-                      data.course_data?.["Synthese ce qu'il faut retenir"] && (
+                    {!getCourseData(data)?.["SYNTHESE_DU_COURS"] &&
+                      getCourseData(data)?.["Synthese ce qu'il faut retenir"] && (
                         <div className="text-amber-950 leading-relaxed">
                           <MathText
                             text={
-                              data.course_data["Synthese ce qu'il faut retenir"]
+                              getCourseData(data)["Synthese ce qu'il faut retenir"]
                             }
                           />
                         </div>

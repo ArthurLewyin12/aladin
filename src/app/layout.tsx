@@ -12,7 +12,7 @@ const adventPro = Advent_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Aladin website",
+  title: "Aladin",
   description:
     "aladin une superbe app web pour vous aider dans votre cursus scolaire",
 };

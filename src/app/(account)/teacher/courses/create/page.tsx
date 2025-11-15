@@ -248,15 +248,18 @@ export default function CreateCoursePage() {
           onSuccess: (data) => {
             // Une fois le cours créé, l'activer immédiatement
             if (data?.cours?.id) {
-              activateCourseMutation({
-                classeId: Number(selectedClass),
-                coursId: data.cours.id,
-              }, {
-                onSuccess: () => {
-                  clearDraft();
-                  router.push("/teacher/courses");
-                }
-              });
+              activateCourseMutation(
+                {
+                  classeId: Number(selectedClass),
+                  coursId: data.cours.id,
+                },
+                {
+                  onSuccess: () => {
+                    clearDraft();
+                    router.push("/teacher/courses");
+                  },
+                },
+              );
             } else {
               clearDraft();
               router.push("/teacher/courses");
@@ -299,7 +302,7 @@ export default function CreateCoursePage() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
-              Créer un cours
+              Créer un cours manuel
             </h1>
           </div>
         </div>

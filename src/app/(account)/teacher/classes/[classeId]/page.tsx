@@ -46,10 +46,10 @@ const ClasseDetailPage = () => {
   };
 
   const tabs = [
-    { label: "Quiz avec AI", icon: <Brain className="w-4 h-4" /> },
-    { label: "Quiz manuelle", icon: <BookText className="w-4 h-4" /> },
+    { label: "Quiz avec IA", icon: <Brain className="w-4 h-4" /> },
+    { label: "Quiz manuel", icon: <BookText className="w-4 h-4" /> },
     { label: "Documents", icon: <Upload className="w-4 h-4" /> },
-    { label: "Elève", icon: <Users className="w-4 h-4" /> },
+    { label: "Elèves", icon: <Users className="w-4 h-4" /> },
     { label: "Notes", icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
@@ -128,16 +128,16 @@ const ClasseDetailPage = () => {
 
           {/* Contenu des onglets */}
           <div>
-            {activeTab === "Quiz avec AI" && (
+            {activeTab === "Quiz avec IA" && (
               <QuizAISection classeDetails={classeDetails} />
             )}
-            {activeTab === "Quiz manuelle" && (
+            {activeTab === "Quiz manuel" && (
               <ManualQuizSection classeDetails={classeDetails} />
             )}
             {activeTab === "Documents" && (
               <div>Contenu pour Document téléchargé</div>
             )}
-            {activeTab === "Elève" && (
+            {activeTab === "Elèves" && (
               <StudentSection classeDetails={classeDetails} />
             )}
             {activeTab === "Notes" && (

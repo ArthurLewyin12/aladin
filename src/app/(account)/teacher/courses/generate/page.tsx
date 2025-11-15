@@ -20,6 +20,7 @@ import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
 import { useGenerateCourse } from "@/services/hooks/professeur/useGenerateCourse";
 import { useActivateCourse } from "@/services/hooks/professeur/useActivateCourse";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
+import { DeepeeningQuestions } from "@/components/pages/cours/deepening-questions";
 import { MathText } from "@/components/ui/MathText";
 import { toast } from "@/lib/toast";
 import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
@@ -231,24 +232,30 @@ export default function GenerateCoursePage() {
     }
 
     // Activer le cours pour le rendre visible aux élèves
-    activateCourseMutation({
-      classeId: Number(selectedClass),
-      coursId: generatedCourse.id,
-    }, {
-      onSuccess: () => {
-        // Rediriger vers la liste des cours après activation
-        router.push("/teacher/courses");
-      }
-    });
+    activateCourseMutation(
+      {
+        classeId: Number(selectedClass),
+        coursId: generatedCourse.id,
+      },
+      {
+        onSuccess: () => {
+          // Rediriger vers la liste des cours après activation
+          router.push("/teacher/courses");
+        },
+      },
+    );
   };
 
   // Fonctions utilitaires pour récupérer les noms
   const getClasseName = (classId: string) => {
-    return classes?.find(c => c.id.toString() === classId)?.nom || "";
+    return classes?.find((c) => c.id.toString() === classId)?.nom || "";
   };
 
   const getMatiereName = (matiereId: string) => {
-    return classeDetails?.matieres?.find(m => m.id.toString() === matiereId)?.libelle || "";
+    return (
+      classeDetails?.matieres?.find((m) => m.id.toString() === matiereId)
+        ?.libelle || ""
+    );
   };
 
   // Titre dynamique selon l'état
@@ -665,6 +672,42 @@ export default function GenerateCoursePage() {
                                         </div>
                                       </div>
                                     )}
+
+                                    {/* Questions d'approfondissement */}
+                                    {generatedCourse.questions &&
+                                      generatedCourse.questions.length > 0 && (
+                                        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">
+                                          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                                            Questions d'approfondissement
+                                          </h2>
+                                          <div className="space-y-4">
+                                            {generatedCourse.questions.map(
+                                              (qa: any, index: number) => (
+                                                <details
+                                                  key={index}
+                                                  className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
+                                                >
+                                                  <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                                                      {index + 1}
+                                                    </span>
+                                                    <MathText
+                                                      text={qa.question}
+                                                      className="flex-1"
+                                                    />
+                                                  </summary>
+                                                  <div className="mt-4 pl-9">
+                                                    <MathText
+                                                      text={qa.reponse}
+                                                      className="text-sm sm:text-base text-gray-700 leading-relaxed"
+                                                    />
+                                                  </div>
+                                                </details>
+                                              ),
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
                                   </div>
                                 )}
 
@@ -900,7 +943,6 @@ export default function GenerateCoursePage() {
               </>
             ) : (
               <>
-                {/* ANCIEN FORMAT TEXTE BRUT */}
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">

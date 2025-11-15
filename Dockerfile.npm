@@ -1,34 +1,25 @@
-# Aladin Frontend - Multi-stage Docker Build
-# Optimized for Next.js 15 with pnpm
+# Aladin Frontend - Dockerfile utilisant NPM (fallback pour problèmes réseau)
+# Alternative pour environnements avec connectivité limitée
 
-# Use Debian-based Node image for better compatibility
 FROM node:20-slim AS base
-
-# Install pnpm globally using standalone script (no npm registry needed)
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=9.15.0 sh - && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Add pnpm to PATH
-ENV PNPM_HOME="/root/.local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
 
 # Stage 1: Dependencies installation
 FROM base AS deps
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
-COPY .npmrc* ./
+# Configure npm pour meilleures performances réseau
+RUN npm config set fetch-timeout 300000 && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000
 
-# Install dependencies with retry logic and increased timeout
-RUN pnpm config set network-timeout 300000 && \
-    pnpm config set fetch-retries 5 && \
-    pnpm install --frozen-lockfile || \
-    (sleep 5 && pnpm install --frozen-lockfile) || \
-    (sleep 10 && pnpm install --frozen-lockfile)
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies using npm with legacy peer deps
+RUN npm ci --legacy-peer-deps || \
+    (sleep 5 && npm ci --legacy-peer-deps) || \
+    (sleep 10 && npm install --legacy-peer-deps)
 
 # Stage 2: Build the application
 FROM base AS builder
@@ -41,17 +32,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for build
-# Note: NEXT_PUBLIC_* variables must be available at build time
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_UNIVERSE
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 ENV NEXT_PUBLIC_UNIVERSE=${NEXT_PUBLIC_UNIVERSE}
-
-# Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
 # Stage 3: Production runner
 FROM base AS runner
@@ -62,8 +50,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create non-root user
-RUN groupadd --system --gid 1001 nodejs
-RUN useradd --system --uid 1001 --gid nodejs nextjs
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
 
 # Copy necessary files from builder
 COPY --from=builder /app/public ./public

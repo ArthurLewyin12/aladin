@@ -211,7 +211,8 @@ export const request = {
       ...config,
       headers: {
         ...config?.headers,
-        "Content-Type": "multipart/form-data",
+        // DO NOT set Content-Type for FormData - let the browser/axios set it automatically with the correct boundary
+        // "Content-Type": "multipart/form-data",
       },
     });
 

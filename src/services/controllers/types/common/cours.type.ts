@@ -19,7 +19,8 @@ export interface UserCours {
   time: number;
   created_at: string;
   updated_at: string;
-  course_data?: CourseStructuredData; // Optionnel: nouveau format structuré
+  course_data?: CourseStructuredData; // Backend uses course_data
+  cours_data?: CourseStructuredData; // API also returns cours_data
 }
 
 export interface GenerateCoursPayload {
@@ -182,5 +183,6 @@ export interface GenerateCoursStructuredSuccessResponse {
   message?: string;
   illustrations_pending?: boolean;
   structured: boolean;
-  course_data: CourseStructuredData;
+  course_data?: CourseStructuredData; // Backend uses course_data
+  cours_data?: CourseStructuredData; // API also returns cours_data
 }

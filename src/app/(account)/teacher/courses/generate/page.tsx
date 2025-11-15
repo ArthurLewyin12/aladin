@@ -35,6 +35,11 @@ const courseLoadingMessages = [
   "Finalisation du cours...",
 ];
 
+// Helper function to get course_data or cours_data
+const getCourseData = (data: any) => {
+  return data?.course_data || data?.cours_data;
+};
+
 export default function GenerateCoursePage() {
   const router = useRouter();
 
@@ -112,12 +117,12 @@ export default function GenerateCoursePage() {
     setGeneratedCourse(null);
   }, [selectedMatiere]);
 
-  // Déterminer si on a la structure course_data
+  // Déterminer si on a la structure course_data ou cours_data
   const hasStructuredCourseData =
     generatedCourse &&
     typeof generatedCourse === "object" &&
-    "course_data" in generatedCourse &&
-    generatedCourse.course_data;
+    (("course_data" in generatedCourse && generatedCourse.course_data) ||
+      ("cours_data" in generatedCourse && generatedCourse.cours_data));
 
   // Parser le contenu texte brut
   const parsedContent = useMemo(() => {
@@ -271,31 +276,33 @@ export default function GenerateCoursePage() {
   // Gestion de l'édition
   const handleEditSection = (section: string) => {
     setEditingSection(section);
-    if (generatedCourse?.course_data) {
+    const courseData = getCourseData(generatedCourse);
+    if (courseData) {
       setEditedTitle(
-        generatedCourse.course_data["TITRE_DE_LA_LECON"] ||
-          generatedCourse.course_data["Titre de la leçon"] ||
-          generatedCourse.course_data["Titre de la lecon"] ||
+        courseData["TITRE_DE_LA_LECON"] ||
+          courseData["Titre de la leçon"] ||
+          courseData["Titre de la lecon"] ||
           "",
       );
-      setEditedIntro(generatedCourse.course_data.Introduction || "");
+      setEditedIntro(courseData.Introduction || "");
       setEditedDevelopment(
-        generatedCourse.course_data["DEVELOPPEMENT_DU_COURS"] ||
-          generatedCourse.course_data["developpement du cours"] ||
+        courseData["DEVELOPPEMENT_DU_COURS"] ||
+          courseData["developpement du cours"] ||
           {},
       );
       setEditedSynthesis(
-        generatedCourse.course_data["SYNTHESE_DU_COURS"] ||
-          generatedCourse.course_data["Synthese ce qu'il faut retenir"] ||
+        courseData["SYNTHESE_DU_COURS"] ||
+          courseData["Synthese ce qu'il faut retenir"] ||
           {},
       );
     }
   };
 
   const handleSaveSection = () => {
-    if (generatedCourse?.course_data) {
+    const courseData = getCourseData(generatedCourse);
+    if (courseData) {
       const updatedCourseData = {
-        ...generatedCourse.course_data,
+        ...courseData,
         TITRE_DE_LA_LECON: editedTitle,
         "Titre de la leçon": editedTitle,
         "Titre de la lecon": editedTitle,
@@ -306,10 +313,18 @@ export default function GenerateCoursePage() {
         "Synthese ce qu'il faut retenir": editedSynthesis,
       };
 
-      setGeneratedCourse({
-        ...generatedCourse,
-        course_data: updatedCourseData,
-      });
+      // Update based on which property exists
+      if ("course_data" in generatedCourse) {
+        setGeneratedCourse({
+          ...generatedCourse,
+          course_data: updatedCourseData,
+        });
+      } else if ("cours_data" in generatedCourse) {
+        setGeneratedCourse({
+          ...generatedCourse,
+          cours_data: updatedCourseData,
+        });
+      }
     }
     setEditingSection(null);
   };
@@ -553,9 +568,9 @@ export default function GenerateCoursePage() {
                   <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">
                     <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-green-500 w-fit mx-auto">
                       Chapitre "
-                      {generatedCourse.course_data?.["TITRE_DE_LA_LECON"] ||
-                        generatedCourse.course_data?.["Titre de la leçon"] ||
-                        generatedCourse.course_data?.["Titre de la lecon"]}
+                      {getCourseData(generatedCourse)?.["TITRE_DE_LA_LECON"] ||
+                        getCourseData(generatedCourse)?.["Titre de la leçon"] ||
+                        getCourseData(generatedCourse)?.["Titre de la lecon"]}
                       "
                     </h1>
                   </div>
@@ -567,16 +582,16 @@ export default function GenerateCoursePage() {
                     </h2>
                     <div className="text-gray-700 leading-relaxed">
                       <MathText
-                        text={generatedCourse.course_data?.Introduction || ""}
+                        text={getCourseData(generatedCourse)?.Introduction || ""}
                       />
                     </div>
                   </div>
 
                   {/* Développement du cours */}
-                  {generatedCourse.course_data &&
+                  {getCourseData(generatedCourse) &&
                     Object.keys(
-                      generatedCourse.course_data["DEVELOPPEMENT_DU_COURS"] ||
-                        generatedCourse.course_data["developpement du cours"] ||
+                      getCourseData(generatedCourse)["DEVELOPPEMENT_DU_COURS"] ||
+                        getCourseData(generatedCourse)["developpement du cours"] ||
                         {},
                     ).length > 0 && (
                       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">
@@ -585,10 +600,10 @@ export default function GenerateCoursePage() {
                         </h2>
                         <div className="space-y-8">
                           {Object.entries(
-                            generatedCourse.course_data[
+                            getCourseData(generatedCourse)[
                               "DEVELOPPEMENT_DU_COURS"
                             ] ||
-                              generatedCourse.course_data[
+                              getCourseData(generatedCourse)[
                                 "developpement du cours"
                               ],
                           ).map(
@@ -830,10 +845,10 @@ export default function GenerateCoursePage() {
                     )}
 
                   {/* Synthèse */}
-                  {((generatedCourse as any)?.course_data?.[
+                  {((getCourseData(generatedCourse)?.[
                     "SYNTHESE_DU_COURS"
                   ] ||
-                    (generatedCourse as any)?.course_data?.[
+                    getCourseData(generatedCourse)?.[
                       "Synthese ce qu'il faut retenir"
                     ]) && (
                     <div className="bg-gradient-to-br from-amber-50 to-green-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
@@ -842,9 +857,9 @@ export default function GenerateCoursePage() {
                       </h2>
 
                       {/* Synthèse structurée */}
-                      {generatedCourse.course_data?.["SYNTHESE_DU_COURS"] && (
+                      {getCourseData(generatedCourse)?.["SYNTHESE_DU_COURS"] && (
                         <div className="space-y-4">
-                          {(generatedCourse as any).course_data[
+                          {getCourseData(generatedCourse)[
                             "SYNTHESE_DU_COURS"
                           ].recapitulatif && (
                             <div>
@@ -854,7 +869,7 @@ export default function GenerateCoursePage() {
                               <div className="text-amber-950 leading-relaxed">
                                 <MathText
                                   text={
-                                    (generatedCourse as any).course_data[
+                                    getCourseData(generatedCourse)[
                                       "SYNTHESE_DU_COURS"
                                     ].recapitulatif
                                   }
@@ -863,7 +878,7 @@ export default function GenerateCoursePage() {
                             </div>
                           )}
 
-                          {(generatedCourse as any).course_data[
+                          {getCourseData(generatedCourse)[
                             "SYNTHESE_DU_COURS"
                           ].competences_acquises && (
                             <div>
@@ -873,7 +888,7 @@ export default function GenerateCoursePage() {
                               <div className="text-amber-950 leading-relaxed">
                                 <MathText
                                   text={
-                                    (generatedCourse as any).course_data[
+                                    getCourseData(generatedCourse)[
                                       "SYNTHESE_DU_COURS"
                                     ].competences_acquises
                                   }
@@ -882,7 +897,7 @@ export default function GenerateCoursePage() {
                             </div>
                           )}
 
-                          {(generatedCourse as any).course_data[
+                          {getCourseData(generatedCourse)[
                             "SYNTHESE_DU_COURS"
                           ].points_de_vigilance && (
                             <div>
@@ -892,7 +907,7 @@ export default function GenerateCoursePage() {
                               <div className="text-amber-950 leading-relaxed">
                                 <MathText
                                   text={
-                                    (generatedCourse as any).course_data[
+                                    getCourseData(generatedCourse)[
                                       "SYNTHESE_DU_COURS"
                                     ].points_de_vigilance
                                   }
@@ -901,7 +916,7 @@ export default function GenerateCoursePage() {
                             </div>
                           )}
 
-                          {(generatedCourse as any).course_data[
+                          {getCourseData(generatedCourse)[
                             "SYNTHESE_DU_COURS"
                           ].ouverture && (
                             <div>
@@ -911,7 +926,7 @@ export default function GenerateCoursePage() {
                               <div className="text-amber-950 leading-relaxed">
                                 <MathText
                                   text={
-                                    (generatedCourse as any).course_data[
+                                    getCourseData(generatedCourse)[
                                       "SYNTHESE_DU_COURS"
                                     ].ouverture
                                   }
@@ -923,14 +938,14 @@ export default function GenerateCoursePage() {
                       )}
 
                       {/* Synthèse simple (fallback) */}
-                      {!generatedCourse.course_data?.["SYNTHESE_DU_COURS"] &&
-                        generatedCourse.course_data?.[
+                      {!getCourseData(generatedCourse)?.["SYNTHESE_DU_COURS"] &&
+                        getCourseData(generatedCourse)?.[
                           "Synthese ce qu'il faut retenir"
                         ] && (
                           <div className="text-amber-950 leading-relaxed">
                             <MathText
                               text={
-                                generatedCourse.course_data[
+                                getCourseData(generatedCourse)[
                                   "Synthese ce qu'il faut retenir"
                                 ]
                               }
@@ -938,7 +953,7 @@ export default function GenerateCoursePage() {
                           </div>
                         )}
                     </div>
-                  )}
+                  ))}
                 </div>
               </>
             ) : (

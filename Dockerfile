@@ -1,23 +1,26 @@
 # Aladin Frontend - Multi-stage Docker Build
 # Optimized for Next.js 15 with pnpm
 
-# Stage 1: Dependencies installation
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+# Use Debian-based Node image for better compatibility
+FROM node:20-slim AS base
 
+# Stage 1: Dependencies installation
+FROM base AS deps
 WORKDIR /app
 
-# Install pnpm using npm (more reliable than corepack in restricted environments)
+# Install pnpm
 RUN npm install -g pnpm@9
 
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies with retry logic
+RUN pnpm install --frozen-lockfile || \
+    (sleep 5 && pnpm install --frozen-lockfile) || \
+    (sleep 10 && pnpm install --frozen-lockfile)
 
 # Stage 2: Build the application
-FROM node:20-alpine AS builder
+FROM base AS builder
 WORKDIR /app
 
 # Install pnpm
@@ -43,7 +46,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm run build
 
 # Stage 3: Production runner
-FROM node:20-alpine AS runner
+FROM base AS runner
 WORKDIR /app
 
 # Set production environment
@@ -51,8 +54,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 --gid nodejs nextjs
 
 # Copy necessary files from builder
 COPY --from=builder /app/public ./public

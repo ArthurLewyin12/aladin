@@ -1,0 +1,29 @@
+# Production Docker Compose - Uses pre-built image from Docker Hub
+# No build required on the server - just pull and run
+
+services:
+  aladin-frontend:
+    image: sminth/aladin-frontend:latest
+    container_name: aladin-frontend
+    ports:
+      - "12000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-https://aladin.yira.pro}
+      - NEXT_PUBLIC_UNIVERSE=${NEXT_PUBLIC_UNIVERSE:-PROD}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Optionnel: limiter les ressources
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1.0'
+    #       memory: 1G
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 512M

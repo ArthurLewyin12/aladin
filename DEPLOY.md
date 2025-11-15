@@ -6,7 +6,9 @@
 - Accès git au dépôt
 - Port 12000 disponible (ou modifier dans docker-compose.yml)
 
-## Déploiement rapide
+## ✅ Déploiement RAPIDE (Recommandé)
+
+**Utilise l'image pré-buildée depuis Docker Hub - Pas de build nécessaire sur le serveur !**
 
 ### 1. Sur le serveur Ubuntu
 
@@ -14,7 +16,7 @@
 # Se placer dans le répertoire du projet
 cd /home/akilyum/domains/aladin.akilyum.site/public_html/aladin
 
-# Pull les dernières modifications (incluant package-lock.json)
+# Pull les dernières modifications
 git pull
 
 # Configurer les variables d'environnement (optionnel)
@@ -22,6 +24,22 @@ git pull
 export NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro
 export NEXT_PUBLIC_UNIVERSE=PROD
 
+# Pull et lancer l'image depuis Docker Hub (RAPIDE - pas de build)
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+**Avantages :**
+- ✅ Pas de build sur le serveur (évite tous les problèmes réseau)
+- ✅ Déploiement ultra-rapide (juste pull + run)
+- ✅ Image testée et validée
+- ✅ Utilise moins de ressources serveur
+
+## Alternative : Build local sur le serveur
+
+Si vous préférez builder localement :
+
+```bash
 # Build et lancer (SANS CACHE pour éviter les problèmes)
 docker compose -f docker-compose.npm.yml build --no-cache
 docker compose -f docker-compose.npm.yml up -d
@@ -107,11 +125,45 @@ docker system prune -a
 
 ## Mise à jour de l'application
 
+### Avec l'image Docker Hub (Recommandé)
+
+```bash
+cd /home/akilyum/domains/aladin.akilyum.site/public_html/aladin
+
+# Pull les dernières modifications
+git pull
+
+# Pull la nouvelle image et redémarrer
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Avec build local
+
 ```bash
 cd /home/akilyum/domains/aladin.akilyum.site/public_html/aladin
 git pull
 docker compose -f docker-compose.npm.yml build --no-cache
 docker compose -f docker-compose.npm.yml up -d
+```
+
+## Publication d'une nouvelle version (Développeur)
+
+Pour builder et publier une nouvelle version de l'image :
+
+```bash
+# Sur votre machine de développement
+docker build -t sminth/aladin-frontend:latest \
+  --build-arg NEXT_PUBLIC_API_BASE_URL=https://aladin.yira.pro \
+  --build-arg NEXT_PUBLIC_UNIVERSE=PROD \
+  -f Dockerfile.npm .
+
+# Pousser sur Docker Hub
+docker push sminth/aladin-frontend:latest
+
+# Optionnel: créer un tag de version
+docker tag sminth/aladin-frontend:latest sminth/aladin-frontend:v1.0.0
+docker push sminth/aladin-frontend:v1.0.0
 ```
 
 ## Configuration Nginx (reverse proxy)

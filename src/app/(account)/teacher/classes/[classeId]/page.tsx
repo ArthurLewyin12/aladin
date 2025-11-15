@@ -1,8 +1,10 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useClasse } from "@/services/hooks/professeur/useClasse";
+import { createQueryKey } from "@/lib/request";
 import { useActivateQuiz } from "@/services/hooks/professeur/useActivateQuiz";
 import { useDeactivateQuiz } from "@/services/hooks/professeur/useDeactivateQuiz";
 import { Spinner } from "@/components/ui/spinner";
@@ -34,12 +36,18 @@ import { parseAsInteger, useQueryState } from "nuqs";
 const ClasseDetailPage = () => {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const classeId = Number(params.classeId);
 
-  const [activeTab, setActiveTab] = useState("Quiz avec AI");
+  const [activeTab, setActiveTab] = useState("Quiz avec IA");
   const [isMessageModalOpen, setMessageModalOpen] = useState(false);
 
-  const { data: classeDetails, isLoading, isError } = useClasse(classeId);
+  const { data: classeDetails, isLoading, isError, refetch } = useClasse(classeId);
+
+  // Refetch les données quand le tab change
+  useEffect(() => {
+    refetch();
+  }, [activeTab, refetch]);
 
   const handleBack = () => {
     router.back();

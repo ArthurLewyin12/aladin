@@ -20,6 +20,9 @@ export type GetSubjectsResponse = {
   libelles?: string[]; // Noms des matières enseignées par le prof (ex: ["Mathematiques", "Physique-Chimie", "SVT"])
   count: number;
   max: number;
+  is_on_trial?: boolean;
+  modifications_effectuees?: number;
+  modifications_restantes?: number;
 };
 
 export type SetSubjectsPayload = {
@@ -29,6 +32,12 @@ export type SetSubjectsPayload = {
 export type SetSubjectsResponse = {
   message: string;
   matieres: MatiereEnseignee[];
+  libelles?: string[];
+  count: number;
+  max: number;
+  is_on_trial?: boolean;
+  modifications_effectuees?: number;
+  modifications_restantes?: number;
 };
 
 export type MatiereGeneric = {

@@ -235,7 +235,7 @@ export const getClasse = async (
           parent_numero: eleve.parent_numero,
           niveau_id: eleve.niveau?.id,
           type: "utilisateur" as const,
-          user_id: eleve.id,
+          user_id: eleve.user_id,
           is_active: eleve.is_active,
         },
       })) || [],

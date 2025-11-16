@@ -241,6 +241,7 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
         onClose={() => setAddStudentModalOpen(false)}
         classeId={classeDetails.id}
         classeName={classeDetails.nom}
+        classeNiveauId={niveau?.id}
       />
     </div>
   );

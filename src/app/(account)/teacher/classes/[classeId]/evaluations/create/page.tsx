@@ -290,10 +290,22 @@ const CreateEvaluationPage = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               if (member.eleve.user_id) {
-                                setGrades((prev) => ({
-                                  ...prev,
-                                  [member.eleve.user_id!]: value ? Number(value) : undefined,
-                                }));
+                                // Valider que c'est un nombre valide
+                                if (value === "") {
+                                  setGrades((prev) => ({
+                                    ...prev,
+                                    [member.eleve.user_id!]: undefined,
+                                  }));
+                                } else {
+                                  const numValue = parseFloat(value);
+                                  // Vérifier que c'est un nombre valide et dans la plage
+                                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 20) {
+                                    setGrades((prev) => ({
+                                      ...prev,
+                                      [member.eleve.user_id!]: numValue,
+                                    }));
+                                  }
+                                }
                               }
                             }}
                             className="w-20 text-center"

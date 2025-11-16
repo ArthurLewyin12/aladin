@@ -38,6 +38,7 @@ interface AddStudentModalProps {
   onClose: () => void;
   classeId: number;
   classeName: string;
+  classeNiveauId?: number;
   cardColor?: string;
   isMobile?: boolean;
 }
@@ -47,13 +48,13 @@ export const AddStudentModal = ({
   onClose,
   classeId,
   classeName,
+  classeNiveauId,
   cardColor = "bg-[#D4F4DD]",
   isMobile = false,
 }: AddStudentModalProps) => {
   const [email, setEmail] = useState("");
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
-  const [niveauId, setNiveauId] = useState<string>("");
   const [numero, setNumero] = useState("");
   const [parentMail, setParentMail] = useState("");
   const [parentNumero, setParentNumero] = useState("");
@@ -64,8 +65,6 @@ export const AddStudentModal = ({
 
   const { mutate: addMemberMutation, isPending } = useAddMember();
   const { mutate: checkEleveMutation } = useCheckEleve();
-  const { data: niveauxData } = useNiveaux();
-  const niveaux = niveauxData?.niveaux || [];
 
   // Vérifier l'email automatiquement lors de la saisie
   useEffect(() => {
@@ -85,10 +84,9 @@ export const AddStudentModal = ({
       onSuccess: (response) => {
         if (response.exists && response.eleve) {
           setEleveFound(response.eleve);
-          // Auto-remplir les champs
+          // Auto-remplir les champs (sauf niveau, pas besoin)
           setNom(response.eleve.nom);
           setPrenom(response.eleve.prenom);
-          setNiveauId(response.eleve.niveau_id?.toString() || "");
           setNumero(response.eleve.numero || "");
           setParentMail(response.eleve.parent_mail || "");
           setParentNumero(response.eleve.parent_numero || "");
@@ -97,7 +95,6 @@ export const AddStudentModal = ({
           // Réinitialiser les champs si l'élève n'existe pas
           setNom("");
           setPrenom("");
-          setNiveauId("");
           setNumero("");
           setParentMail("");
           setParentNumero("");
@@ -144,11 +141,21 @@ export const AddStudentModal = ({
         },
       );
     } else {
-      // Sinon, on envoie tous les champs requis
-      if (!nom.trim() || !prenom.trim() || !niveauId) {
+      // Sinon, on envoie un élève manuel
+      if (!nom.trim() || !prenom.trim()) {
         toast({
           variant: "error",
-          message: "Veuillez remplir tous les champs obligatoires",
+          message:
+            "Veuillez remplir tous les champs obligatoires (nom et prénom)",
+        });
+        return;
+      }
+
+      if (!classeNiveauId) {
+        toast({
+          variant: "error",
+          message:
+            "Impossible d'ajouter l'élève: niveau de la classe non défini",
         });
         return;
       }
@@ -160,7 +167,7 @@ export const AddStudentModal = ({
             email,
             nom: nom.trim(),
             prenom: prenom.trim(),
-            niveau_id: parseInt(niveauId),
+            niveau_id: classeNiveauId,
             numero: numero.trim() || undefined,
             parent_mail: parentMail.trim() || undefined,
             parent_numero: parentNumero.trim() || undefined,
@@ -178,12 +185,12 @@ export const AddStudentModal = ({
     email,
     nom,
     prenom,
-    niveauId,
     numero,
     parentMail,
     parentNumero,
     eleveFound,
     classeId,
+    classeNiveauId,
     addMemberMutation,
     onClose,
   ]);
@@ -192,7 +199,7 @@ export const AddStudentModal = ({
     setEmail("");
     setNom("");
     setPrenom("");
-    setNiveauId("");
+    // setNiveauId("");
     setNumero("");
     setParentMail("");
     setParentNumero("");
@@ -271,24 +278,6 @@ export const AddStudentModal = ({
                       disabled={isPending}
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
-                    Niveau *
-                  </Label>
-                  <Select value={niveauId} onValueChange={setNiveauId} disabled={isPending}>
-                    <SelectTrigger className="bg-white border-gray-200">
-                      <SelectValue placeholder="Sélectionner un niveau" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {niveaux.map((niveau) => (
-                        <SelectItem key={niveau.id} value={niveau.id.toString()}>
-                          {niveau.libelle}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -415,7 +404,9 @@ export const AddStudentModal = ({
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Nom *</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Nom *
+                  </Label>
                   <Input
                     value={nom}
                     onChange={(e) => setNom(e.target.value)}
@@ -424,7 +415,9 @@ export const AddStudentModal = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Prénom *</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Prénom *
+                  </Label>
                   <Input
                     value={prenom}
                     onChange={(e) => setPrenom(e.target.value)}
@@ -432,22 +425,6 @@ export const AddStudentModal = ({
                     disabled={isPending}
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Niveau *</Label>
-                <Select value={niveauId} onValueChange={setNiveauId} disabled={isPending}>
-                  <SelectTrigger className="bg-white border-gray-200">
-                    <SelectValue placeholder="Sélectionner un niveau" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {niveaux.map((niveau) => (
-                      <SelectItem key={niveau.id} value={niveau.id.toString()}>
-                        {niveau.libelle}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">
@@ -524,4 +501,3 @@ export const AddStudentModal = ({
     </Drawer>
   );
 };
-

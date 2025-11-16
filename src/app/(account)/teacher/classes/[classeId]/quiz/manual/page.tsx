@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Spinner } from "@/components/ui/spinner";
+import { MultipleSelect, TTag } from "@/components/ui/multiple-selects";
 import {
   Form,
   FormControl,
@@ -85,15 +86,7 @@ const approfondissementSchema = z.object({
 const manualQuizSchema = z.object({
   titre: z.string().min(1, "Le titre est requis."),
   difficulte: z.enum(["Facile", "Moyen", "Difficile"]),
-  temps: z
-    .string()
-    .min(1, "Le temps est requis.")
-    .refine((value) => !isNaN(Number(value)), {
-      message: "Indiquez un nombre valide.",
-    })
-    .refine((value) => Number(value) >= 30 && Number(value) <= 60, {
-      message: "Le temps par question doit être entre 30 et 60 secondes.",
-    }),
+  temps: z.string().min(1, "Le temps est requis."),
   matiere_id: z.string().min(1, "La matière est requise."),
   chapitres_ids: z.array(z.string()).min(1, "Choisissez au moins un chapitre."),
   qcm: z.array(questionSchema).min(1, "Ajoutez au moins une question."),
@@ -341,7 +334,7 @@ export default function CreateManualQuizPage() {
                   name="temps"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Temps par question (secondes)</FormLabel>
+                      <FormLabel>Temps par question</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-gray-50 border-gray-200 w-full">
@@ -349,16 +342,8 @@ export default function CreateManualQuizPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Array.from({ length: 31 }, (_, i) => 30 + i).map(
-                            (second) => (
-                              <SelectItem
-                                key={second}
-                                value={second.toString()}
-                              >
-                                {second} secondes
-                              </SelectItem>
-                            ),
-                          )}
+                          <SelectItem value="30">30 secondes</SelectItem>
+                          <SelectItem value="60">60 secondes</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -433,61 +418,48 @@ export default function CreateManualQuizPage() {
                 <FormField
                   control={form.control}
                   name="chapitres_ids"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Chapitres liés</FormLabel>
-                      <div className="mt-3 space-y-3">
-                        {isLoadingChapitres ? (
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Spinner size="sm" /> Chargement des chapitres...
+                  render={({ field }) => {
+                    const chapterTags: TTag[] =
+                      chapitres?.map((chap) => ({
+                        key: String(chap.id),
+                        name: chap.libelle,
+                      })) || [];
+
+                    const selectedTags = chapterTags.filter((tag) =>
+                      field.value?.includes(tag.key),
+                    );
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Chapitres liés</FormLabel>
+                        {!selectedMatiere ? (
+                          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-gray-600">
+                            Veuillez sélectionner une matière d'abord.
                           </div>
-                        ) : chapitres && chapitres.length > 0 ? (
-                          chapitres.map((chapitre) => {
-                            const checked = field.value.includes(
-                              chapitre.id.toString(),
-                            );
-                            return (
-                              <div
-                                key={chapitre.id}
-                                className="flex items-center space-x-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
-                              >
-                                <Checkbox
-                                  id={`chapitre-${chapitre.id}`}
-                                  checked={checked}
-                                  onCheckedChange={(state) => {
-                                    if (state) {
-                                      field.onChange([
-                                        ...field.value,
-                                        chapitre.id.toString(),
-                                      ]);
-                                    } else {
-                                      field.onChange(
-                                        field.value.filter(
-                                          (value) =>
-                                            value !== chapitre.id.toString(),
-                                        ),
-                                      );
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`chapitre-${chapitre.id}`}
-                                  className="text-sm text-gray-700"
-                                >
-                                  {chapitre.libelle}
-                                </label>
-                              </div>
-                            );
-                          })
+                        ) : isLoadingChapitres ? (
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-600">
+                            <Spinner size="sm" className="mr-2 inline" />
+                            Chargement des chapitres...
+                          </div>
+                        ) : chapterTags.length === 0 ? (
+                          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+                            Aucun chapitre trouvé pour cette matière.
+                          </div>
                         ) : (
-                          <p className="text-sm text-gray-500">
-                            Aucun chapitre disponible pour cette matière.
-                          </p>
+                          <MultipleSelect
+                            key={`${selectedMatiere}-${selectedTags.map((t) => t.key).join(",")}`}
+                            tags={chapterTags}
+                            defaultValue={selectedTags}
+                            onChange={(tags) => {
+                              field.onChange(tags.map((tag) => tag.key));
+                            }}
+                            showLabel={false}
+                          />
                         )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
             </CardContent>

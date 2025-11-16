@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { QuizCard } from "@/components/pages/quizzes/quiz-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FileQuestion, Users, BookOpen } from "lucide-react";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { CreateClassQuizModal } from "./create-class-quiz-modal";
 import { GetClasseResponse } from "@/services/controllers/types/common/professeur.types";
+import Link from "next/link";
 
 interface QuizAISectionProps {
   classeDetails: GetClasseResponse;
@@ -20,7 +20,6 @@ const ITEMS_PER_PAGE = 6;
 
 export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
   const router = useRouter();
-  const [isCreateQuizModalOpen, setCreateQuizModalOpen] = useState(false);
 
   // Pagination avec nuqs
   const [page, setPage] = useQueryState(
@@ -75,12 +74,14 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
             </p>
           </div>
           <Button
-            onClick={() => setCreateQuizModalOpen(true)}
+            asChild
             className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 md:px-6 py-3 text-sm sm:text-base md:text-lg rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
           >
-            <span className="text-lg mr-2">+</span>
-            <span className="hidden sm:inline">Nouveau quiz</span>
-            <span className="sm:hidden">Créer</span>
+            <Link href={`/teacher/classes/${classeDetails.id}/quiz/create`}>
+              <span className="text-lg mr-2">+</span>
+              <span className="hidden sm:inline">Nouveau quiz</span>
+              <span className="sm:hidden">Créer</span>
+            </Link>
           </Button>
         </div>
       )}
@@ -112,12 +113,14 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
               </p>
 
               <Button
+                asChild
                 size="lg"
-                onClick={() => setCreateQuizModalOpen(true)}
                 className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
               >
-                <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Créer un Quiz
+                <Link href={`/teacher/classes/${classeDetails.id}/quiz/create`}>
+                  <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Créer un Quiz
+                </Link>
               </Button>
             </div>
           </div>
@@ -228,14 +231,6 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
           )}
         </div>
       )}
-
-      {/* Modal de création de quiz */}
-      <CreateClassQuizModal
-        isOpen={isCreateQuizModalOpen}
-        onClose={() => setCreateQuizModalOpen(false)}
-        classeId={classeDetails.id}
-        matieres={matieres}
-      />
     </div>
   );
 };

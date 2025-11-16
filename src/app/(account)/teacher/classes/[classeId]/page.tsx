@@ -56,7 +56,6 @@ const ClasseDetailPage = () => {
   const tabs = [
     { label: "Quiz avec IA", icon: <Brain className="w-4 h-4" /> },
     { label: "Quiz manuel", icon: <BookText className="w-4 h-4" /> },
-    { label: "Documents", icon: <Upload className="w-4 h-4" /> },
     { label: "Elèves", icon: <Users className="w-4 h-4" /> },
     { label: "Notes", icon: <BarChart3 className="w-4 h-4" /> },
   ];
@@ -141,9 +140,6 @@ const ClasseDetailPage = () => {
             )}
             {activeTab === "Quiz manuel" && (
               <ManualQuizSection classeDetails={classeDetails} />
-            )}
-            {activeTab === "Documents" && (
-              <div>Contenu pour Document téléchargé</div>
             )}
             {activeTab === "Elèves" && (
               <StudentSection classeDetails={classeDetails} />

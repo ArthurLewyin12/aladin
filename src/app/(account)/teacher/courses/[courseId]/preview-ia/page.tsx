@@ -20,9 +20,30 @@ export default function CoursePreviewIAPage() {
     router.push(`/teacher/courses/${courseId}/edit`);
   };
 
+  // Helper function to get course_data or cours_data
+  const getCourseData = (courseData: any) => {
+    // Check multiple possible locations for course_data
+    return (
+      courseData?.content?.course_data ||
+      courseData?.course_data ||
+      courseData?.data?.course_data ||
+      courseData?.content?.cours_data ||
+      courseData?.cours_data ||
+      courseData?.data?.cours_data
+    );
+  };
+
   // Déterminer si c'est le nouveau format structuré
   const hasStructuredCourseData =
-    course && typeof course === "object" && "course_data" in course;
+    course &&
+    typeof course === "object" &&
+    ("course_data" in course ||
+      "cours_data" in course ||
+      (course.content &&
+        ("course_data" in course.content || "cours_data" in course.content)) ||
+      (course.data &&
+        ("course_data" in course.data || "cours_data" in course.data))) &&
+    getCourseData(course) !== null;
 
   if (isError) {
     return (
@@ -108,15 +129,14 @@ export default function CoursePreviewIAPage() {
 
         {/* Main Content */}
         {course && (
-          <main className="w-full max-w-4xl mx-auto py-8 sm:py-12 space-y-6">
-            {/* NOUVEAU FORMAT STRUCTURÉ */}
+          <main className="w-full max-w-6xl mx-auto py-8 sm:py-12 space-y-6 px-4 sm:px-6">
             {hasStructuredCourseData ? (
               <>
-                {/* Titre Principal avec underline */}
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-orange-500 w-fit mx-auto">
-                  {course.course_data?.["TITRE_DE_LA_LECON"] ||
-                    course.course_data?.["Titre de la leçon"] ||
-                    course.course_data?.["Titre de la lecon"]}
+                {/* Titre Principal */}
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 w-fit mx-auto">
+                  {getCourseData(course)?.["TITRE_DE_LA_LECON"] ||
+                    getCourseData(course)?.["Titre de la leçon"] ||
+                    getCourseData(course)?.["Titre de la lecon"]}
                 </h1>
 
                 {/* Introduction */}
@@ -125,15 +145,17 @@ export default function CoursePreviewIAPage() {
                     Introduction
                   </h2>
                   <div className="text-gray-700 leading-relaxed">
-                    <MathText text={course.course_data?.Introduction || ""} />
+                    <MathText
+                      text={getCourseData(course)?.Introduction || ""}
+                    />
                   </div>
                 </div>
 
                 {/* Développement du cours */}
-                {course.course_data &&
+                {getCourseData(course) &&
                   Object.keys(
-                    course.course_data["DEVELOPPEMENT_DU_COURS"] ||
-                      course.course_data["developpement du cours"] ||
+                    getCourseData(course)["DEVELOPPEMENT_DU_COURS"] ||
+                      getCourseData(course)["developpement du cours"] ||
                       {},
                   ).length > 0 && (
                     <div className="mb-8">
@@ -142,15 +164,12 @@ export default function CoursePreviewIAPage() {
                       </h2>
                       <div className="space-y-8">
                         {Object.entries(
-                          (course.course_data["DEVELOPPEMENT_DU_COURS"] ||
-                            course.course_data[
+                          (getCourseData(course)["DEVELOPPEMENT_DU_COURS"] ||
+                            getCourseData(course)[
                               "developpement du cours"
                             ]) as Record<string, any>,
                         ).map(([key, notion]: [string, any], index: number) => (
-                          <div
-                            key={key}
-                            className="border-l-4 border-orange-500 pl-6 py-4"
-                          >
+                          <div key={key} className="py-4">
                             {/* Numéro et titre de la notion */}
                             <div className="flex items-baseline gap-2 mb-4">
                               <span className="text-2xl font-bold text-orange-500">
@@ -343,17 +362,19 @@ export default function CoursePreviewIAPage() {
                   )}
 
                 {/* Synthèse */}
-                {(course.course_data?.["SYNTHESE_DU_COURS"] ||
-                  course.course_data?.["Synthese ce qu'il faut retenir"]) && (
+                {(getCourseData(course)?.["SYNTHESE_DU_COURS"] ||
+                  getCourseData(course)?.[
+                    "Synthese ce qu'il faut retenir"
+                  ]) && (
                   <div className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
                     <h2 className="text-xl font-bold text-amber-900 mb-4">
                       Synthèse du cours
                     </h2>
 
                     {/* Synthèse structurée */}
-                    {course.course_data?.["SYNTHESE_DU_COURS"] && (
+                    {getCourseData(course)?.["SYNTHESE_DU_COURS"] && (
                       <div className="space-y-4">
-                        {course.course_data["SYNTHESE_DU_COURS"]
+                        {getCourseData(course)["SYNTHESE_DU_COURS"]
                           .recapitulatif && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -362,7 +383,7 @@ export default function CoursePreviewIAPage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  course.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(course)["SYNTHESE_DU_COURS"]
                                     .recapitulatif
                                 }
                               />
@@ -370,7 +391,7 @@ export default function CoursePreviewIAPage() {
                           </div>
                         )}
 
-                        {course.course_data["SYNTHESE_DU_COURS"]
+                        {getCourseData(course)["SYNTHESE_DU_COURS"]
                           .competences_acquises && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -379,7 +400,7 @@ export default function CoursePreviewIAPage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  course.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(course)["SYNTHESE_DU_COURS"]
                                     .competences_acquises
                                 }
                               />
@@ -387,7 +408,7 @@ export default function CoursePreviewIAPage() {
                           </div>
                         )}
 
-                        {course.course_data["SYNTHESE_DU_COURS"]
+                        {getCourseData(course)["SYNTHESE_DU_COURS"]
                           .points_de_vigilance && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
@@ -396,7 +417,7 @@ export default function CoursePreviewIAPage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  course.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(course)["SYNTHESE_DU_COURS"]
                                     .points_de_vigilance
                                 }
                               />
@@ -404,7 +425,8 @@ export default function CoursePreviewIAPage() {
                           </div>
                         )}
 
-                        {course.course_data["SYNTHESE_DU_COURS"].ouverture && (
+                        {getCourseData(course)["SYNTHESE_DU_COURS"]
+                          .ouverture && (
                           <div>
                             <h3 className="font-semibold text-amber-900 mb-2">
                               Ouverture
@@ -412,7 +434,7 @@ export default function CoursePreviewIAPage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  course.course_data["SYNTHESE_DU_COURS"]
+                                  getCourseData(course)["SYNTHESE_DU_COURS"]
                                     .ouverture
                                 }
                               />
@@ -423,14 +445,14 @@ export default function CoursePreviewIAPage() {
                     )}
 
                     {/* Synthèse simple (fallback) */}
-                    {!course.course_data?.["SYNTHESE_DU_COURS"] &&
-                      course.course_data?.[
+                    {!getCourseData(course)?.["SYNTHESE_DU_COURS"] &&
+                      getCourseData(course)?.[
                         "Synthese ce qu'il faut retenir"
                       ] && (
                         <div className="text-amber-950 leading-relaxed">
                           <MathText
                             text={
-                              course.course_data[
+                              getCourseData(course)[
                                 "Synthese ce qu'il faut retenir"
                               ]
                             }
@@ -441,56 +463,53 @@ export default function CoursePreviewIAPage() {
                 )}
 
                 {/* Questions d'approfondissement */}
-                {course && course.questions && course.questions.length > 0 && (
-                  <section className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-orange-500 rounded-xl">
-                        <MessageCircleQuestion className="w-5 h-5 text-white" />
+                {course &&
+                  (course.content?.questions || course.questions) &&
+                  (course.content?.questions || course.questions).length >
+                    0 && (
+                    <section className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-orange-500 rounded-xl">
+                          <MessageCircleQuestion className="w-5 h-5 text-white" />
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                          Questions d'approfondissements
+                        </h2>
                       </div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                        Questions d'approfondissements
-                      </h2>
-                    </div>
-                    <div className="space-y-4">
-                      {course.questions.map((qa: any, index: number) => (
-                        <details
-                          key={index}
-                          className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
-                        >
-                          <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
-                            <span className="flex-shrink-0 mt-0.5 text-orange-500 group-open:hidden">
-                              ▶
-                            </span>
-                            <span className="flex-shrink-0 mt-0.5 text-orange-500 hidden group-open:block">
-                              ▼
-                            </span>
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
-                              {index + 1}
-                            </span>
-                            <MathText text={qa.question} className="flex-1" />
-                          </summary>
-                          <div className="mt-4 pl-9">
-                            <MathText
-                              text={qa.reponse}
-                              className="text-sm sm:text-base text-gray-700 leading-relaxed"
-                            />
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Edit Button */}
-                <div className="flex justify-center pt-4">
-                  <Button
-                    onClick={handleEdit}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-3xl"
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Éditer ce cours
-                  </Button>
-                </div>
+                      <div className="space-y-4">
+                        {(course.content?.questions || course.questions).map(
+                          (qa: any, index: number) => (
+                            <details
+                              key={index}
+                              className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
+                            >
+                              <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                                <span className="flex-shrink-0 mt-0.5 text-orange-500 group-open:hidden">
+                                  ▶
+                                </span>
+                                <span className="flex-shrink-0 mt-0.5 text-orange-500 hidden group-open:block">
+                                  ▼
+                                </span>
+                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                                  {index + 1}
+                                </span>
+                                <MathText
+                                  text={qa.question}
+                                  className="flex-1"
+                                />
+                              </summary>
+                              <div className="mt-4 pl-9">
+                                <MathText
+                                  text={qa.reponse}
+                                  className="text-sm sm:text-base text-gray-700 leading-relaxed"
+                                />
+                              </div>
+                            </details>
+                          ),
+                        )}
+                      </div>
+                    </section>
+                  )}
               </>
             ) : (
               // Fallback pour ancien format

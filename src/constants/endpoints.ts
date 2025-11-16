@@ -305,4 +305,7 @@ export enum ProfesseurEndpoints {
   CREATE_CLASS_MESSAGE = "/api/prof/classes/{classe_id}/messages",
   UPDATE_CLASS_MESSAGE = "/api/prof/classes/{classe_id}/messages/{message_id}",
   TOGGLE_CLASS_MESSAGE = "/api/prof/classes/{classe_id}/messages/{message_id}/toggle",
+
+  // Dashboard
+  GET_DASHBOARD = "/api/prof/dashboard",
 }

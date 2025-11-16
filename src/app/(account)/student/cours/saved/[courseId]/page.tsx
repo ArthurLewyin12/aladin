@@ -104,7 +104,9 @@ export default function SavedCoursePage() {
 
   // Déterminer si c'est le nouveau format structuré
   const hasStructuredCourseData =
-    data && typeof data === "object" && ("course_data" in data || "cours_data" in data);
+    data &&
+    typeof data === "object" &&
+    ("course_data" in data || "cours_data" in data);
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
@@ -236,14 +238,11 @@ export default function SavedCoursePage() {
 
         {/* Main Content */}
         {data && (
-          <main className="w-full max-w-4xl mx-auto py-8 sm:py-12 space-y-6">
-            {/* Vérifier si c'est le nouveau format structuré */}
+          <main className="w-full max-w-6xl mx-auto py-8 sm:py-12 space-y-6">
             {hasStructuredCourseData ? (
               <>
-                {/* NOUVEAU FORMAT STRUCTURÉ - Simple et épuré */}
-
                 {/* Titre Principal avec underline */}
-                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
                   {getCourseData(data)?.["TITRE_DE_LA_LECON"] ||
                     getCourseData(data)?.["Titre de la leçon"] ||
                     getCourseData(data)?.["Titre de la lecon"]}
@@ -277,10 +276,7 @@ export default function SavedCoursePage() {
                               "developpement du cours"
                             ]) as Record<string, any>,
                         ).map(([key, notion]: [string, any], index: number) => (
-                           <div
-                             key={key}
-                             className="pl-6 py-4"
-                           >
+                          <div key={key} className="pl-6 py-4">
                             {/* Numéro et titre de la notion */}
                             <div className="flex items-baseline gap-2 mb-4">
                               <span className="text-2xl font-bold text-orange-500">
@@ -554,11 +550,15 @@ export default function SavedCoursePage() {
 
                     {/* Synthèse simple (fallback) */}
                     {!getCourseData(data)?.["SYNTHESE_DU_COURS"] &&
-                      getCourseData(data)?.["Synthese ce qu'il faut retenir"] && (
+                      getCourseData(data)?.[
+                        "Synthese ce qu'il faut retenir"
+                      ] && (
                         <div className="text-amber-950 leading-relaxed">
                           <MathText
                             text={
-                              getCourseData(data)["Synthese ce qu'il faut retenir"]
+                              getCourseData(data)[
+                                "Synthese ce qu'il faut retenir"
+                              ]
                             }
                           />
                         </div>

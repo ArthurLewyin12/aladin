@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/pages/dashboard/stat-card";
+import { useDashboard } from "@/services/hooks/professeur/useDashboard";
+import { useSubjects } from "@/services/hooks/professeur/useSubjects";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -197,6 +200,8 @@ const STATIC_DATA = {
 
 export default function TeacherDashboardPage() {
   const router = useRouter();
+  const { data: dashboardData, isLoading, error } = useDashboard();
+  const { data: subjectsData } = useSubjects();
 
   const handleBack = () => {
     router.push("/teacher/home");
@@ -210,73 +215,213 @@ export default function TeacherDashboardPage() {
     return "bg-red-500";
   };
 
-  // Colonnes pour le tableau des moyennes
+  // Transformer les données de l'API pour les graphiques
+  const statsData = useMemo(() => {
+    if (!dashboardData) return STATIC_DATA.stats;
+    return {
+      totalClasses: dashboardData.statistiques_generales.nombre_classes,
+      totalStudents: dashboardData.statistiques_generales.nombre_eleves,
+      totalCourses: dashboardData.statistiques_generales.nombre_cours,
+      totalQuizzes: dashboardData.statistiques_generales.nombre_quiz,
+    };
+  }, [dashboardData]);
+
+  // Répartition des quiz
+  const quizDistribution = useMemo(() => {
+    if (!dashboardData) return STATIC_DATA.quizTypeDistribution;
+    return [
+      { name: "Quiz Manuel", value: dashboardData.repartition_quiz.manuel, color: "#8884d8" },
+      { name: "Quiz IA", value: dashboardData.repartition_quiz.genere, color: "#82ca9d" },
+      { name: "Quiz Document", value: dashboardData.repartition_quiz.document, color: "#ffc658" },
+    ];
+  }, [dashboardData]);
+
+  // Activité des classes (total des activités du dernier mois pour chaque classe)
+  const classActivityData = useMemo(() => {
+    if (!dashboardData) return STATIC_DATA.classActivity;
+
+    return dashboardData.evolution_activites_par_classe.map((classe) => {
+      // Prendre le dernier mois avec des données
+      const dernierMois = classe.evolution[classe.evolution.length - 1];
+
+      // Trouver les moyennes correspondantes
+      const moyennesClasse = dashboardData.evolution_moyennes_par_classe.find(
+        (m) => m.classe_id === classe.classe_id
+      );
+      const moyenneDernierMois = moyennesClasse?.evolution[moyennesClasse.evolution.length - 1];
+
+      return {
+        classe: classe.classe_nom,
+        quiz_termines: dernierMois.details.quiz,
+        moyenne: moyenneDernierMois?.moyenne_generale || 0,
+      };
+    });
+  }, [dashboardData]);
+
+  // Évolution des performances par mois (toutes les classes)
+  const performanceEvolutionData = useMemo(() => {
+    if (!dashboardData) return STATIC_DATA.performanceEvolution;
+
+    // Récupérer tous les mois uniques
+    const allMonths = dashboardData.evolution_moyennes_par_classe[0]?.evolution.map((e) => e.mois) || [];
+
+    // Préparer les données pour le graphique
+    return allMonths.map((mois, index) => {
+      const dataPoint: any = { mois };
+
+      // Pour chaque classe, ajouter sa moyenne pour ce mois
+      dashboardData.evolution_moyennes_par_classe.forEach((classe) => {
+        const moyenneMois = classe.evolution[index];
+        dataPoint[classe.classe_nom] = moyenneMois?.moyenne_generale || null;
+      });
+
+      return dataPoint;
+    });
+  }, [dashboardData]);
+
+  // Récupérer les matières enseignées par le prof
+  const teacherSubjects = useMemo(() => {
+    if (!subjectsData) return [];
+    return Array.isArray(subjectsData.libelles)
+      ? subjectsData.libelles.filter((item) => typeof item === "string")
+      : [];
+  }, [subjectsData]);
+
+  // Transformer les notes élèves pour le tableau
+  const studentNotesData = useMemo(() => {
+    if (!dashboardData) return STATIC_DATA.studentAverages;
+
+    // Grouper les notes par élève et par matière
+    const elevesMap = new Map<number, any>();
+
+    dashboardData.tableau_notes_eleves.forEach((note) => {
+      if (!elevesMap.has(note.eleve_id)) {
+        elevesMap.set(note.eleve_id, {
+          eleve: `${note.eleve_nom} ${note.eleve_prenom}`,
+          classe: note.classe_nom,
+          notesByMatiere: new Map<string, number[]>(),
+          quizRealises: 0,
+        });
+      }
+      const eleve = elevesMap.get(note.eleve_id);
+
+      // Grouper les notes par matière
+      const matiere = note.matiere_libelle;
+      if (!eleve.notesByMatiere.has(matiere)) {
+        eleve.notesByMatiere.set(matiere, []);
+      }
+      eleve.notesByMatiere.get(matiere).push(note.note);
+
+      if (note.type === "evaluation") {
+        eleve.quizRealises++;
+      }
+    });
+
+    // Calculer les moyennes
+    return Array.from(elevesMap.values()).map((eleve) => {
+      const result: any = {
+        eleve: eleve.eleve,
+        classe: eleve.classe,
+        quizRealises: eleve.quizRealises,
+      };
+
+      // Calculer la moyenne par matière enseignée
+      let totalNotes = 0;
+      let countNotes = 0;
+
+      teacherSubjects.forEach((matiere) => {
+        const notesMatiere = eleve.notesByMatiere.get(matiere);
+        if (notesMatiere && notesMatiere.length > 0) {
+          const moyenne = notesMatiere.reduce((sum: number, n: number) => sum + n, 0) / notesMatiere.length;
+          result[matiere] = moyenne;
+          totalNotes += moyenne;
+          countNotes++;
+        } else {
+          result[matiere] = null; // Pas de note pour cette matière
+        }
+      });
+
+      // Calculer la moyenne générale
+      result.moyenneGenerale = countNotes > 0 ? totalNotes / countNotes : null;
+
+      return result;
+    });
+  }, [dashboardData, teacherSubjects]);
+
+  // Colonnes pour le tableau des moyennes (dynamiques selon les matières)
   const studentAverageColumns = useMemo(
-    () => [
-      columnHelper.accessor("eleve", {
-        header: "Élève",
-        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
-      }),
-      columnHelper.accessor("classe", {
-        header: "Classe",
-        cell: (info) => <Badge variant="outline">{info.getValue()}</Badge>,
-      }),
-      columnHelper.accessor("moyenneGenerale", {
-        header: "Moyenne Générale",
-        cell: (info) => {
-          const note = info.getValue();
-          return (
-            <div className="flex items-center justify-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${getNoteBadgeColor(note)}`}
-              />
-              <span className="font-bold text-lg">
-                {note.toFixed(1)}
-                <span className="text-sm text-gray-500">/20</span>
-              </span>
-            </div>
-          );
-        },
-      }),
-      columnHelper.accessor("mathematiques", {
-        header: "Mathématiques",
-        cell: (info) => (
-          <span className="font-semibold text-center block">
-            {info.getValue().toFixed(1)}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("physique", {
-        header: "Physique",
-        cell: (info) => (
-          <span className="font-semibold text-center block">
-            {info.getValue().toFixed(1)}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("chimie", {
-        header: "Chimie",
-        cell: (info) => (
-          <span className="font-semibold text-center block">
-            {info.getValue().toFixed(1)}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("quizRealises", {
-        header: "Quiz Réalisés",
-        cell: (info) => (
-          <span className="font-semibold text-blue-600 text-center block">
-            {info.getValue()}
-          </span>
-        ),
-      }),
-    ],
-    [],
+    () => {
+      const columns: any[] = [
+        columnHelper.accessor("eleve", {
+          header: "Élève",
+          cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+        }),
+        columnHelper.accessor("classe", {
+          header: "Classe",
+          cell: (info) => <Badge variant="outline">{info.getValue()}</Badge>,
+        }),
+        columnHelper.accessor("moyenneGenerale", {
+          header: "Moyenne Générale",
+          cell: (info) => {
+            const note = info.getValue();
+            if (note === null || note === undefined) {
+              return <span className="text-gray-400 text-center block">-</span>;
+            }
+            return (
+              <div className="flex items-center justify-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${getNoteBadgeColor(note)}`}
+                />
+                <span className="font-bold text-lg">
+                  {note.toFixed(1)}
+                  <span className="text-sm text-gray-500">/20</span>
+                </span>
+              </div>
+            );
+          },
+        }),
+      ];
+
+      // Ajouter une colonne pour chaque matière enseignée
+      teacherSubjects.forEach((matiere) => {
+        columns.push(
+          columnHelper.accessor(matiere as any, {
+            header: matiere,
+            cell: (info: any) => {
+              const note = info.getValue();
+              if (note === null || note === undefined) {
+                return <span className="text-gray-400 text-center block">-</span>;
+              }
+              return (
+                <span className="font-semibold text-center block">
+                  {note.toFixed(1)}
+                </span>
+              );
+            },
+          })
+        );
+      });
+
+      // Ajouter la colonne Quiz Réalisés
+      columns.push(
+        columnHelper.accessor("quizRealises", {
+          header: "Quiz Réalisés",
+          cell: (info) => (
+            <span className="font-semibold text-blue-600 text-center block">
+              {info.getValue()}
+            </span>
+          ),
+        })
+      );
+
+      return columns;
+    },
+    [teacherSubjects],
   );
 
   // Table avec pagination
   const studentAverageTable = useReactTable({
-    data: STATIC_DATA.studentAverages,
+    data: studentNotesData,
     columns: studentAverageColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -302,6 +447,37 @@ export default function TeacherDashboardPage() {
     }
     return null;
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center px-4">
+        <div className="text-center space-y-4">
+          <Spinner size="lg" />
+          <p className="text-lg font-medium text-gray-700">
+            Chargement du dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center px-4">
+        <div className="max-w-md w-full bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center">
+          <p className="text-lg font-semibold text-red-600 mb-2">
+            Erreur lors du chargement du dashboard
+          </p>
+          <p className="text-sm text-red-500 mb-6">{(error as any)?.message}</p>
+          <Button onClick={handleBack} className="bg-red-600 hover:bg-red-700 text-white">
+            Retour
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -336,7 +512,7 @@ export default function TeacherDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               title="Mes classes"
-              value={STATIC_DATA.stats.totalClasses.toString()}
+              value={statsData.totalClasses.toString()}
               subtitle="Classes actives"
               icon={<Users className="h-16 w-16" />}
               bgColor="bg-[#D4F4DD]"
@@ -344,7 +520,7 @@ export default function TeacherDashboardPage() {
             />
             <StatCard
               title="Mes élèves"
-              value={STATIC_DATA.stats.totalStudents.toString()}
+              value={statsData.totalStudents.toString()}
               subtitle="Élèves inscrits"
               icon={<GraduationCap className="h-16 w-16" />}
               bgColor="bg-[#E8F8E8]"
@@ -352,7 +528,7 @@ export default function TeacherDashboardPage() {
             />
             <StatCard
               title="Cours créés"
-              value={STATIC_DATA.stats.totalCourses.toString()}
+              value={statsData.totalCourses.toString()}
               subtitle="Cours publiés"
               icon={<BookOpen className="h-16 w-16" />}
               bgColor="bg-[#C8E6C9]"
@@ -360,7 +536,7 @@ export default function TeacherDashboardPage() {
             />
             <StatCard
               title="Quiz créés"
-              value={STATIC_DATA.stats.totalQuizzes.toString()}
+              value={statsData.totalQuizzes.toString()}
               subtitle="Tous types"
               icon={<Brain className="h-16 w-16" />}
               bgColor="bg-[#DCEDC8]"
@@ -382,7 +558,7 @@ export default function TeacherDashboardPage() {
               </h2>
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={STATIC_DATA.classActivity}>
+              <BarChart data={classActivityData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="classe"
@@ -414,7 +590,7 @@ export default function TeacherDashboardPage() {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={STATIC_DATA.quizTypeDistribution}
+                  data={quizDistribution}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -425,7 +601,7 @@ export default function TeacherDashboardPage() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {STATIC_DATA.quizTypeDistribution.map((entry, index) => (
+                  {quizDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -446,47 +622,25 @@ export default function TeacherDashboardPage() {
             </h2>
           </div>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={STATIC_DATA.performanceEvolution}>
+            <LineChart data={performanceEvolutionData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="jour" />
+              <XAxis dataKey="mois" />
               <YAxis domain={[0, 20]} />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="Terminale S1"
-                stroke="#10b981"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="Terminale S2"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="Première S"
-                stroke="#8b5cf6"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="Seconde A"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="Seconde B"
-                stroke="#ef4444"
-                strokeWidth={2}
-                dot={false}
-              />
+              {dashboardData?.evolution_moyennes_par_classe.map((classe, index) => {
+                const colors = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899", "#06b6d4", "#84cc16"];
+                return (
+                  <Line
+                    key={classe.classe_id}
+                    type="monotone"
+                    dataKey={classe.classe_nom}
+                    stroke={colors[index % colors.length]}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                );
+              })}
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -503,7 +657,7 @@ export default function TeacherDashboardPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-xl border border-gray-200 overflow-hidden">
+            <div className="rounded-xl border border-gray-200 overflow-x-auto">
               <Table>
                 <TableHeader>
                   {studentAverageTable.getHeaderGroups().map((headerGroup) => (

@@ -68,6 +68,7 @@ import {
   UpdateClassMessageResponse,
   ToggleClassMessageResponse,
 } from "./types/common/professeur.types";
+import { DashboardResponse } from "./types/common/professeur-dashboard.types";
 
 /**
  * ===============================
@@ -913,4 +914,18 @@ export const toggleClassMessage = async (
     classeId.toString(),
   ).replace("{message_id}", messageId.toString());
   return request.post<ToggleClassMessageResponse>(endpoint);
+};
+
+/**
+ * ===============================
+ * DASHBOARD
+ * ===============================
+ */
+
+/**
+ * Récupère les données du dashboard du professeur.
+ * @returns {Promise<DashboardResponse>} Statistiques et données du dashboard.
+ */
+export const getDashboard = async (): Promise<DashboardResponse> => {
+  return request.get<DashboardResponse>(ProfesseurEndpoints.GET_DASHBOARD);
 };

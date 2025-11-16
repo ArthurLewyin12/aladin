@@ -121,7 +121,13 @@ export default function CoursePage() {
 
   const handleBack = () => router.back();
 
-  if (isError || (data && !("text" in data) && !("course_data" in data) && !("cours_data" in data))) {
+  if (
+    isError ||
+    (data &&
+      !("text" in data) &&
+      !("course_data" in data) &&
+      !("cours_data" in data))
+  ) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center px-4">
         <div className="max-w-md w-full bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center">
@@ -161,7 +167,9 @@ export default function CoursePage() {
 
   const courseData = data as GenerateCoursSuccessResponse;
   const hasStructuredCourseData =
-    data && typeof data === "object" && ("course_data" in data || "cours_data" in data);
+    data &&
+    typeof data === "object" &&
+    ("course_data" in data || "cours_data" in data);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -197,7 +205,7 @@ export default function CoursePage() {
 
         {/* Main Content */}
         {data && (
-          <main className="w-full max-w-4xl mx-auto py-8 sm:py-12">
+          <main className="w-full max-w-6xl mx-auto py-8 sm:py-12">
             {showDeepeeningQuestions ? (
               <DeepeeningQuestions
                 questions={courseData.questions || []}
@@ -208,7 +216,7 @@ export default function CoursePage() {
                 {/* NOUVEAU FORMAT STRUCTURÉ - Complet avec tous les champs */}
 
                 {/* Titre Principal avec underline */}
-                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
                   {getCourseData(courseData)?.["TITRE_DE_LA_LECON"] ||
                     getCourseData(courseData)?.["Titre de la leçon"] ||
                     getCourseData(courseData)?.["Titre de la lecon"]}
@@ -221,9 +229,7 @@ export default function CoursePage() {
                   </h2>
                   <div className="text-gray-700 leading-relaxed">
                     <MathText
-                      text={
-                        getCourseData(courseData)?.Introduction || ""
-                      }
+                      text={getCourseData(courseData)?.Introduction || ""}
                     />
                   </div>
                 </div>
@@ -232,9 +238,7 @@ export default function CoursePage() {
                 {getCourseData(courseData) &&
                   Object.keys(
                     getCourseData(courseData)["DEVELOPPEMENT_DU_COURS"] ||
-                      getCourseData(courseData)[
-                        "developpement du cours"
-                      ] ||
+                      getCourseData(courseData)["developpement du cours"] ||
                       {},
                   ).length > 0 && (
                     <div className="mb-8">
@@ -243,17 +247,10 @@ export default function CoursePage() {
                       </h2>
                       <div className="space-y-8">
                         {Object.entries(
-                          getCourseData(courseData)[
-                            "DEVELOPPEMENT_DU_COURS"
-                          ] ||
-                            getCourseData(courseData)[
-                              "developpement du cours"
-                            ],
+                          getCourseData(courseData)["DEVELOPPEMENT_DU_COURS"] ||
+                            getCourseData(courseData)["developpement du cours"],
                         ).map(([key, notion]: [string, any], index: number) => (
-                           <div
-                             key={key}
-                             className="pl-6 py-4"
-                           >
+                          <div key={key} className="pl-6 py-4">
                             {/* Numéro et titre de la notion */}
                             <div className="flex items-baseline gap-2 mb-4">
                               <span className="text-2xl font-bold text-orange-500">
@@ -446,7 +443,7 @@ export default function CoursePage() {
                   )}
 
                 {/* Synthèse */}
-                {((getCourseData(courseData)?.["SYNTHESE_DU_COURS"] ||
+                {(getCourseData(courseData)?.["SYNTHESE_DU_COURS"] ||
                   getCourseData(courseData)?.[
                     "Synthese ce qu'il faut retenir"
                   ]) && (
@@ -456,9 +453,7 @@ export default function CoursePage() {
                     </h2>
 
                     {/* Synthèse structurée */}
-                    {getCourseData(courseData)?.[
-                      "SYNTHESE_DU_COURS"
-                    ] && (
+                    {getCourseData(courseData)?.["SYNTHESE_DU_COURS"] && (
                       <div className="space-y-4">
                         {getCourseData(courseData)["SYNTHESE_DU_COURS"]
                           .recapitulatif && (
@@ -469,9 +464,8 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  getCourseData(courseData)[
-                                    "SYNTHESE_DU_COURS"
-                                  ].recapitulatif
+                                  getCourseData(courseData)["SYNTHESE_DU_COURS"]
+                                    .recapitulatif
                                 }
                               />
                             </div>
@@ -487,9 +481,8 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  getCourseData(courseData)[
-                                    "SYNTHESE_DU_COURS"
-                                  ].competences_acquises
+                                  getCourseData(courseData)["SYNTHESE_DU_COURS"]
+                                    .competences_acquises
                                 }
                               />
                             </div>
@@ -505,9 +498,8 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  getCourseData(courseData)[
-                                    "SYNTHESE_DU_COURS"
-                                  ].points_de_vigilance
+                                  getCourseData(courseData)["SYNTHESE_DU_COURS"]
+                                    .points_de_vigilance
                                 }
                               />
                             </div>
@@ -523,9 +515,8 @@ export default function CoursePage() {
                             <div className="text-amber-950 leading-relaxed">
                               <MathText
                                 text={
-                                  getCourseData(courseData)[
-                                    "SYNTHESE_DU_COURS"
-                                  ].ouverture
+                                  getCourseData(courseData)["SYNTHESE_DU_COURS"]
+                                    .ouverture
                                 }
                               />
                             </div>
@@ -550,7 +541,7 @@ export default function CoursePage() {
                         </div>
                       )}
                   </div>
-                ))}
+                )}
               </>
             ) : (
               <>

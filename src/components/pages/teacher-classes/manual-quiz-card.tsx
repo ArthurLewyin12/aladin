@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Clock, FileQuestion, BookOpen, Calendar, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -36,7 +37,18 @@ export const ManualQuizCard = ({
     DIFFICULTY_COLORS[quiz.difficulte as keyof typeof DIFFICULTY_COLORS] ||
     "bg-gray-100 text-gray-800 border-gray-200";
 
+  // State local pour optimistic update
+  const [isActive, setIsActive] = useState(quiz.is_active);
+
+  // Synchroniser avec les données du serveur quand elles changent
+  useEffect(() => {
+    setIsActive(quiz.is_active);
+  }, [quiz.is_active]);
+
   const handleStatusChange = (newStatus: boolean) => {
+    // Mise à jour optimiste - changer l'UI immédiatement
+    setIsActive(newStatus);
+
     if (newStatus && onActivate) {
       onActivate();
     } else if (!newStatus && onDeactivate) {
@@ -71,7 +83,6 @@ export const ManualQuizCard = ({
         "relative rounded-3xl p-8 shadow-sm transition-all hover:shadow-md",
         cardColor,
         className,
-        !quiz.is_active && "opacity-60",
       )}
     >
       {/* Header avec titre et switch */}
@@ -93,13 +104,13 @@ export const ManualQuizCard = ({
         <div className="flex items-center space-x-2 flex-shrink-0">
           <Label
             htmlFor={`quiz-status-${quiz.id}`}
-            className="text-sm font-medium"
+            className="text-sm font-medium whitespace-nowrap"
           >
-            {quiz.is_active ? "Actif" : "Inactif"}
+            {isActive ? "Publié" : "Partager"}
           </Label>
           <Switch
             id={`quiz-status-${quiz.id}`}
-            checked={quiz.is_active}
+            checked={isActive}
             onCheckedChange={handleStatusChange}
             className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
           />
@@ -144,7 +155,7 @@ export const ManualQuizCard = ({
 
       {/* Footer avec boutons */}
       <div className="flex items-center justify-end gap-3">
-        {quiz.is_active ? (
+        {isActive ? (
           <Button
             onClick={handleOpen}
             variant="outline"

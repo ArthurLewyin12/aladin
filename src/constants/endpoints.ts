@@ -270,7 +270,7 @@ export enum ProfesseurEndpoints {
   UPDATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}",
   ACTIVATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/activate",
   DEACTIVATE_QUIZ = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/deactivate",
-  GET_QUIZ_NOTES = "/api/prof/classes/{classe_id}/quizzes/{quiz_id}/notes",
+  GET_QUIZ_NOTES = "/api/prof/quizzes/{quiz_id}/notes-eleves",
 
   // Cours de classe
   GET_COURSES = "/api/prof/cours",

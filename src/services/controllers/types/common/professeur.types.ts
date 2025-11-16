@@ -306,23 +306,56 @@ export type DeactivateQuizResponse = {
   message: string;
 };
 
+export type QuizNoteEleve = {
+  id: number;
+  note: number;
+  eleve: {
+    id: number;
+    nom: string;
+    prenom: string;
+    mail: string;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuizCorrection = {
+  questions: Array<{
+    question: string;
+    reponses: Array<{
+      texte: string;
+      correct: boolean;
+    }>;
+  }>;
+  questions_approfondissement: Array<{
+    question: string;
+    reponse: string;
+  }>;
+  nombre_questions: number;
+};
+
 export type GetQuizNotesResponse = {
+  success: boolean;
   quiz: {
     id: number;
     titre: string;
+    difficulte: string;
     nombre_questions: number;
-    notes: Array<{
-      id: number;
-      note: number;
-      user: {
-        id: number;
-        nom: string;
-        prenom: string;
-        mail: string;
-      };
-      created_at: string;
-    }>;
+    classe_id: number;
   };
+  classe: {
+    id: number;
+    nom: string;
+    description: string;
+  };
+  notes: QuizNoteEleve[];
+  statistiques: {
+    total_notes: number;
+    moyenne_generale: number;
+    note_max: number;
+    note_min: number;
+  };
+  corrections: QuizCorrection;
 };
 
 /**

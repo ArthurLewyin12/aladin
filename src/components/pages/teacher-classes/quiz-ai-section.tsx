@@ -11,6 +11,8 @@ import { FileQuestion, Users, BookOpen } from "lucide-react";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { GetClasseResponse } from "@/services/controllers/types/common/professeur.types";
 import Link from "next/link";
+import { useActivateQuiz } from "@/services/hooks/professeur/useActivateQuiz";
+import { useDeactivateQuiz } from "@/services/hooks/professeur/useDeactivateQuiz";
 
 interface QuizAISectionProps {
   classeDetails: GetClasseResponse;
@@ -28,6 +30,10 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
   );
 
   const { quizzes = [], matieres = [] } = classeDetails;
+
+  // Hooks pour activer/désactiver les quiz
+  const { mutate: activateQuizMutation } = useActivateQuiz();
+  const { mutate: deactivateQuizMutation } = useDeactivateQuiz();
 
   // Filtrer uniquement les quiz générés par IA (is_manual === false)
   const aiQuizzes = quizzes.filter((quiz) => quiz.is_manual === false);
@@ -57,6 +63,20 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
       setPage(page - 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  // Gérer l'activation/désactivation d'un quiz
+  const handleStatusChange = (quizId: number, newStatus: boolean) => {
+    if (newStatus) {
+      activateQuizMutation({ classeId: classeDetails.id, quizId });
+    } else {
+      deactivateQuizMutation({ classeId: classeDetails.id, quizId });
+    }
+  };
+
+  // Naviguer vers la page de détails/notes du quiz
+  const handleViewGrades = (quizId: number) => {
+    router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}`);
   };
 
   return (
@@ -152,7 +172,10 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                   quizId={quiz.id.toString()}
                   isActive={quiz.is_active}
                   index={(page - 1) * ITEMS_PER_PAGE + index}
-                  // No onStart or onViewGrades for teacher's view directly on card
+                  canManage={true}
+                  onStatusChange={(newStatus) => handleStatusChange(quiz.id, newStatus)}
+                  onViewGrades={() => handleViewGrades(quiz.id)}
+                  createdAt={quiz.created_at}
                 />
               );
             })}

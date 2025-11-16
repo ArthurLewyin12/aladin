@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -65,7 +66,7 @@ export const QuizCard = ({
   numberOfQuestions,
   duration,
   quizId,
-  isActive,
+  isActive: initialIsActive,
   index,
   canManage,
   onStatusChange,
@@ -78,13 +79,30 @@ export const QuizCard = ({
 }: QuizCardProps) => {
   const bgColor = CARD_COLORS[index % CARD_COLORS.length];
 
+  // State local pour optimistic update
+  const [isActive, setIsActive] = useState(initialIsActive);
+
+  // Synchroniser avec les données du serveur quand elles changent
+  useEffect(() => {
+    setIsActive(initialIsActive);
+  }, [initialIsActive]);
+
+  const handleStatusChange = (newStatus: boolean) => {
+    // Mise à jour optimiste - changer l'UI immédiatement
+    setIsActive(newStatus);
+
+    if (onStatusChange) {
+      onStatusChange(newStatus);
+    }
+  };
+
   return (
     <div
       className={cn(
         "relative rounded-3xl p-10 shadow-sm transition-all hover:shadow-md",
         bgColor,
         className,
-        !isActive && "opacity-60",
+        !isActive && !canManage && "opacity-60",
       )}
     >
       {/* Header avec titre et switch */}
@@ -95,15 +113,16 @@ export const QuizCard = ({
         <div className="mt-1 flex items-center space-x-2">
           <Label
             htmlFor={`quiz-status-${quizId}`}
-            className="text-sm font-medium"
+            className="text-sm font-medium whitespace-nowrap"
           >
-            {isActive ? "Activé" : "Désactivé"}
+            {isActive ? "Publié" : "Partager"}
           </Label>
           {canManage && (
             <Switch
               id={`quiz-status-${quizId}`}
               checked={isActive}
-              onCheckedChange={onStatusChange}
+              onCheckedChange={handleStatusChange}
+              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
             />
           )}
         </div>
@@ -129,7 +148,17 @@ export const QuizCard = ({
 
       {/* Footer avec boutons */}
       <div className="flex items-center justify-between gap-3">
-        {!hasTaken ? (
+        {canManage ? (
+          // Vue professeur : uniquement "Voir les notes"
+          <Button
+            onClick={onViewGrades}
+            variant="outline"
+            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
+          >
+            Voir les notes
+          </Button>
+        ) : !hasTaken ? (
+          // Vue élève : "Lancer le quiz" si pas encore passé
           <Button
             onClick={onStart}
             variant="outline"
@@ -138,6 +167,7 @@ export const QuizCard = ({
             Lancer le quiz
           </Button>
         ) : (
+          // Vue élève : "Déjà passé" + "Voir les notes"
           <>
             <Button
               disabled

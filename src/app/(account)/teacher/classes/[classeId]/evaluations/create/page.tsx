@@ -83,10 +83,14 @@ const CreateEvaluationPage = () => {
     // Convertir les grades en array de { user_id, note }
     const gradesArray = Object.entries(grades)
       .filter(([, note]) => note !== undefined && note !== null)
-      .map(([userId, note]) => ({
-        user_id: Number(userId),
-        note: Number(note),
-      }));
+      .map(([eleveId, note]) => {
+        // Trouver le member correspondant pour récupérer le member_id
+        const member = classeDetails?.members.find(m => m.eleve.id === Number(eleveId));
+        return {
+          user_id: member?.id || Number(eleveId), // member.id est le member_id (relation élève-classe)
+          note: Number(note),
+        };
+      });
 
     // Ne pas inclure grades si aucune note saisie
     const payload = {
@@ -273,7 +277,7 @@ const CreateEvaluationPage = () => {
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {classeDetails.members.map((member) => (
                       <div
-                        key={member.eleve.user_id}
+                        key={member.eleve.id}
                         className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl"
                       >
                         <Label className="flex-1 text-sm font-medium text-gray-700">
@@ -286,29 +290,26 @@ const CreateEvaluationPage = () => {
                             max="20"
                             step="0.5"
                             placeholder="Note"
-                            value={member.eleve.user_id ? (grades[member.eleve.user_id] ?? "") : ""}
+                            value={grades[member.eleve.id] ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
-                              if (member.eleve.user_id) {
-                                // Valider que c'est un nombre valide
-                                if (value === "") {
+                              if (value === "") {
+                                setGrades((prev) => ({
+                                  ...prev,
+                                  [member.eleve.id]: undefined,
+                                }));
+                              } else {
+                                const numValue = Number(value);
+                                // Accepter seulement les nombres positifs <= 20
+                                if (!isNaN(numValue) && numValue >= 0 && numValue <= 20) {
                                   setGrades((prev) => ({
                                     ...prev,
-                                    [member.eleve.user_id!]: undefined,
+                                    [member.eleve.id]: numValue,
                                   }));
-                                } else {
-                                  const numValue = parseFloat(value);
-                                  // Vérifier que c'est un nombre valide et dans la plage
-                                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 20) {
-                                    setGrades((prev) => ({
-                                      ...prev,
-                                      [member.eleve.user_id!]: numValue,
-                                    }));
-                                  }
                                 }
                               }
                             }}
-                            className="w-20 text-center"
+                            className="w-20 text-center rounded-2xl border-2"
                           />
                           <span className="text-xs text-gray-600">/20</span>
                         </div>

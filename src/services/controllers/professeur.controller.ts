@@ -493,19 +493,17 @@ export const deactivateQuiz = async (
 };
 
 /**
- * Récupère les notes d'un quiz de classe.
- * @param {number} classeId - ID de la classe.
+ * Récupère les notes des élèves pour un quiz spécifique.
  * @param {number} quizId - ID du quiz.
- * @returns {Promise<GetQuizNotesResponse>} Détails du quiz avec les notes.
+ * @returns {Promise<GetQuizNotesResponse>} Notes des élèves, statistiques et corrections.
  */
 export const getQuizNotes = async (
-  classeId: number,
   quizId: number,
 ): Promise<GetQuizNotesResponse> => {
   const endpoint = ProfesseurEndpoints.GET_QUIZ_NOTES.replace(
-    "{classe_id}",
-    classeId.toString(),
-  ).replace("{quiz_id}", quizId.toString());
+    "{quiz_id}",
+    quizId.toString(),
+  );
   return request.get<GetQuizNotesResponse>(endpoint);
 };
 

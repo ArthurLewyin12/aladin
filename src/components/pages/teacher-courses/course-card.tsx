@@ -55,7 +55,12 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
     if (onEdit) {
       onEdit(course.id);
     } else {
-      router.push(`/teacher/courses/${course.id}/edit`);
+      // Rediriger vers edit-ia pour les cours générés par IA, sinon vers edit
+      const editPath =
+        course.type === "genere"
+          ? `/teacher/courses/${course.id}/edit-ia`
+          : `/teacher/courses/${course.id}/edit`;
+      router.push(editPath);
     }
   };
 
@@ -121,19 +126,24 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
               )}
             </div>
           </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            <Label
-              htmlFor={`course-status-${course.id}`}
-              className="text-sm font-medium whitespace-nowrap"
-            >
-              {isActive ? "Publié" : "Partager"}
-            </Label>
-            <Switch
-              id={`course-status-${course.id}`}
-              checked={isActive}
-              onCheckedChange={handleStatusChange}
-              className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-            />
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <div className="flex items-center space-x-2">
+              <Label
+                htmlFor={`course-status-${course.id}`}
+                className="text-sm font-medium whitespace-nowrap"
+              >
+                {isActive ? "Publié" : "Brouillon"}
+              </Label>
+              <Switch
+                id={`course-status-${course.id}`}
+                checked={isActive}
+                onCheckedChange={handleStatusChange}
+                className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+              />
+            </div>
+            <p className="text-xs text-gray-600 italic">
+              {isActive ? "Visible par les élèves" : "Activer pour partager"}
+            </p>
           </div>
         </div>
       </CardHeader>
@@ -152,12 +162,6 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-gray-500" />
                 <span className="truncate">{course.matiere.libelle}</span>
-              </div>
-            )}
-            {course.chapitre && (
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-gray-500" />
-                <span className="truncate">Chapitre: {course.chapitre.libelle}</span>
               </div>
             )}
             <div className="flex items-center gap-2">

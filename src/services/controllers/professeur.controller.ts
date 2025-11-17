@@ -39,6 +39,7 @@ import {
   GenerateCoursePayload,
   GenerateCourseResponse,
   UpdateCoursePayload,
+  UpdateCourseIAPayload,
   UpdateCourseResponse,
   ActivateCourseResponse,
   DeactivateCourseResponse,
@@ -589,7 +590,7 @@ export const generateCourse = async (
 };
 
 /**
- * Met à jour un cours de classe.
+ * Met à jour un cours manuel (Lexical).
  * @param {number} classeId - ID de la classe.
  * @param {number} coursId - ID du cours.
  * @param {UpdateCoursePayload} payload - Données à mettre à jour.
@@ -600,7 +601,26 @@ export const updateCourse = async (
   coursId: number,
   payload: UpdateCoursePayload,
 ): Promise<UpdateCourseResponse> => {
-  const endpoint = ProfesseurEndpoints.UPDATE_COURSE.replace(
+  const endpoint = ProfesseurEndpoints.UPDATE_COURSE_MANUAL.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{cours_id}", coursId.toString());
+  return request.put<UpdateCourseResponse>(endpoint, payload);
+};
+
+/**
+ * Met à jour un cours IA (structuré).
+ * @param {number} classeId - ID de la classe.
+ * @param {number} coursId - ID du cours.
+ * @param {UpdateCourseIAPayload} payload - Données à mettre à jour.
+ * @returns {Promise<UpdateCourseResponse>} Confirmation et données mises à jour.
+ */
+export const updateCourseIA = async (
+  classeId: number,
+  coursId: number,
+  payload: UpdateCourseIAPayload,
+): Promise<UpdateCourseResponse> => {
+  const endpoint = ProfesseurEndpoints.UPDATE_COURSE_IA.replace(
     "{classe_id}",
     classeId.toString(),
   ).replace("{cours_id}", coursId.toString());

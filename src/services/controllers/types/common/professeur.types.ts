@@ -218,6 +218,7 @@ export type ClasseQuiz = {
   is_active: boolean;
   is_manual: boolean;
   type?: "manual" | "ai"; // Type du quiz: manuel ou généré par IA
+  nombre_eleves_soumis?: number; // Nombre d'élèves ayant soumis le quiz
   data?: {
     qcm: Array<{
       question: string;
@@ -424,11 +425,36 @@ export type GenerateCourseResponse = {
 };
 
 /**
- * Payload pour mettre à jour un cours
+ * Payload pour mettre à jour un cours manuel (Lexical)
  */
 export type UpdateCoursePayload = {
   titre?: string;
   content?: CourseContent;
+  questions?: Array<{
+    question: string;
+    reponse: string;
+  }>;
+};
+
+/**
+ * Payload pour mettre à jour un cours IA (structuré)
+ */
+export type UpdateCourseIAPayload = {
+  titre?: string;
+  content?: {
+    structured: boolean;
+    course_data: {
+      TITRE_DE_LA_LECON?: string;
+      Introduction?: string;
+      DEVELOPPEMENT_DU_COURS?: Record<string, any>;
+      SYNTHESE_DU_COURS?: {
+        recapitulatif?: string;
+        competences_acquises?: string;
+        points_de_vigilance?: string;
+        ouverture?: string;
+      };
+    };
+  };
   questions?: Array<{
     question: string;
     reponse: string;

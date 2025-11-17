@@ -34,7 +34,7 @@ export default function TeacherCoursesPage() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
-              Mes cours de classe
+              Cours Classe - Matières
             </h1>
           </div>
         </div>

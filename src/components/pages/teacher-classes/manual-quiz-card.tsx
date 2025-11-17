@@ -14,7 +14,8 @@ interface ManualQuizCardProps {
   matiere?: string; // Nom de la matière
   onActivate?: () => void;
   onDeactivate?: () => void;
-  onOpen?: () => void;
+  onOpen?: () => void; // Pour voir les notes
+  onViewDetails?: () => void; // Pour voir les détails (questions/réponses)
   className?: string;
 }
 
@@ -31,8 +32,10 @@ export const ManualQuizCard = ({
   onActivate,
   onDeactivate,
   onOpen,
+  onViewDetails,
   className,
 }: ManualQuizCardProps) => {
+  const nombre_eleves_soumis = quiz.nombre_eleves_soumis ?? 0;
   const difficultyColor =
     DIFFICULTY_COLORS[quiz.difficulte as keyof typeof DIFFICULTY_COLORS] ||
     "bg-gray-100 text-gray-800 border-gray-200";
@@ -66,6 +69,24 @@ export const ManualQuizCard = ({
   const numQuestions = quiz.data?.qcm?.length || 0;
   const hasApprofondissement =
     (quiz.data?.questions_approfondissement?.length || 0) > 0;
+
+  // quiz.temps est le temps par question en secondes
+  const tempsParQuestion = quiz.temps; // déjà en secondes
+  const tempsTotal = tempsParQuestion * numQuestions; // temps total en secondes
+
+  // Fonction pour formater la durée en secondes
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes === 0) {
+      return `${remainingSeconds} sec`;
+    } else if (remainingSeconds === 0) {
+      return `${minutes} min`;
+    } else {
+      return `${minutes} min ${remainingSeconds} sec`;
+    }
+  };
 
   // Formater la date de création
   const formatDate = (dateString: string) => {
@@ -132,10 +153,22 @@ export const ManualQuizCard = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-base text-gray-900">
-          <Clock className="w-5 h-5 flex-shrink-0" />
-          <span className="font-semibold">Durée : {quiz.temps} min</span>
-        </div>
+        {numQuestions > 0 ? (
+          <>
+            <div className="flex items-center gap-2 text-base text-gray-900">
+              <Clock className="w-5 h-5 flex-shrink-0" />
+              <span className="font-bold">{formatDuration(tempsParQuestion)} par question</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Durée totale : {formatDuration(tempsTotal)}</span>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-base text-gray-900">
+            <Clock className="w-5 h-5 flex-shrink-0" />
+            <span className="font-semibold">{formatDuration(quiz.temps)} par question</span>
+          </div>
+        )}
 
         {quiz.chapitres_ids && quiz.chapitres_ids.length > 0 && (
           <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -154,24 +187,41 @@ export const ManualQuizCard = ({
       </div>
 
       {/* Footer avec boutons */}
-      <div className="flex items-center justify-end gap-3">
-        {isActive ? (
-          <Button
-            onClick={handleOpen}
-            variant="outline"
-            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
-          >
-            Voir les notes
-          </Button>
+      <div className="flex items-center justify-between gap-3">
+        {nombre_eleves_soumis === 0 ? (
+          // Aucune soumission : afficher "En attente de soumission" + "Voir détails"
+          <>
+            <div className="flex-1 flex items-center justify-center bg-orange-100 border-2 border-orange-400 rounded-xl px-6 h-11">
+              <p className="text-sm font-medium text-orange-700">
+                En attente de soumission
+              </p>
+            </div>
+            <Button
+              onClick={handleOpen}
+              variant="outline"
+              className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
+            >
+              Voir détails
+            </Button>
+          </>
         ) : (
-          <Button
-            onClick={handleOpen}
-            variant="outline"
-            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Modifier
-          </Button>
+          // Des soumissions existent : afficher "Voir les notes" + nombre de soumissions + "Voir détails"
+          <>
+            <Button
+              onClick={handleOpen}
+              variant="outline"
+              className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
+            >
+              Voir les notes ({nombre_eleves_soumis})
+            </Button>
+            <Button
+              onClick={handleOpen}
+              variant="outline"
+              className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
+            >
+              Voir détails
+            </Button>
+          </>
         )}
       </div>
     </div>

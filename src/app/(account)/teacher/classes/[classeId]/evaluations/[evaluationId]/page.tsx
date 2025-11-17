@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Save,
-  Calendar,
-  BookOpen,
   Users,
   TrendingUp,
   Edit,
@@ -20,8 +18,6 @@ import { useGetClassMembers } from "@/services/hooks/professeur/useGetClassMembe
 import { useAddGradesToEvaluation } from "@/services/hooks/professeur/useAddGradesToEvaluation";
 import { useUpdateAllGrades } from "@/services/hooks/professeur/useUpdateAllGrades";
 import { Spinner } from "@/components/ui/spinner";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { toast } from "@/lib/toast";
 
 const EvaluationDetailsPage = () => {
@@ -77,7 +73,10 @@ const EvaluationDetailsPage = () => {
 
   const handleGradeChange = (studentId: number, value: string) => {
     // Valider que c'est un nombre entre 0 et 20
-    if (value === "" || (!isNaN(Number(value)) && Number(value) >= 0 && Number(value) <= 20)) {
+    if (
+      value === "" ||
+      (!isNaN(Number(value)) && Number(value) >= 0 && Number(value) <= 20)
+    ) {
       setGrades((prev) => ({ ...prev, [studentId]: value }));
     }
   };
@@ -206,6 +205,11 @@ const EvaluationDetailsPage = () => {
                 >
                   {evaluation.is_active ? "Actif" : "Inactif"}
                 </Badge>
+                {evaluation.classe && (
+                  <Badge className="bg-blue-600 text-white">
+                    {evaluation.classe.nom}
+                  </Badge>
+                )}
                 {evaluation.matiere && (
                   <Badge className="bg-[#2C3E50] text-white">
                     {evaluation.matiere.libelle}
@@ -226,25 +230,7 @@ const EvaluationDetailsPage = () => {
         </div>
 
         {/* Statistiques */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <Card className="rounded-3xl border-2 border-white shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-100 rounded-2xl">
-                  <Calendar className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Date</p>
-                  <p className="font-bold text-gray-900">
-                    {format(new Date(evaluation.date_evaluation), "dd MMM yyyy", {
-                      locale: fr,
-                    })}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <Card className="rounded-3xl border-2 border-white shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -252,7 +238,7 @@ const EvaluationDetailsPage = () => {
                   <Users className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Notes</p>
+                  <p className="text-sm text-gray-600">Note / élèves</p>
                   <p className="font-bold text-gray-900">
                     {evaluationData.total_notes} / {studentsWithGrades.length}
                   </p>
@@ -268,7 +254,7 @@ const EvaluationDetailsPage = () => {
                   <TrendingUp className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Moyenne</p>
+                  <p className="text-sm text-gray-600">Moyenne de la classe</p>
                   <p className="font-bold text-gray-900">
                     {evaluationData.moyenne
                       ? `${evaluationData.moyenne.toFixed(2)}/20`
@@ -279,18 +265,6 @@ const EvaluationDetailsPage = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Commentaire */}
-        {evaluation.commentaire && (
-          <Card className="rounded-3xl border-2 border-white shadow-lg mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Commentaire</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">{evaluation.commentaire}</p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Liste des élèves et notes */}
         <Card className="rounded-3xl border-2 border-white shadow-lg">

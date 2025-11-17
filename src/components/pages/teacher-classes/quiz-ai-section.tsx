@@ -74,9 +74,14 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
     }
   };
 
-  // Naviguer vers la page de détails/notes du quiz
+  // Naviguer vers la page de notes du quiz
   const handleViewGrades = (quizId: number) => {
     router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}`);
+  };
+
+  // Naviguer vers la page de détails du quiz (questions/réponses)
+  const handleViewDetails = (quizId: number) => {
+    router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}/details`);
   };
 
   return (
@@ -162,6 +167,19 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                 matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
               const numberOfQuestions = quiz.data?.qcm?.length || 0;
 
+              // Console log pour debug des données de chaque quiz card
+              console.log(`🎯 Quiz Card #${index + 1} - "${quiz.titre}":`, {
+                id: quiz.id,
+                titre: quiz.titre,
+                subject,
+                numberOfQuestions,
+                duration: quiz.temps,
+                isActive: quiz.is_active,
+                created_at: quiz.created_at,
+                matiere_id: quiz.matiere_id,
+                fullQuizData: quiz,
+              });
+
               return (
                 <QuizCard
                   key={quiz.id}
@@ -175,6 +193,8 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                   canManage={true}
                   onStatusChange={(newStatus) => handleStatusChange(quiz.id, newStatus)}
                   onViewGrades={() => handleViewGrades(quiz.id)}
+                  onViewDetails={() => handleViewGrades(quiz.id)}
+                  nombre_eleves_soumis={quiz.nombre_eleves_soumis ?? 0}
                   createdAt={quiz.created_at}
                 />
               );

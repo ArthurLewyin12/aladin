@@ -193,7 +193,7 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                   canManage={true}
                   onStatusChange={(newStatus) => handleStatusChange(quiz.id, newStatus)}
                   onViewGrades={() => handleViewGrades(quiz.id)}
-                  onViewDetails={() => handleViewGrades(quiz.id)}
+                  onViewDetails={() => handleViewDetails(quiz.id)}
                   nombre_eleves_soumis={quiz.nombre_eleves_soumis ?? 0}
                   createdAt={quiz.created_at}
                 />

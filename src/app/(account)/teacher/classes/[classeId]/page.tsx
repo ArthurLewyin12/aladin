@@ -220,8 +220,13 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
   };
 
   const handleOpen = (quizId: number) => {
-    // TODO: Créer la page de détails du quiz
+    // Aller vers la page de notes du quiz
     router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}`);
+  };
+
+  const handleViewDetails = (quizId: number) => {
+    // Aller vers la page de détails du quiz (questions/réponses)
+    router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}/details`);
   };
 
   const handlePrevPage = () => {
@@ -314,6 +319,7 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
             onActivate={() => handleActivate(quiz.id)}
             onDeactivate={() => handleDeactivate(quiz.id)}
             onOpen={() => handleOpen(quiz.id)}
+            onViewDetails={() => handleViewDetails(quiz.id)}
           />
         ))}
       </div>

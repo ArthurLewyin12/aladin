@@ -197,7 +197,10 @@ export const ManualQuizCard = ({
               </p>
             </div>
             <Button
-              onClick={handleOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onViewDetails) onViewDetails();
+              }}
               variant="outline"
               className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
             >
@@ -215,7 +218,10 @@ export const ManualQuizCard = ({
               Voir les notes ({nombre_eleves_soumis})
             </Button>
             <Button
-              onClick={handleOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onViewDetails) onViewDetails();
+              }}
               variant="outline"
               className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
             >

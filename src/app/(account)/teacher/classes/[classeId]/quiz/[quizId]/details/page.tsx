@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, XCircle, FileQuestion } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MathText } from "@/components/ui/math-text";
+import { MathText } from "@/components/ui/MathText";
 
 const QuizDetailsPage = () => {
   const params = useParams();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/pages/dashboard/stat-card";
 import { useDashboard } from "@/services/hooks/professeur/useDashboard";
@@ -25,9 +25,19 @@ import {
   ChevronLeft,
   ChevronRight,
   Award,
+  Filter,
+  X,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import {
   BarChart,
   Bar,
@@ -203,6 +213,11 @@ export default function TeacherDashboardPage() {
   const { data: dashboardData, isLoading, error } = useDashboard();
   const { data: subjectsData } = useSubjects();
 
+  // États pour les filtres
+  const [selectedClassForActivity, setSelectedClassForActivity] = useState<string>("all");
+  const [selectedClassForStudents, setSelectedClassForStudents] = useState<string>("all");
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+
   const handleBack = () => {
     router.push("/teacher/home");
   };
@@ -236,27 +251,49 @@ export default function TeacherDashboardPage() {
     ];
   }, [dashboardData]);
 
+  // Liste des classes disponibles
+  const availableClasses = useMemo(() => {
+    if (!dashboardData) return [];
+    return dashboardData.evolution_activites_par_classe.map((classe) => ({
+      id: classe.classe_id,
+      nom: classe.classe_nom,
+    }));
+  }, [dashboardData]);
+
   // Activité des classes (total des activités du dernier mois pour chaque classe)
   const classActivityData = useMemo(() => {
     if (!dashboardData) return STATIC_DATA.classActivity;
 
-    return dashboardData.evolution_activites_par_classe.map((classe) => {
-      // Prendre le dernier mois avec des données
-      const dernierMois = classe.evolution[classe.evolution.length - 1];
+    const allData = dashboardData.evolution_activites_par_classe
+      .map((classe) => {
+        // Prendre le dernier mois avec des données
+        const dernierMois = classe.evolution[classe.evolution.length - 1];
 
-      // Trouver les moyennes correspondantes
-      const moyennesClasse = dashboardData.evolution_moyennes_par_classe.find(
-        (m) => m.classe_id === classe.classe_id
-      );
-      const moyenneDernierMois = moyennesClasse?.evolution[moyennesClasse.evolution.length - 1];
+        // Trouver les moyennes correspondantes
+        const moyennesClasse = dashboardData.evolution_moyennes_par_classe.find(
+          (m) => m.classe_id === classe.classe_id
+        );
+        const moyenneDernierMois = moyennesClasse?.evolution[moyennesClasse.evolution.length - 1];
 
-      return {
-        classe: classe.classe_nom,
-        quiz_termines: dernierMois.details.quiz,
-        moyenne: moyenneDernierMois?.moyenne_generale || 0,
-      };
-    });
-  }, [dashboardData]);
+        return {
+          classe: classe.classe_nom,
+          quiz_termines: dernierMois.details.quiz,
+          moyenne: moyenneDernierMois?.moyenne_generale || 0,
+          created_at: dernierMois.date, // Utiliser la date du dernier mois comme date de création
+        };
+      })
+      .sort((a, b) => {
+        // Trier par date de création, du plus récent au plus ancien
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+    // Filtrer par classe si une classe est sélectionnée
+    if (selectedClassForActivity !== "all") {
+      return allData.filter((item) => item.classe === selectedClassForActivity);
+    }
+
+    return allData;
+  }, [dashboardData, selectedClassForActivity]);
 
   // Évolution des performances par mois (toutes les classes)
   const performanceEvolutionData = useMemo(() => {
@@ -318,7 +355,7 @@ export default function TeacherDashboardPage() {
     });
 
     // Calculer les moyennes
-    return Array.from(elevesMap.values()).map((eleve) => {
+    const allStudents = Array.from(elevesMap.values()).map((eleve) => {
       const result: any = {
         eleve: eleve.eleve,
         classe: eleve.classe,
@@ -346,7 +383,72 @@ export default function TeacherDashboardPage() {
 
       return result;
     });
-  }, [dashboardData, teacherSubjects]);
+
+    // Filtrer par classe si sélectionné
+    let filteredStudents = allStudents;
+    if (selectedClassForStudents !== "all") {
+      filteredStudents = allStudents.filter((student) => student.classe === selectedClassForStudents);
+    }
+
+    // Appliquer les filtres par colonne
+    Object.entries(columnFilters).forEach(([column, filterValue]) => {
+      if (!filterValue) return;
+
+      filteredStudents = filteredStudents.filter((student) => {
+        const value = student[column];
+
+        // Filtrage pour les colonnes de texte (élève, classe)
+        if (column === "eleve" || column === "classe") {
+          return value?.toString().toLowerCase().includes(filterValue.toLowerCase());
+        }
+
+        // Filtrage pour les colonnes numériques (moyennes, quiz)
+        if (column === "moyenneGenerale" || column === "quizRealises" || teacherSubjects.includes(column)) {
+          if (value === null || value === undefined) return false;
+
+          // Vérifier si c'est une plage (ex: "10-15")
+          if (filterValue.includes("-")) {
+            const [min, max] = filterValue.split("-").map((v) => parseFloat(v.trim()));
+            return value >= min && value <= max;
+          }
+
+          // Vérifier si c'est une comparaison (ex: ">15", "<10", ">=12")
+          if (filterValue.startsWith(">=")) {
+            return value >= parseFloat(filterValue.slice(2));
+          }
+          if (filterValue.startsWith("<=")) {
+            return value <= parseFloat(filterValue.slice(2));
+          }
+          if (filterValue.startsWith(">")) {
+            return value > parseFloat(filterValue.slice(1));
+          }
+          if (filterValue.startsWith("<")) {
+            return value < parseFloat(filterValue.slice(1));
+          }
+
+          // Comparaison exacte
+          return value.toString().includes(filterValue);
+        }
+
+        return true;
+      });
+    });
+
+    return filteredStudents;
+  }, [dashboardData, teacherSubjects, selectedClassForStudents, columnFilters]);
+
+  // Helper pour gérer les changements de filtres
+  const handleColumnFilterChange = (column: string, value: string) => {
+    setColumnFilters((prev) => {
+      const newFilters = { ...prev };
+      if (value) {
+        newFilters[column] = value;
+      } else {
+        delete newFilters[column];
+      }
+      return newFilters;
+    });
+  };
 
   // Colonnes pour le tableau des moyennes (dynamiques selon les matières)
   const studentAverageColumns = useMemo(
@@ -549,13 +651,41 @@ export default function TeacherDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Activité des classes */}
           <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Users className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-blue-100">
+                  <Users className="h-5 w-5 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Activité des classes
+                </h2>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
-                Activité des classes
-              </h2>
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-500" />
+                <Select value={selectedClassForActivity} onValueChange={setSelectedClassForActivity}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Toutes les classes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les classes</SelectItem>
+                    {availableClasses.map((classe) => (
+                      <SelectItem key={classe.id} value={classe.nom}>
+                        {classe.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedClassForActivity !== "all" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedClassForActivity("all")}
+                    className="h-8 w-8"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={classActivityData}>
@@ -647,16 +777,82 @@ export default function TeacherDashboardPage() {
 
         {/* Moyennes des élèves */}
         <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-blue-100">
-              <Award className="h-5 w-5 text-blue-600" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-blue-100">
+                <Award className="h-5 w-5 text-blue-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">
+                Performance des élèves
+              </h2>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
-              Performance des élèves
-            </h2>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <Select value={selectedClassForStudents} onValueChange={setSelectedClassForStudents}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Toutes les classes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
+                  {availableClasses.map((classe) => (
+                    <SelectItem key={classe.id} value={classe.nom}>
+                      {classe.nom}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedClassForStudents !== "all" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedClassForStudents("all")}
+                  className="h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
+            {/* Aide pour les filtres */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-800">
+                <strong>Astuce:</strong> Pour les colonnes numériques (moyennes, quiz), vous pouvez utiliser :
+                <span className="ml-2 font-mono bg-white px-1 rounded">&gt;15</span> (supérieur à 15),
+                <span className="ml-1 font-mono bg-white px-1 rounded">&lt;10</span> (inférieur à 10),
+                <span className="ml-1 font-mono bg-white px-1 rounded">10-15</span> (entre 10 et 15),
+                <span className="ml-1 font-mono bg-white px-1 rounded">&gt;=12</span> (supérieur ou égal à 12)
+              </p>
+            </div>
+
+            {/* Filtres actifs */}
+            {Object.keys(columnFilters).length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-medium text-gray-700">Filtres actifs:</span>
+                {Object.entries(columnFilters).map(([column, value]) => (
+                  <Badge key={column} variant="secondary" className="flex items-center gap-1">
+                    <span className="font-medium">{column}:</span>
+                    <span>{value}</span>
+                    <button
+                      onClick={() => handleColumnFilterChange(column, "")}
+                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setColumnFilters({})}
+                  className="h-7 text-xs"
+                >
+                  Réinitialiser tous les filtres
+                </Button>
+              </div>
+            )}
+
             <div className="rounded-xl border border-gray-200 overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -672,6 +868,24 @@ export default function TeacherDashboardPage() {
                               )}
                         </TableHead>
                       ))}
+                    </TableRow>
+                  ))}
+                  {/* Ligne de filtres */}
+                  {studentAverageTable.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={`filter-${headerGroup.id}`} className="bg-blue-50">
+                      {headerGroup.headers.map((header) => {
+                        const columnId = header.column.id;
+                        return (
+                          <TableHead key={`filter-${header.id}`} className="py-2">
+                            <Input
+                              placeholder={`Filtrer ${columnId}...`}
+                              value={columnFilters[columnId] || ""}
+                              onChange={(e) => handleColumnFilterChange(columnId, e.target.value)}
+                              className="h-8 text-xs"
+                            />
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableHeader>

@@ -51,6 +51,12 @@ const QuizGradesPage = () => {
 
   const { quiz, classe, notes, statistiques, corrections } = gradesData;
 
+  // Console.log pour debug des données de statistiques
+  console.log("📊 Données statistiques:", statistiques);
+  console.log("📝 Notes complètes:", notes);
+  console.log("🎯 Quiz info:", quiz);
+  console.log("🏫 Classe info:", classe);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

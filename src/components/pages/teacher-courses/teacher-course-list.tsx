@@ -285,9 +285,6 @@ export function TeacherCourseList() {
             key={`course-${course.id}`}
             course={course}
             cardColor={course.cardColor}
-            onEdit={(courseId) =>
-              router.push(`/teacher/courses/${courseId}/edit`)
-            }
             onPreview={(courseId) => {
               // Find the course to check its type
               const courseData = paginatedCourses.find(

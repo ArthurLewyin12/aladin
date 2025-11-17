@@ -105,12 +105,13 @@ export default function CoursePreviewIAPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div
-          className="mt-2 sm:mt-4 w-full flex items-start sm:items-center gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
+          className="mt-2 sm:mt-4 w-full flex items-start sm:items-center justify-between gap-3 sm:gap-4 px-3 sm:px-6 md:px-10 py-3 sm:py-4 mb-6 sm:mb-8 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
             backgroundSize: "180px 180px",
           }}
         >
+          {/* Bouton retour */}
           <Button
             variant="ghost"
             size="icon"
@@ -120,10 +121,23 @@ export default function CoursePreviewIAPage() {
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
 
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-orange-500 leading-tight">
+          <div className="flex flex-1 justify-between items-center">
+            {/* Titre du cours */}
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-orange-500 leading-tight">
               Cours généré
             </h1>
+
+            {/* Matière + Chapitre (même couleur que Cours généré) */}
+            {course?.matiere && course?.chapitre && (
+              <div className="flex flex-col text-right">
+                <span className="text-lg sm:text-2xl font-bold text-orange-500">
+                  {course.matiere.libelle}
+                </span>
+                <span className="text-base sm:text-lg font-semibold text-orange-500">
+                  {course.chapitre.libelle}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -20,7 +20,6 @@ import { useChapitres } from "@/services/hooks/chapitre/useChapitres";
 import { useGenerateCourse } from "@/services/hooks/professeur/useGenerateCourse";
 import { useActivateCourse } from "@/services/hooks/professeur/useActivateCourse";
 import { GenerationLoadingOverlay } from "@/components/ui/generation-loading-overlay";
-import { DeepeeningQuestions } from "@/components/pages/cours/deepening-questions";
 import { MathText } from "@/components/ui/MathText";
 import { toast } from "@/lib/toast";
 import { GenerateCoursSuccessResponse } from "@/services/controllers/types/common/cours.type";
@@ -204,23 +203,18 @@ export default function GenerateCoursePage() {
     );
   };
 
-  const handleSaveCourse = () => {
-    if (!generatedCourse) {
+  const handleEditCourse = () => {
+    if (!generatedCourse || !generatedCourse.id) {
       toast({
-        message: "Aucun cours à sauvegarder",
+        message: "Aucun cours disponible",
         variant: "warning",
       });
       return;
     }
 
-    // TODO: Implémenter la logique de sauvegarde du cours
-    toast({
-      variant: "success",
-      message: "Cours sauvegardé avec succès !",
-    });
-    // Nettoyer le store après la sauvegarde
+    // Nettoyer le store et rediriger vers la page d'édition IA
     clearGeneratedCourse();
-    router.push("/teacher/courses");
+    router.push(`/teacher/courses/${generatedCourse.id}/edit-ia`);
   };
 
   const handleBack = () => {
@@ -392,6 +386,7 @@ export default function GenerateCoursePage() {
                   <Select
                     value={selectedClass}
                     onValueChange={setSelectedClass}
+                    disabled={!!generatedCourse}
                   >
                     <SelectTrigger className="mt-1 rounded-3xl w-full">
                       <SelectValue placeholder="Sélectionner une classe" />
@@ -415,7 +410,7 @@ export default function GenerateCoursePage() {
                   <Select
                     value={selectedMatiere}
                     onValueChange={setSelectedMatiere}
-                    disabled={!selectedClass || isLoadingClasseDetails}
+                    disabled={!selectedClass || isLoadingClasseDetails || !!generatedCourse}
                   >
                     <SelectTrigger className="mt-1 rounded-3xl w-full">
                       <SelectValue placeholder="Sélectionner une matière" />
@@ -450,7 +445,7 @@ export default function GenerateCoursePage() {
                   <Select
                     value={selectedChapter}
                     onValueChange={setSelectedChapter}
-                    disabled={!selectedMatiere || isLoadingChapitres}
+                    disabled={!selectedMatiere || isLoadingChapitres || !!generatedCourse}
                   >
                     <SelectTrigger className="mt-1 rounded-3xl w-full">
                       <SelectValue placeholder="Sélectionner un chapitre" />
@@ -516,27 +511,27 @@ export default function GenerateCoursePage() {
                   {generatedCourse && (
                     <div className="flex flex-col gap-4">
                       <Button
-                        onClick={handleSaveCourse}
+                        onClick={handleEditCourse}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"
                       >
                         <Save className="w-4 h-4 mr-2" />
-                        Editer ( facultatif)
+                        Éditer le cours
                       </Button>
 
                       <Button
                         onClick={handleShareCourse}
                         disabled={isActivatingCourse}
-                        className="w-full rounded-3xl bg-green-800 hover:bg-green-900"
+                        className="w-full rounded-3xl bg-green-600 hover:bg-green-700"
                       >
                         {isActivatingCourse ? (
                           <>
                             <Spinner className="w-4 h-4 mr-2" />
-                            Activation...
+                            Sauvegarde...
                           </>
                         ) : (
                           <>
-                            <Share className="w-4 h-4 mr-2" />
-                            Partager
+                            <Save className="w-4 h-4 mr-2" />
+                            Sauvegarder et publier
                           </>
                         )}
                       </Button>
@@ -564,9 +559,9 @@ export default function GenerateCoursePage() {
             ) : hasStructuredCourseData ? (
               <>
                 <div className="space-y-6">
-                  {/* Titre Principal avec underline */}
+                  {/* Titre Principal */}
                   <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 border-b-4 border-green-500 w-fit mx-auto">
+                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 w-fit mx-auto">
                       Chapitre "
                       {getCourseData(generatedCourse)?.["TITRE_DE_LA_LECON"] ||
                         getCourseData(generatedCourse)?.["Titre de la leçon"] ||
@@ -610,7 +605,7 @@ export default function GenerateCoursePage() {
                             ([key, notion]: [string, any], index: number) => (
                               <div
                                 key={key}
-                                className="border-l-4 border-green-500 pl-6 py-4"
+                                className="py-4"
                               >
                                 {/* Numéro et titre de la notion */}
                                 <div className="flex items-baseline gap-2 mb-4">
@@ -687,42 +682,6 @@ export default function GenerateCoursePage() {
                                         </div>
                                       </div>
                                     )}
-
-                                    {/* Questions d'approfondissement */}
-                                    {generatedCourse.questions &&
-                                      generatedCourse.questions.length > 0 && (
-                                        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200">
-                                          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                                            Questions d'approfondissement
-                                          </h2>
-                                          <div className="space-y-4">
-                                            {generatedCourse.questions.map(
-                                              (qa: any, index: number) => (
-                                                <details
-                                                  key={index}
-                                                  className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
-                                                >
-                                                  <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
-                                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
-                                                      {index + 1}
-                                                    </span>
-                                                    <MathText
-                                                      text={qa.question}
-                                                      className="flex-1"
-                                                    />
-                                                  </summary>
-                                                  <div className="mt-4 pl-9">
-                                                    <MathText
-                                                      text={qa.reponse}
-                                                      className="text-sm sm:text-base text-gray-700 leading-relaxed"
-                                                    />
-                                                  </div>
-                                                </details>
-                                              ),
-                                            )}
-                                          </div>
-                                        </div>
-                                      )}
                                   </div>
                                 )}
 
@@ -842,6 +801,63 @@ export default function GenerateCoursePage() {
                           )}
                         </div>
                       </div>
+                    )}
+
+                  {/* Questions d'approfondissement */}
+                  {generatedCourse.questions &&
+                    generatedCourse.questions.length > 0 && (
+                      <section className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-orange-500 rounded-xl">
+                            <svg
+                              className="w-5 h-5 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          </div>
+                          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                            Questions d&apos;approfondissement
+                          </h2>
+                        </div>
+                        <div className="space-y-4">
+                          {generatedCourse.questions.map((qa: any, index: number) => (
+                            <details
+                              key={index}
+                              className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
+                            >
+                              <summary className="font-semibold text-base sm:text-lg cursor-pointer text-gray-900 flex items-start gap-3 list-none">
+                                <span className="flex-shrink-0 mt-0.5 text-orange-500 group-open:hidden">
+                                  ▶
+                                </span>
+                                <span className="flex-shrink-0 mt-0.5 text-orange-500 hidden group-open:block">
+                                  ▼
+                                </span>
+                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold mt-0.5">
+                                  {index + 1}
+                                </span>
+                                <MathText
+                                  text={qa.question}
+                                  className="flex-1"
+                                />
+                              </summary>
+                              <div className="mt-4 pl-9">
+                                <MathText
+                                  text={qa.reponse}
+                                  className="text-sm sm:text-base text-gray-700 leading-relaxed"
+                                />
+                              </div>
+                            </details>
+                          ))}
+                        </div>
+                      </section>
                     )}
 
                   {/* Synthèse */}

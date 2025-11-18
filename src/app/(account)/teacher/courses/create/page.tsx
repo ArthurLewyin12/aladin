@@ -445,23 +445,6 @@ export default function CreateCoursePage() {
                     )}
                     {isSaving ? "Enregistrement..." : "Enregistrer le cours"}
                   </Button>
-                  <Button
-                    onClick={handleShareCourse}
-                    disabled={isSaving || isActivatingCourse}
-                    className="w-full rounded-3xl bg-green-800 hover:bg-green-900"
-                  >
-                    {isSaving || isActivatingCourse ? (
-                      <>
-                        <Spinner className="w-4 h-4 mr-2" />
-                        {isSaving ? "Création..." : "Activation..."}
-                      </>
-                    ) : (
-                      <>
-                        <Share className="w-4 h-4 mr-2" />
-                        Partager
-                      </>
-                    )}
-                  </Button>
                 </div>
               </CardContent>
             </Card>

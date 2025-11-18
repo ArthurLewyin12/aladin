@@ -109,6 +109,11 @@ export const AddStudentModal = ({
   }, [debouncedEmail, checkEleveMutation]);
 
   const handleSubmit = useCallback(() => {
+    console.log("🔍 DEBUG - handleSubmit appelé");
+    console.log("📧 Email:", email);
+    console.log("👤 eleveFound:", eleveFound);
+    console.log("🎓 classeNiveauId reçu dans le modal:", classeNiveauId);
+
     if (!email.trim()) {
       toast({
         variant: "error",
@@ -128,6 +133,7 @@ export const AddStudentModal = ({
 
     // Si l'élève existe déjà, on envoie juste l'email
     if (eleveFound) {
+      console.log("✅ Élève trouvé - envoi avec email uniquement");
       addMemberMutation(
         {
           classeId,
@@ -141,6 +147,7 @@ export const AddStudentModal = ({
         },
       );
     } else {
+      console.log("➕ Nouvel élève - création manuelle");
       // Sinon, on envoie un élève manuel
       if (!nom.trim() || !prenom.trim()) {
         toast({
@@ -151,7 +158,12 @@ export const AddStudentModal = ({
         return;
       }
 
+      console.log("🔍 Vérification classeNiveauId:", classeNiveauId);
+      console.log("🔍 Type de classeNiveauId:", typeof classeNiveauId);
+      console.log("🔍 classeNiveauId est falsy?", !classeNiveauId);
+
       if (!classeNiveauId) {
+        console.error("❌ classeNiveauId est undefined/null/0 - Erreur affichée");
         toast({
           variant: "error",
           message:

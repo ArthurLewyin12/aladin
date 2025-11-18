@@ -54,6 +54,13 @@ const QuizDetailsPage = () => {
   const qcmData = quiz.data?.qcm || [];
   const questionsApprofondissement = quiz.data?.questions_approfondissement || [];
 
+  // Récupérer la matière du quiz
+  const matieres = classeDetails.matieres || [];
+  const matiere = matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
+
+  // Récupérer le chapitre du quiz (si disponible)
+  const chapitre = quiz.chapitre?.libelle || "";
+
   // Formater la durée
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -68,8 +75,10 @@ const QuizDetailsPage = () => {
     }
   };
 
-  const tempsParQuestion = quiz.temps;
-  const tempsTotal = tempsParQuestion * qcmData.length;
+  // quiz.temps est le temps TOTAL du quiz en secondes
+  const tempsTotal = quiz.temps;
+  // Calculer le temps par question
+  const tempsParQuestion = qcmData.length > 0 ? Math.floor(tempsTotal / qcmData.length) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,6 +115,16 @@ const QuizDetailsPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
+            {matiere && (
+              <Badge variant="outline" className="text-base bg-blue-50 text-blue-700 border-blue-200">
+                {matiere}
+              </Badge>
+            )}
+            {chapitre && (
+              <Badge variant="outline" className="text-base bg-purple-50 text-purple-700 border-purple-200">
+                {chapitre}
+              </Badge>
+            )}
             <Badge variant="outline" className="text-base">
               {isManual ? "Quiz manuel" : "Quiz IA"}
             </Badge>

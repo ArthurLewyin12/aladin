@@ -24,6 +24,11 @@ export const useCreateClassMessage = () => {
       queryClient.invalidateQueries({
         queryKey: createQueryKey("professeur", "classes", variables.classeId.toString(), "messages"),
       });
+
+      // Invalider aussi la query qui récupère tous les messages actifs (pour le header)
+      queryClient.invalidateQueries({
+        queryKey: createQueryKey("professeur", "all-active-messages"),
+      });
     },
     onError: (error: any) => {
       const errorMessage =

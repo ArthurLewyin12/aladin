@@ -186,6 +186,7 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
   const { mutate: deactivateQuizMutation } = useDeactivateQuiz();
 
   const quizzes = classeDetails.quizzes || [];
+  const matieres = classeDetails.matieres || [];
 
   // Filtrer uniquement les quiz manuels (is_manual === true)
   const manualQuizzes = quizzes.filter((quiz) => quiz.is_manual === true);
@@ -311,17 +312,23 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
 
       {/* Grille des quiz paginés */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-0">
-        {paginatedQuizzes.map((quiz) => (
-          <ManualQuizCard
-            key={`quiz-${quiz.id}`}
-            quiz={quiz}
-            cardColor={quiz.cardColor}
-            onActivate={() => handleActivate(quiz.id)}
-            onDeactivate={() => handleDeactivate(quiz.id)}
-            onOpen={() => handleOpen(quiz.id)}
-            onViewDetails={() => handleViewDetails(quiz.id)}
-          />
-        ))}
+        {paginatedQuizzes.map((quiz) => {
+          // Récupérer la matière du quiz
+          const matiere = matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
+
+          return (
+            <ManualQuizCard
+              key={`quiz-${quiz.id}`}
+              quiz={quiz}
+              cardColor={quiz.cardColor}
+              matiere={matiere}
+              onActivate={() => handleActivate(quiz.id)}
+              onDeactivate={() => handleDeactivate(quiz.id)}
+              onOpen={() => handleOpen(quiz.id)}
+              onViewDetails={() => handleViewDetails(quiz.id)}
+            />
+          );
+        })}
       </div>
 
       {/* Pagination */}

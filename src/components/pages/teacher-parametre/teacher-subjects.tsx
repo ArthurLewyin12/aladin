@@ -16,6 +16,8 @@ export default function TeacherSubjects() {
   const [selectedMatieres, setSelectedMatieres] = useState<number[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isModifyMode, setIsModifyMode] = useState(false);
+  const [nombreMatieres, setNombreMatieres] = useState<number>(0); // Sera initialisé avec les données
+  const [showNumberInput, setShowNumberInput] = useState(false);
 
   // Récupérer les matières déjà enseignées
   const { data: subjectsData, isLoading: isLoadingSubjects } = useSubjects();
@@ -35,6 +37,7 @@ export default function TeacherSubjects() {
     count: 0,
     max: 3,
   };
+  const maxSubjects = subjectsResponse.max || 3;
   // Utiliser libelles pour récupérer les noms des matières sélectionnées
   const currentLibelles = Array.isArray(subjectsResponse.libelles)
     ? subjectsResponse.libelles.filter((item) => typeof item === "string")
@@ -45,12 +48,14 @@ export default function TeacherSubjects() {
         .filter((m) => currentLibelles.includes(m.libelle))
         .map((m) => m.id)
     : [];
-  const maxSubjects = subjectsResponse.max;
-  const isSelectionComplete = currentLibelles.length === maxSubjects;
+  const isSelectionComplete = currentLibelles.length > 0 && currentLibelles.length === nombreMatieres;
   const modificationsRestantes = subjectsResponse.modifications_restantes ?? undefined;
   const canModify = modificationsRestantes === undefined || modificationsRestantes > 0;
 
-  // Initialiser selectedMatieres avec les matières actuelles
+  // Déterminer si on doit demander le nombre de matières
+  const shouldAskNumber = currentLibelles.length === 0 || (isModifyMode && showNumberInput);
+
+  // Initialiser selectedMatieres et nombreMatieres avec les matières actuelles
   useEffect(() => {
     if (currentLibelles.length > 0 && matieres.length > 0) {
       // Si on a les libellés, trouver les IDs correspondants
@@ -58,9 +63,16 @@ export default function TeacherSubjects() {
         .filter((m) => currentLibelles.includes(m.libelle))
         .map((m) => m.id);
       setSelectedMatieres(ids);
+      // Initialiser le nombre de matières avec le count actuel
+      if (nombreMatieres === 0) {
+        setNombreMatieres(currentLibelles.length || 3);
+      }
     } else if (currentSubjectIds.length > 0) {
       // Fallback: utiliser currentSubjectIds
       setSelectedMatieres(currentSubjectIds);
+      if (nombreMatieres === 0) {
+        setNombreMatieres(currentSubjectIds.length || 3);
+      }
     }
   }, [subjectsData, matieres]);
 
@@ -68,33 +80,31 @@ export default function TeacherSubjects() {
     const isSelected = selectedMatieres.includes(matiereId);
 
     if (isModifyMode) {
-      // En mode modification: permet de remplacer
+      // En mode modification: permet de sélectionner/désélectionner librement
       if (isSelected) {
-        // Décocher une matière
         setSelectedMatieres(selectedMatieres.filter((id) => id !== matiereId));
       } else {
-        // Cocher une matière (remplace si au max)
-        if (selectedMatieres.length >= maxSubjects) {
-          // Remplacer la première
-          setSelectedMatieres([...selectedMatieres.slice(1), matiereId]);
+        if (selectedMatieres.length >= nombreMatieres) {
+          toast({
+            variant: "warning",
+            message: `Vous devez sélectionner exactement ${nombreMatieres} matière${nombreMatieres > 1 ? 's' : ''}. Décochez d'abord une matière pour en ajouter une nouvelle.`,
+          });
         } else {
           setSelectedMatieres([...selectedMatieres, matiereId]);
         }
       }
     } else {
-      // En mode sélection initiale
+      // En mode sélection initiale: peut sélectionner/désélectionner jusqu'à la limite
       if (isSelected) {
-        // Grisé = disabled, ne peut pas décocher
-        return;
+        setSelectedMatieres(selectedMatieres.filter((id) => id !== matiereId));
       } else {
-        // Peut seulement ajouter
-        if (selectedMatieres.length < maxSubjects) {
-          setSelectedMatieres([...selectedMatieres, matiereId]);
-        } else {
+        if (selectedMatieres.length >= nombreMatieres) {
           toast({
             variant: "warning",
-            message: `Vous avez atteint la limite de ${maxSubjects} matières.`,
+            message: `Vous devez sélectionner exactement ${nombreMatieres} matière${nombreMatieres > 1 ? 's' : ''}. Décochez d'abord une matière pour en ajouter une nouvelle.`,
           });
+        } else {
+          setSelectedMatieres([...selectedMatieres, matiereId]);
         }
       }
     }
@@ -109,10 +119,18 @@ export default function TeacherSubjects() {
       return;
     }
 
+    if (selectedMatieres.length !== nombreMatieres) {
+      toast({
+        variant: "error",
+        message: `Vous devez sélectionner exactement ${nombreMatieres} matière${nombreMatieres > 1 ? 's' : ''}. Vous en avez sélectionné ${selectedMatieres.length}.`,
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     if (isModifyMode) {
-      // Mode modification: envoyer les 3 matières complètes
+      // Mode modification: envoyer toutes les matières complètes
       const selectedLibelles = matieres
         .filter((m) => selectedMatieres.includes(m.id))
         .map((m) => m.libelle);
@@ -123,6 +141,7 @@ export default function TeacherSubjects() {
           onSuccess: () => {
             setIsSaving(false);
             setIsModifyMode(false);
+            setShowNumberInput(false);
           },
           onError: () => {
             setIsSaving(false);
@@ -130,31 +149,22 @@ export default function TeacherSubjects() {
         },
       );
     } else {
-      // Mode sélection initiale: envoyer seulement la nouvelle matière
-      const newMatiereIds = selectedMatieres.filter(
-        (id) => !currentSubjectIds.includes(id),
+      // Mode sélection initiale: envoyer toutes les matières sélectionnées
+      const selectedLibelles = matieres
+        .filter((m) => selectedMatieres.includes(m.id))
+        .map((m) => m.libelle);
+
+      setSubjectsMutation(
+        { matieres: selectedLibelles },
+        {
+          onSuccess: () => {
+            setIsSaving(false);
+          },
+          onError: () => {
+            setIsSaving(false);
+          },
+        },
       );
-
-      if (newMatiereIds.length > 0) {
-        const newMatiereLibelle = matieres.find(
-          (m) => m.id === newMatiereIds[0],
-        )?.libelle;
-
-        if (newMatiereLibelle) {
-          setSubjectsMutation(
-            { matieres: [newMatiereLibelle] },
-            {
-              onSuccess: () => {
-                setIsSaving(false);
-                // Ne pas réinitialiser, on continue la sélection
-              },
-              onError: () => {
-                setIsSaving(false);
-              },
-            },
-          );
-        }
-      }
     }
   };
 
@@ -178,7 +188,7 @@ export default function TeacherSubjects() {
           Mes matières
         </h2>
         <p className="text-red-500 text-[1.1rem]">
-          Nb : Vous pouvez changer vos matières une seule fois pendant la durée
+          Nb : Vous pouvez changer vos matières une seule fois durant la période
           de votre abonnement.
         </p>
         {isSelectionComplete && modificationsRestantes !== undefined && (
@@ -198,74 +208,93 @@ export default function TeacherSubjects() {
             )}
           </p>
         )}
-        <p className="text-sm text-gray-600 mt-1">
-          Sélectionnez les matières que vous enseignez (maximum {maxSubjects})
-        </p>
-        {currentLibelles.length > 0 && (
-          <p className="text-sm text-green-700 font-medium mt-2">
-            ✓ Vous avez sélectionné{" "}
-            <span className="font-bold text-green-900">
-              {currentLibelles.length}/{maxSubjects}
-            </span>
-            {maxSubjects - currentLibelles.length > 0 && (
-              <>
-                {" "}
-                - Il vous reste{" "}
-                <span className="font-bold text-green-900">
-                  {maxSubjects - currentLibelles.length}
-                </span>{" "}
-                {maxSubjects - currentLibelles.length === 1
-                  ? "matière"
-                  : "matières"}{" "}
-                à sélectionner
-              </>
-            )}
-            {maxSubjects - currentLibelles.length === 0 && " (Limite atteinte)"}
-          </p>
-        )}
-        {currentLibelles.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2 items-center">
-            {currentLibelles.map((libelle, index) => (
-              <span
-                key={index}
-                className="inline-block px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full"
-              >
-                {libelle}
-              </span>
-            ))}
-            {isSelectionComplete && !isModifyMode && canModify && (
-              <Button
-                onClick={() => {
-                  toast({
-                    variant: "warning",
-                    message:
-                      "⚠️ C'est votre unique chance de modification. Veuillez bien vérifier vos sélections avant de sauvegarder.",
-                  });
-                  setIsModifyMode(true);
-                }}
-                variant="outline"
-                size="sm"
-                className="ml-2 text-blue-600 border-blue-200 hover:bg-blue-50"
-              >
-                Modifier
-              </Button>
-            )}
-            {isSelectionComplete && !canModify && (
-              <span className="ml-2 text-xs font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">
-                ✓ Choix définitif
-              </span>
-            )}
+
+        {/* Demander le nombre de matières si nécessaire */}
+        {shouldAskNumber && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Label className="text-sm font-semibold text-gray-900 mb-2 block">
+              Combien de matières enseignez-vous ? (Maximum 3)
+            </Label>
+            <div className="flex gap-3 mt-2">
+              {[1, 2, 3].map((num) => (
+                <Button
+                  key={num}
+                  onClick={() => {
+                    setNombreMatieres(num);
+                    setShowNumberInput(false);
+                  }}
+                  variant={nombreMatieres === num ? "default" : "outline"}
+                  className={nombreMatieres === num ? "bg-green-600 hover:bg-green-700" : ""}
+                >
+                  {num} {num === 1 ? "matière" : "matières"}
+                </Button>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Afficher les matières sélectionnées */}
+        {!shouldAskNumber && currentLibelles.length > 0 && (
+          <>
+            <p className="text-sm text-green-700 font-medium mt-3">
+              ✓ Vous avez sélectionné{" "}
+              <span className="font-bold text-green-900">
+                {currentLibelles.length}/{nombreMatieres}
+              </span>
+              {" "}matière{currentLibelles.length > 1 ? "s" : ""}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2 items-center">
+              {currentLibelles.map((libelle, index) => (
+                <span
+                  key={index}
+                  className="inline-block px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full"
+                >
+                  {libelle}
+                </span>
+              ))}
+              {isSelectionComplete && !isModifyMode && canModify && (
+                <Button
+                  onClick={() => {
+                    if (modificationsRestantes === 1) {
+                      toast({
+                        variant: "warning",
+                        message:
+                          "⚠️ ATTENTION : Si vous modifiez maintenant, ce sera DÉFINITIF durant la période de votre abonnement. Vous ne pourrez plus modifier vos matières après cette fois.",
+                      });
+                    } else {
+                      toast({
+                        variant: "warning",
+                        message:
+                          "⚠️ C'est votre unique chance de modification. Veuillez bien vérifier vos sélections avant de sauvegarder.",
+                      });
+                    }
+                    setIsModifyMode(true);
+                    setShowNumberInput(true);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="ml-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  Modifier
+                </Button>
+              )}
+              {isSelectionComplete && !canModify && (
+                <span className="ml-2 text-xs font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                  ✓ Choix définitif
+                </span>
+              )}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Liste de toutes les matières disponibles - Affichée si pas en limite OU en mode modification */}
-      {(maxSubjects - currentLibelles.length > 0 || isModifyMode) && (
+      {/* Liste de toutes les matières disponibles - Affichée après avoir choisi le nombre */}
+      {!shouldAskNumber && (!isSelectionComplete || isModifyMode) && (
         <div>
           <Label className="text-sm font-semibold text-gray-700">
             {isModifyMode
               ? "Modifiez vos matières"
-              : "Sélectionnez vos matières"}
+              : `Sélectionnez vos ${nombreMatieres} matière${nombreMatieres > 1 ? "s" : ""}`}
           </Label>
           {isLoadingMatieres ? (
             <div className="flex justify-center py-8">
@@ -313,14 +342,14 @@ export default function TeacherSubjects() {
       )}
 
       {/* Boutons d'action */}
-      {/* Mode sélection initiale: affiche si changements ET pas encore 3 matières */}
+      {/* Mode sélection initiale: affiche si changements ET nombre choisi */}
       {!isModifyMode &&
         hasChanges &&
-        maxSubjects - currentLibelles.length > 0 && (
+        !shouldAskNumber && (
           <div className="flex gap-3 pt-4">
             <Button
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isSaving || selectedMatieres.length !== nombreMatieres}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (

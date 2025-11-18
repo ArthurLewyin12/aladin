@@ -11,7 +11,25 @@ import { GetNotificationsParams } from "@/services/controllers/types/common/noti
 export const useNotifications = (params?: GetNotificationsParams) => {
   return useQuery({
     queryKey: createQueryKey("notifications", params),
-    queryFn: () => getNotifications(params),
+    queryFn: async () => {
+      const data = await getNotifications(params);
+
+      // Trier les notifications générales par date de création (plus récentes en premier)
+      if (data?.notifications_generales?.data) {
+        data.notifications_generales.data = data.notifications_generales.data.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      }
+
+      // Trier les invitations de groupe par date de création (plus récentes en premier)
+      if (data?.invitations_groupes) {
+        data.invitations_groupes = data.invitations_groupes.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      }
+
+      return data;
+    },
     // Rafraîchir automatiquement toutes les 30 secondes pour avoir les nouvelles notifications
     refetchInterval: 30000,
   });

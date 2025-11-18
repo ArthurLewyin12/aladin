@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,7 +24,6 @@ import { Label } from "@/components/ui/label";
 import { X, Calendar as CalendarIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { addDays, format } from "date-fns";
-import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -54,7 +53,6 @@ export const SendMessageModal = ({
   classeId,
 }: SendMessageModalProps) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(
     addDays(new Date(), 7),
   );
@@ -66,16 +64,19 @@ export const SendMessageModal = ({
   });
 
   const handlePublish = (data: MessageFormValues) => {
-    if (!startDate || !endDate) {
+    if (!endDate) {
       return;
     }
+
+    // Utiliser la date du jour comme date de début
+    const today = new Date();
 
     createMessage(
       {
         classeId,
         payload: {
           message: data.message,
-          date_debut: format(startDate, "yyyy-MM-dd"),
+          date_debut: format(today, "yyyy-MM-dd"),
           date_fin: format(endDate, "yyyy-MM-dd"),
         },
       },
@@ -91,30 +92,8 @@ export const SendMessageModal = ({
   const FormContent = (
     <form onSubmit={form.handleSubmit(handlePublish)} className="space-y-4">
       <div>
-        <Label className="text-sm text-gray-600">Période de validité</Label>
-        <div className="grid grid-cols-2 gap-4 mt-1">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !startDate && "text-muted-foreground",
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "LLL dd, y") : <span>Du</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={setStartDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+        <Label className="text-sm text-gray-600">Date de fin de validité</Label>
+        <div className="mt-1">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -125,7 +104,7 @@ export const SendMessageModal = ({
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "LLL dd, y") : <span>Au</span>}
+                {endDate ? format(endDate, "LLL dd, y") : <span>Sélectionner une date</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -138,6 +117,9 @@ export const SendMessageModal = ({
             </PopoverContent>
           </Popover>
         </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Le message sera actif à partir d'aujourd'hui jusqu'à la date sélectionnée.
+        </p>
       </div>
 
       <div>

@@ -173,6 +173,7 @@ export default function CreateManualQuizPage() {
 
   const handleSubmit = (values: ManualQuizFormValues) => {
     if (!classeId) return;
+
     createManualQuizMutation.mutate(
       {
         classeId,
@@ -257,48 +258,37 @@ export default function CreateManualQuizPage() {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white"
       >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Header avec bouton retour et titre */}
+          <div
+            className="mt-4 w-full mx-auto max-w-[1600px] flex items-center gap-4 px-4 sm:px-6 md:px-10 py-4 mb-8 rounded-2xl"
+            style={{
+              backgroundImage: `url("/bg-2.png")`,
+              backgroundSize: "180px 180px",
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleGoBack}
+              className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleGoBack}
-                className="rounded-full bg-white hover:bg-gray-100 shadow-sm"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  Créer un quiz manuel
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  Classe : {classeDetails.nom}
-                </p>
-              </div>
+              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
+                Créer un quiz manuel
+              </h1>
             </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => form.reset(defaultValues)}
-                disabled={createManualQuizMutation.isPending}
-              >
-                Réinitialiser
-              </Button>
-              <Button
-                type="submit"
-                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"
-                disabled={createManualQuizMutation.isPending}
-              >
-                {createManualQuizMutation.isPending ? (
-                  <Spinner size="sm" className="mr-2" />
-                ) : (
-                  <PlusIcon className="w-4 h-4 mr-2" />
-                )}
-                Créer le quiz
-              </Button>
-            </div>
+          </div>
+
+          {/* Sous-titre */}
+          <div className="mb-8 px-4">
+            <p className="text-gray-600 text-base sm:text-lg">
+              Classe : {classeDetails.nom}
+            </p>
           </div>
 
           <Card className="shadow-md">
@@ -636,6 +626,31 @@ export default function CreateManualQuizPage() {
               ))}
             </CardContent>
           </Card>*/}
+
+          {/* Boutons d'action en bas du formulaire */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-end mt-8 px-4 pb-8">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset(defaultValues)}
+              disabled={createManualQuizMutation.isPending}
+              className="sm:w-auto"
+            >
+              Réinitialiser
+            </Button>
+            <Button
+              type="submit"
+              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white sm:w-auto"
+              disabled={createManualQuizMutation.isPending}
+            >
+              {createManualQuizMutation.isPending ? (
+                <Spinner size="sm" className="mr-2" />
+              ) : (
+                <PlusIcon className="w-4 h-4 mr-2" />
+              )}
+              Créer le quiz
+            </Button>
+          </div>
           </div>
         </div>
       </form>

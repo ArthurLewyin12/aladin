@@ -5,6 +5,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { BookMarked } from "lucide-react";
 
 interface QuizCardProps {
   title: string;
@@ -14,6 +21,7 @@ interface QuizCardProps {
   quizId: string;
   isActive: boolean;
   index: number;
+  chapter?: string; // New prop - chapitre du quiz
   canManage?: boolean;
   onStatusChange?: (newStatus: boolean) => void;
   onViewGrades?: () => void;
@@ -70,6 +78,7 @@ export const QuizCard = ({
   quizId,
   isActive: initialIsActive,
   index,
+  chapter,
   canManage,
   onStatusChange,
   onViewGrades,
@@ -147,6 +156,21 @@ export const QuizCard = ({
       {/* Informations du quiz */}
       <div className="mb-6 space-y-1">
         <p className="text-sm text-gray-500">{subject}</p>
+        {chapter && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2 cursor-help">
+                  <BookMarked className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <p className="text-sm text-gray-500 truncate">{chapter}</p>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{chapter}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <p className="text-base text-gray-500">
           {safeNumberOfQuestions} question{safeNumberOfQuestions > 1 ? "s" : ""}
         </p>

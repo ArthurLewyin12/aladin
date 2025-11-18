@@ -30,7 +30,12 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("studentPage", parseAsInteger.withDefault(1));
 
-  const { members = [], niveau } = classeDetails;
+  const { members = [], niveau, niveau_id } = classeDetails;
+
+  console.log("🏫 StudentSection - classeDetails:", classeDetails);
+  console.log("🎓 StudentSection - niveau:", niveau);
+  console.log("🆔 StudentSection - niveau_id:", niveau_id);
+  console.log("🔍 StudentSection - niveau?.id:", niveau?.id);
 
   const queryClient = useQueryClient();
   const { mutate: deactivateMember } = useDeactivateMember();
@@ -241,7 +246,7 @@ export const StudentSection = ({ classeDetails }: StudentSectionProps) => {
         onClose={() => setAddStudentModalOpen(false)}
         classeId={classeDetails.id}
         classeName={classeDetails.nom}
-        classeNiveauId={niveau?.id}
+        classeNiveauId={classeDetails.niveau_id}
       />
     </div>
   );

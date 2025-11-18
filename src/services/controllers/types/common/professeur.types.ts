@@ -214,6 +214,10 @@ export type ClasseQuiz = {
   temps: number;
   matiere_id: number;
   chapitres_ids: number[];
+  chapitre?: {
+    id: number;
+    libelle: string;
+  };
   classe_id: number;
   is_active: boolean;
   is_manual: boolean;

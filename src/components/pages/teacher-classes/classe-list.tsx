@@ -214,6 +214,7 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
         <AddStudentModal
           classeId={selectedClasseId}
           classeName={enrichedClasses.find(c => c.id === selectedClasseId)?.nom || ''}
+          classeNiveauId={enrichedClasses.find(c => c.id === selectedClasseId)?.niveau_id}
           isOpen={isAddStudentModalOpen}
           onClose={() => setAddStudentModalOpen(false)}
         />

@@ -227,8 +227,8 @@ export default function EditCoursePage() {
                   </h4>
                    <div className="space-y-1 text-sm text-gray-600">
                      <p><span className="font-medium">Classe :</span> {classeDetails?.nom || 'Chargement...'}</p>
-                     <p><span className="font-medium">Chapitre :</span> {chapitres?.find(c => c.id === course?.chapitre_id)?.libelle || 'Chargement...'}</p>
-                     <p><span className="font-medium">Matière :</span> {chapitres?.find(c => c.id === course?.chapitre_id)?.matiere?.libelle || 'Chargement...'}</p>
+                     <p><span className="font-medium">Chapitre :</span> {course?.chapitre?.libelle || 'Chargement...'}</p>
+                     <p><span className="font-medium">Matière :</span> {course?.matiere?.libelle || 'Chargement...'}</p>
                    </div>
                   <p className="text-xs text-gray-500 mt-2">
                     Ces informations ne peuvent pas être modifiées lors de

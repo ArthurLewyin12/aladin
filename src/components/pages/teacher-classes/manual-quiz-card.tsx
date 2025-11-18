@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, FileQuestion, BookOpen, Calendar, Edit } from "lucide-react";
+import { Clock, FileQuestion, BookOpen, Calendar, Edit, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ClasseQuiz } from "@/services/controllers/types/common/professeur.types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ManualQuizCardProps {
   quiz: ClasseQuiz;
@@ -145,6 +151,22 @@ export const ManualQuizCard = ({
 
       {/* Informations du quiz */}
       <div className="space-y-2.5 mb-6">
+        {quiz.chapitre && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2 cursor-help">
+                  <BookMarked className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <p className="text-sm text-gray-500 truncate">{quiz.chapitre.libelle}</p>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{quiz.chapitre.libelle}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+
         <div className="flex items-center gap-2 text-base text-gray-900">
           <FileQuestion className="w-5 h-5 flex-shrink-0" />
           <span className="font-semibold">

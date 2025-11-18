@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/pages/dashboard/stat-card";
 import { useDashboard } from "@/services/hooks/professeur/useDashboard";
-import { useSubjects } from "@/services/hooks/professeur/useSubjects";
 import { Spinner } from "@/components/ui/spinner";
+import { formatMonthFromCode } from "@/constants/months";
 import {
   Table,
   TableBody,
@@ -211,7 +211,6 @@ const STATIC_DATA = {
 export default function TeacherDashboardPage() {
   const router = useRouter();
   const { data: dashboardData, isLoading, error } = useDashboard();
-  const { data: subjectsData } = useSubjects();
 
   // États pour les filtres
   const [selectedClassForActivity, setSelectedClassForActivity] = useState<string>("all");
@@ -304,7 +303,10 @@ export default function TeacherDashboardPage() {
 
     // Préparer les données pour le graphique
     return allMonths.map((mois, index) => {
-      const dataPoint: any = { mois };
+      const dataPoint: any = {
+        mois: formatMonthFromCode(mois),
+        originalMois: mois, // Garder le format original au cas où on en aurait besoin
+      };
 
       // Pour chaque classe, ajouter sa moyenne pour ce mois
       dashboardData.evolution_moyennes_par_classe.forEach((classe) => {
@@ -316,17 +318,28 @@ export default function TeacherDashboardPage() {
     });
   }, [dashboardData]);
 
-  // Récupérer les matières enseignées par le prof
+  // Récupérer les matières enseignées par le prof depuis les données du dashboard
   const teacherSubjects = useMemo(() => {
-    if (!subjectsData) return [];
-    return Array.isArray(subjectsData.libelles)
-      ? subjectsData.libelles.filter((item) => typeof item === "string")
-      : [];
-  }, [subjectsData]);
+    if (!dashboardData) return [];
+
+    // Extraire les matières uniques depuis le tableau des notes
+    const uniqueSubjects = new Set<string>();
+    dashboardData.tableau_notes_eleves.forEach((note: any) => {
+      if (note.matiere_libelle) {
+        uniqueSubjects.add(note.matiere_libelle);
+      }
+    });
+
+    const subjects = Array.from(uniqueSubjects);
+    console.log("📖 Dashboard - teacherSubjects (from dashboard data):", subjects);
+    return subjects;
+  }, [dashboardData]);
 
   // Transformer les notes élèves pour le tableau
   const studentNotesData = useMemo(() => {
     if (!dashboardData) return STATIC_DATA.studentAverages;
+
+    console.log("📊 Dashboard - dashboardData complet:", dashboardData);
 
     // Grouper les notes par élève et par matière
     const elevesMap = new Map<number, any>();
@@ -355,7 +368,12 @@ export default function TeacherDashboardPage() {
     });
 
     // Calculer les moyennes
-    const allStudents = Array.from(elevesMap.values()).map((eleve) => {
+    const allStudents = Array.from(elevesMap.values())
+      .filter((eleve) => {
+        // Filtrer les élèves avec nom ou prénom null
+        return eleve.eleve && !eleve.eleve.includes("null");
+      })
+      .map((eleve) => {
       const result: any = {
         eleve: eleve.eleve,
         classe: eleve.classe,

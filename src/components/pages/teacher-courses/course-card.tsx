@@ -3,11 +3,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Edit, BookOpen, Calendar, Users } from "lucide-react";
+import { Eye, Edit, BookOpen, Calendar, Users, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CourseCardProps {
   course: {
@@ -50,6 +56,9 @@ const CARD_COLORS = [
 export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onActivate, onDeactivate }: CourseCardProps) {
   const router = useRouter();
   const [isActive, setIsActive] = useState(course.is_active);
+
+  console.log("📚 CourseCard - course data:", course);
+  console.log("📖 CourseCard - matiere:", course.matiere);
 
   const handleEdit = () => {
     if (onEdit) {
@@ -163,6 +172,21 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
                 <BookOpen className="w-4 h-4 text-gray-500" />
                 <span className="truncate">{course.matiere.libelle}</span>
               </div>
+            )}
+            {course.chapitre && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2 cursor-help">
+                      <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <span className="truncate">{course.chapitre.libelle}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">{course.chapitre.libelle}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-gray-500" />

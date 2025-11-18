@@ -165,6 +165,7 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
             {paginatedQuizzes.map((quiz, index) => {
               const subject =
                 matieres.find((m) => m.id === quiz.matiere_id)?.libelle || "";
+              const chapter = quiz.chapitre?.libelle || "";
               const numberOfQuestions = quiz.data?.qcm?.length || 0;
 
               // Console log pour debug des données de chaque quiz card
@@ -172,6 +173,7 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                 id: quiz.id,
                 titre: quiz.titre,
                 subject,
+                chapter,
                 numberOfQuestions,
                 duration: quiz.temps,
                 isActive: quiz.is_active,
@@ -185,6 +187,7 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                   key={quiz.id}
                   title={quiz.titre}
                   subject={subject}
+                  chapter={chapter}
                   numberOfQuestions={numberOfQuestions}
                   duration={quiz.temps}
                   quizId={quiz.id.toString()}

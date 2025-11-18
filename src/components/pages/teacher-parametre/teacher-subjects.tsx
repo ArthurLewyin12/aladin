@@ -222,6 +222,10 @@ export default function TeacherSubjects() {
                   onClick={() => {
                     setNombreMatieres(num);
                     setShowNumberInput(false);
+                    // Réinitialiser les sélections si on change le nombre en mode modification
+                    if (isModifyMode && num !== nombreMatieres) {
+                      setSelectedMatieres([]);
+                    }
                   }}
                   variant={nombreMatieres === num ? "default" : "outline"}
                   className={nombreMatieres === num ? "bg-green-600 hover:bg-green-700" : ""}
@@ -289,7 +293,7 @@ export default function TeacherSubjects() {
       </div>
 
       {/* Liste de toutes les matières disponibles - Affichée après avoir choisi le nombre */}
-      {!shouldAskNumber && (!isSelectionComplete || isModifyMode) && (
+      {nombreMatieres > 0 && !shouldAskNumber && (!isSelectionComplete || isModifyMode) && (
         <div>
           <Label className="text-sm font-semibold text-gray-700">
             {isModifyMode

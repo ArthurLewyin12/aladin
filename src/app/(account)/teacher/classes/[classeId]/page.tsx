@@ -31,7 +31,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ManualQuizCard } from "@/components/pages/teacher-classes/manual-quiz-card";
 import { GetClasseResponse } from "@/services/controllers/types/common/professeur.types";
 import Link from "next/link";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 
 const ClasseDetailPage = () => {
   const params = useParams();
@@ -39,7 +39,11 @@ const ClasseDetailPage = () => {
   const queryClient = useQueryClient();
   const classeId = Number(params.classeId);
 
-  const [activeTab, setActiveTab] = useState("Quiz avec IA");
+  // Utiliser nuqs pour persister le tab actif dans l'URL
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    parseAsString.withDefault("Elèves")
+  );
   const [isMessageModalOpen, setMessageModalOpen] = useState(false);
 
   const { data: classeDetails, isLoading, isError, refetch } = useClasse(classeId);
@@ -54,9 +58,9 @@ const ClasseDetailPage = () => {
   };
 
   const tabs = [
+    { label: "Elèves", icon: <Users className="w-4 h-4" /> },
     { label: "Quiz avec IA", icon: <Brain className="w-4 h-4" /> },
     { label: "Quiz manuel", icon: <BookText className="w-4 h-4" /> },
-    { label: "Elèves", icon: <Users className="w-4 h-4" /> },
     { label: "Notes", icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
@@ -82,9 +86,9 @@ const ClasseDetailPage = () => {
     <>
       <div className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Header avec bouton retour et titre */}
+          {/* Header avec bouton retour, titre et bouton message */}
           <div
-            className="mt-4 w-full mx-auto max-w-[1600px] flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 mb-8"
+            className="mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 py-4 mb-8 rounded-2xl"
             style={{
               backgroundImage: `url("/bg-2.png")`,
               backgroundSize: "180px 180px",
@@ -99,14 +103,10 @@ const ClasseDetailPage = () => {
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-green-600 leading-tight">
+                {classeDetails.nom}
+              </h1>
             </div>
-          </div>
-
-          {/* Nom de la classe et bouton de message */}
-          <div className="flex justify-between items-center mb-8 px-4">
-            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
-              {classeDetails.nom}
-            </h1>
             <Button
               onClick={() => setMessageModalOpen(true)}
               className="bg-[#2C3E50] hover:bg-[#1a252f] text-white"

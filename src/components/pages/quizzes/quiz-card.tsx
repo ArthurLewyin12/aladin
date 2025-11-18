@@ -132,23 +132,43 @@ export const QuizCard = ({
         </h3>
         {canManage && (
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
-            <div className="flex items-center space-x-2">
-              <Label
-                htmlFor={`quiz-status-${quizId}`}
-                className="text-sm font-medium whitespace-nowrap"
-              >
-                {isActive ? "Publié" : "Brouillon"}
-              </Label>
-              <Switch
-                id={`quiz-status-${quizId}`}
-                checked={isActive}
-                onCheckedChange={handleStatusChange}
-                className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-              />
-            </div>
-            <p className="text-xs text-gray-600 italic text-right">
-              {isActive ? "Visible par les élèves" : "Cliquez pour diffuser aux élèves"}
-            </p>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center space-x-2">
+                    <Label
+                      htmlFor={`quiz-status-${quizId}`}
+                      className={cn(
+                        "text-sm font-medium whitespace-nowrap",
+                        nombre_eleves_soumis > 0 && "text-gray-400"
+                      )}
+                    >
+                      {isActive ? "Publié" : "Brouillon"}
+                    </Label>
+                    <Switch
+                      id={`quiz-status-${quizId}`}
+                      checked={isActive}
+                      onCheckedChange={handleStatusChange}
+                      disabled={nombre_eleves_soumis > 0}
+                      className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </TooltipTrigger>
+                {nombre_eleves_soumis > 0 ? (
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Ce quiz ne peut plus être modifié car {nombre_eleves_soumis} élève{nombre_eleves_soumis > 1 ? "s" : ""} {nombre_eleves_soumis > 1 ? "ont" : "a"} déjà soumis {nombre_eleves_soumis > 1 ? "leurs" : "sa"} réponse{nombre_eleves_soumis > 1 ? "s" : ""}.
+                    </p>
+                  </TooltipContent>
+                ) : (
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      {isActive ? "Visible par les élèves" : "Cliquez pour diffuser aux élèves"}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       </div>
@@ -197,8 +217,17 @@ export const QuizCard = ({
       <div className="flex items-center justify-between gap-3">
         {canManage ? (
           // Vue professeur
-          nombre_eleves_soumis === 0 ? (
-            // Aucune soumission : afficher "En attente de soumission" + "Voir détails"
+          !isActive ? (
+            // Quiz en brouillon : afficher uniquement "Voir détails"
+            <Button
+              onClick={onViewDetails}
+              variant="outline"
+              className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
+            >
+              Voir détails
+            </Button>
+          ) : nombre_eleves_soumis === 0 ? (
+            // Quiz publié mais aucune soumission : afficher "En attente de soumission" + "Voir détails"
             <>
               <div className="flex-1 flex items-center justify-center bg-orange-100 border-2 border-orange-400 rounded-xl px-6 h-11">
                 <p className="text-sm font-medium text-orange-700">

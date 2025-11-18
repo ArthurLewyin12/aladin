@@ -243,6 +243,7 @@ export default function SavedCoursePage() {
               <>
                 {/* Titre Principal avec underline */}
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
+                  Chapitre :{" "}
                   {getCourseData(data)?.["TITRE_DE_LA_LECON"] ||
                     getCourseData(data)?.["Titre de la leçon"] ||
                     getCourseData(data)?.["Titre de la lecon"]}

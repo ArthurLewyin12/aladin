@@ -98,7 +98,7 @@ export default function CreateQuizPage() {
           queryClient.invalidateQueries({
             queryKey: createQueryKey("professeur", "classe", classeId),
           });
-          router.push(`/teacher/classes/${classeId}`);
+          router.push(`/teacher/classes/${classeId}?tab=Quiz avec IA`);
         },
       },
     );
@@ -140,24 +140,34 @@ export default function CreateQuizPage() {
       />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
+        {/* Header avec bouton retour et titre */}
+        <div
+          className="mt-4 w-full mx-auto max-w-[1600px] flex items-center gap-4 px-4 sm:px-6 md:px-10 py-4 mb-8 rounded-2xl"
+          style={{
+            backgroundImage: `url("/bg-2.png")`,
+            backgroundSize: "180px 180px",
+          }}
+        >
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBack}
-            className="rounded-full bg-white hover:bg-gray-100 w-10 h-10 shadow-sm"
+            className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
               Créer un Quiz IA
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {classeDetails?.nom}
-            </p>
           </div>
+        </div>
+
+        {/* Sous-titre avec nom de la classe */}
+        <div className="mb-8 px-4">
+          <p className="text-gray-600 text-base sm:text-lg">
+            Classe : {classeDetails?.nom}
+          </p>
         </div>
 
         {/* Form */}
@@ -249,21 +259,26 @@ export default function CreateQuizPage() {
                           Aucun chapitre trouvé pour cette matière.
                         </div>
                       ) : (
-                        <MultipleSelect
-                          key={`${watchedMatiereId}-${selectedTags.map((t) => t.key).join(",")}`}
-                          tags={chapterTags}
-                          defaultValue={selectedTags}
-                          onChange={(tags) => {
-                            // Limiter à 1 seul chapitre
-                            if (tags.length <= 1) {
-                              field.onChange(tags.map((tag) => tag.key));
-                            } else {
-                              // Si on essaie d'en ajouter plus, garder seulement le dernier sélectionné
-                              field.onChange([tags[tags.length - 1].key]);
-                            }
-                          }}
-                          showLabel={false}
-                        />
+                        <>
+                          <p className="text-sm text-red-600 font-medium mb-2">
+                            ⚠️ Vous ne pouvez choisir qu'un seul chapitre
+                          </p>
+                          <MultipleSelect
+                            key={`${watchedMatiereId}-${selectedTags.map((t) => t.key).join(",")}`}
+                            tags={chapterTags}
+                            defaultValue={selectedTags}
+                            onChange={(tags) => {
+                              // Limiter à 1 seul chapitre
+                              if (tags.length <= 1) {
+                                field.onChange(tags.map((tag) => tag.key));
+                              } else {
+                                // Si on essaie d'en ajouter plus, garder seulement le dernier sélectionné
+                                field.onChange([tags[tags.length - 1].key]);
+                              }
+                            }}
+                            showLabel={false}
+                          />
+                        </>
                       )}
                       <FormMessage />
                     </FormItem>

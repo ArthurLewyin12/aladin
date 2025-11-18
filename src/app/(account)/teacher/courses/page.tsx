@@ -34,7 +34,7 @@ export default function TeacherCoursesPage() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-green-600 leading-tight">
-              Cours Classe - Matières
+              Cours
             </h1>
           </div>
         </div>
@@ -42,8 +42,8 @@ export default function TeacherCoursesPage() {
         {/* Description */}
         <div className="text-center mb-8 sm:mb-12 px-2">
           <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-4xl mx-auto leading-relaxed">
-            Créez et gérez vos cours pour vos classes. Générez des cours personnalisés
-            avec l'IA ou créez-les manuellement selon vos besoins.
+            Créez et gérez vos cours pour vos classes. Générez des cours
+            personnalisés avec l'IA ou créez-les manuellement selon vos besoins.
           </p>
         </div>
 

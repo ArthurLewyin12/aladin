@@ -6,6 +6,7 @@ import {
   useForm,
   useFieldArray,
   Controller,
+  useFormContext,
   type Control,
 } from "react-hook-form";
 import { z } from "zod";
@@ -61,8 +62,8 @@ const questionSchema = z
       .array(answerSchema)
       .min(2, "Ajoutez au moins deux réponses.")
       .refine(
-        (answers) => answers.some((answer) => answer.correct),
-        "Sélectionnez au moins une bonne réponse.",
+        (answers) => answers.filter((answer) => answer.correct).length === 1,
+        "Sélectionnez exactement une bonne réponse.",
       ),
   })
   .refine(
@@ -203,7 +204,7 @@ export default function CreateManualQuizPage() {
       {
         onSuccess: () => {
           form.reset(defaultValues);
-          router.push(`/teacher/classes/${classeId}?tab=manual`);
+          router.push(`/teacher/classes/${classeId}?tab=Quiz manuel`);
         },
       },
     );
@@ -672,6 +673,25 @@ const QuestionAnswersFields = ({
     name: `qcm.${questionIndex}.reponses` as const,
   });
 
+  const { getValues } = useFormContext<ManualQuizFormValues>();
+
+  // Fonction pour gérer le changement de bonne réponse (une seule à la fois)
+  const handleCorrectChange = (answerIndex: number, checked: boolean) => {
+    if (checked) {
+      // Récupérer les valeurs actuelles du formulaire
+      const currentAnswers = getValues(`qcm.${questionIndex}.reponses`);
+
+      // Décocher toutes les autres réponses et cocher celle-ci
+      currentAnswers.forEach((answer, index) => {
+        update(index, {
+          texte: answer.texte, // Préserver le texte actuel
+          correct: index === answerIndex,
+        });
+      });
+    }
+    // Si on décoche, on ne fait rien (il doit toujours y avoir une bonne réponse)
+  };
+
   return (
     <div className="space-y-3">
       {fields.map((answerField, answerIndex) => (
@@ -707,8 +727,7 @@ const QuestionAnswersFields = ({
                       <Switch
                         checked={switchField.value}
                         onCheckedChange={(checked) => {
-                          // Pour garantir au moins une bonne réponse, on laisse la possibilité d'avoir plusieurs bonnes réponses
-                          switchField.onChange(checked);
+                          handleCorrectChange(answerIndex, checked);
                         }}
                       />
                       <span className="text-xs text-gray-600">

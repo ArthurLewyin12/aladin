@@ -110,7 +110,7 @@ const CreateEvaluationPage = () => {
       },
       {
         onSuccess: () => {
-          router.push(`/teacher/classes/${classeId}`);
+          router.push(`/teacher/classes/${classeId}?tab=Notes`);
         },
       },
     );

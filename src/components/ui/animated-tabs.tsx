@@ -11,11 +11,19 @@ export interface AnimatedTabsProps {
 }
 
 export function AnimatedTabs({ tabs, onTabChange, activeTab: controlledActiveTab, activeTabClassName }: AnimatedTabsProps) {
-  const [internalActiveTab, setInternalActiveTab] = useState(tabs[0].label);
+  // Initialiser avec l'activeTab contrôlé s'il existe, sinon le premier tab
+  const [internalActiveTab, setInternalActiveTab] = useState(controlledActiveTab || tabs[0].label);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Utiliser l'état contrôlé si fourni, sinon l'état interne
   const activeTab = controlledActiveTab ?? internalActiveTab;
+
+  // Synchroniser l'état interne avec l'état contrôlé si celui-ci change
+  useEffect(() => {
+    if (controlledActiveTab && controlledActiveTab !== internalActiveTab) {
+      setInternalActiveTab(controlledActiveTab);
+    }
+  }, [controlledActiveTab]);
 
   const handleTabChange = (label: string) => {
     // Si une prop contrôlée est fournie, ne pas mettre à jour l'état interne

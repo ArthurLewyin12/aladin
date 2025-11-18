@@ -595,6 +595,11 @@ export type Evaluation = {
   };
   notes_count?: number;
   moyenne?: number;
+  grades?: Array<{
+    id: number;
+    note: number;
+    eleve_id: number;
+  }>;
 };
 
 export type CreateEvaluationPayload = {

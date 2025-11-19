@@ -121,23 +121,12 @@ export default function CoursePreviewIAPage() {
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
 
-          <div className="flex flex-1 justify-between items-center">
+          <div className="flex-1">
             {/* Titre du cours */}
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-orange-500 leading-tight">
-              Cours généré
+              Cours généré : {course.classe?.nom || "Classe"} -{" "}
+              {course.matiere?.libelle || "Matière"}
             </h1>
-
-            {/* Matière + Chapitre (même couleur que Cours généré) */}
-            {course?.matiere && course?.chapitre && (
-              <div className="flex flex-col text-right">
-                <span className="text-lg sm:text-2xl font-bold text-orange-500">
-                  {course.matiere.libelle}
-                </span>
-                <span className="text-base sm:text-lg font-semibold text-orange-500">
-                  {course.chapitre.libelle}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -148,6 +137,7 @@ export default function CoursePreviewIAPage() {
               <>
                 {/* Titre Principal */}
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 w-fit mx-auto">
+                  Chapitre :{" "}
                   {getCourseData(course)?.["TITRE_DE_LA_LECON"] ||
                     getCourseData(course)?.["Titre de la leçon"] ||
                     getCourseData(course)?.["Titre de la lecon"]}

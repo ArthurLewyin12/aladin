@@ -52,12 +52,26 @@ export const GradesSection = ({ classeDetails }: GradesSectionProps) => {
 
   const evaluations = evaluationsData?.evaluations || [];
 
-  // Enrichir les évaluations avec les couleurs
+  // Enrichir les évaluations avec les couleurs et les statistiques calculées
   const enrichedEvaluations = useMemo(() => {
-    return evaluations.map((evaluation, index) => ({
-      ...evaluation,
-      cardColor: CARD_COLORS[index % CARD_COLORS.length],
-    }));
+    return evaluations.map((evaluation, index) => {
+      // Calculer notes_count et moyenne à partir de grades
+      const grades = evaluation.grades || [];
+      const notesCount = grades.length;
+
+      let moyenne = 0;
+      if (notesCount > 0) {
+        const sum = grades.reduce((acc, grade) => acc + (grade.note || 0), 0);
+        moyenne = sum / notesCount;
+      }
+
+      return {
+        ...evaluation,
+        cardColor: CARD_COLORS[index % CARD_COLORS.length],
+        notes_count: notesCount,
+        moyenne: moyenne,
+      };
+    });
   }, [evaluations]);
 
   // Calculer les évaluations paginées
@@ -218,24 +232,21 @@ export const GradesSection = ({ classeDetails }: GradesSectionProps) => {
                     </span>
                   </div>
 
-                  {evaluation.notes_count !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-500" />
-                      <span>
-                        {evaluation.notes_count} note
-                        {evaluation.notes_count > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-500" />
+                    <span className="font-semibold">
+                      Notes/élèves : {evaluation.notes_count ?? 0}/{classeDetails.members?.length || 0}
+                    </span>
+                  </div>
 
-                  {/*{evaluation.moyenne !== undefined && (
+                  {evaluation.moyenne !== undefined && evaluation.moyenne > 0 && (
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-gray-500" />
                       <span className="font-semibold">
                         Moyenne: {evaluation.moyenne.toFixed(2)}/20
                       </span>
                     </div>
-                  )}*/}
+                  )}
 
                   {evaluation.commentaire && (
                     <div className="text-xs text-gray-600 mt-2 line-clamp-2">

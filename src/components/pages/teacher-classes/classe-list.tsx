@@ -54,6 +54,7 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
         seenIds.add(classe.id);
         return true;
       })
+      .sort((a, b) => b.id - a.id) // Trier par ID décroissant (plus récent en premier)
       .map((classe, index) => ({
         ...classe,
         cardColor: CARD_COLORS[index % CARD_COLORS.length],

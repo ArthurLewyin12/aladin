@@ -183,49 +183,47 @@ const EvaluationDetailsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600 mb-2">
-                {evaluation.type_evaluation}
-              </h1>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge
-                  className={`${evaluation.is_active ? "bg-green-600" : "bg-gray-500"} text-white`}
-                >
-                  {evaluation.is_active ? "Actif" : "Inactif"}
-                </Badge>
-                {evaluation.classe && (
-                  <Badge className="bg-blue-600 text-white">
-                    {evaluation.classe.nom}
-                  </Badge>
-                )}
-                {evaluation.matiere && (
-                  <Badge className="bg-[#2C3E50] text-white">
-                    {evaluation.matiere.libelle}
-                  </Badge>
-                )}
-              </div>
-            </div>
-
+        {/* Header avec bouton retour, titre et bouton modifier */}
+        <div
+          className="mt-4 w-full mx-auto max-w-[1600px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 py-4 mb-8 rounded-2xl"
+          style={{
+            backgroundImage: `url("/bg-2.png")`,
+            backgroundSize: "180px 180px",
+          }}
+        >
+          <div className="flex items-center gap-4">
             <Button
-              onClick={() => setIsEditMode(!isEditMode)}
-              variant="outline"
-              className="rounded-3xl border-2"
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="rounded-full bg-white hover:bg-gray-50 w-10 h-10 shadow-sm"
             >
-              <Edit className="w-4 h-4 mr-2" />
-              {isEditMode ? "Annuler" : "Modifier"}
+              <ArrowLeft className="w-5 h-5" />
             </Button>
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-green-600 leading-tight">
+              {evaluation.type_evaluation}
+            </h1>
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div className="mb-8 px-4">
+          <div className="flex flex-wrap gap-2">
+            <Badge
+              className={`${evaluation.is_active ? "bg-green-600" : "bg-gray-500"} text-white`}
+            >
+              {evaluation.is_active ? "Actif" : "Inactif"}
+            </Badge>
+            {evaluation.classe && (
+              <Badge className="bg-blue-600 text-white">
+                {evaluation.classe.nom}
+              </Badge>
+            )}
+            {evaluation.matiere && (
+              <Badge className="bg-[#2C3E50] text-white">
+                {evaluation.matiere.libelle}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -269,9 +267,19 @@ const EvaluationDetailsPage = () => {
         {/* Liste des élèves et notes */}
         <Card className="rounded-3xl border-2 border-white shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl font-bold">
-              Notes des élèves
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-bold">
+                Notes des élèves
+              </CardTitle>
+              <Button
+                onClick={() => setIsEditMode(!isEditMode)}
+                variant="outline"
+                className="rounded-3xl border-2"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {isEditMode ? "Annuler" : "Modifier"}
+              </Button>
+            </div>
           </CardHeader>
 
           <CardContent>

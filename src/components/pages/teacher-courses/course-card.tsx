@@ -53,7 +53,15 @@ const CARD_COLORS = [
   "bg-[#FEF3C7]", // Jaune clair
 ];
 
-export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onActivate, onDeactivate }: CourseCardProps) {
+export function CourseCard({
+  course,
+  cardColor,
+  onEdit,
+  onDelete,
+  onPreview,
+  onActivate,
+  onDeactivate,
+}: CourseCardProps) {
   const router = useRouter();
   const [isActive, setIsActive] = useState(course.is_active);
 
@@ -104,7 +112,9 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
   };
 
   return (
-    <Card className={`${cardColor} border-2 border-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] overflow-hidden`}>
+    <Card
+      className={`${cardColor} border-2 border-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] overflow-hidden`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -179,7 +189,9 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-2 cursor-help">
                       <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <span className="truncate">{course.chapitre.libelle}</span>
+                      <span className="truncate">
+                        {course.chapitre.libelle}
+                      </span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -191,7 +203,10 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-gray-500" />
               <span className="text-xs">
-                Modifié {format(new Date(course.updated_at), "dd/MM/yyyy", { locale: fr })}
+                Créer le{" "}
+                {format(new Date(course.updated_at), "dd/MM/yyyy", {
+                  locale: fr,
+                })}
               </span>
             </div>
           </div>
@@ -213,7 +228,7 @@ export function CourseCard({ course, cardColor, onEdit, onDelete, onPreview, onA
               className="flex-1 bg-[#2C3E50] hover:bg-[#1a252f] text-white"
             >
               <Edit className="w-4 h-4 mr-1" />
-              Éditer
+              Modifier
             </Button>
           </div>
         </div>

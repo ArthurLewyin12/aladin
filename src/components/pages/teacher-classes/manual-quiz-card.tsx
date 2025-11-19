@@ -129,18 +129,37 @@ export const ManualQuizCard = ({
           </span>
         </div>
         <div className="flex items-center space-x-2 flex-shrink-0">
-          <Label
-            htmlFor={`quiz-status-${quiz.id}`}
-            className="text-sm font-medium whitespace-nowrap"
-          >
-            {isActive ? "Publié" : "Partager"}
-          </Label>
-          <Switch
-            id={`quiz-status-${quiz.id}`}
-            checked={isActive}
-            onCheckedChange={handleStatusChange}
-            className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center space-x-2">
+                  <Label
+                    htmlFor={`quiz-status-${quiz.id}`}
+                    className={cn(
+                      "text-sm font-medium whitespace-nowrap",
+                      nombre_eleves_soumis > 0 && "text-gray-400"
+                    )}
+                  >
+                    {isActive ? "Publié" : "Partager"}
+                  </Label>
+                  <Switch
+                    id={`quiz-status-${quiz.id}`}
+                    checked={isActive}
+                    onCheckedChange={handleStatusChange}
+                    disabled={nombre_eleves_soumis > 0}
+                    className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+              </TooltipTrigger>
+              {nombre_eleves_soumis > 0 && (
+                <TooltipContent>
+                  <p className="max-w-xs">
+                    Ce quiz ne peut plus être modifié car {nombre_eleves_soumis} élève{nombre_eleves_soumis > 1 ? "s" : ""} {nombre_eleves_soumis > 1 ? "ont" : "a"} déjà soumis {nombre_eleves_soumis > 1 ? "leurs" : "sa"} réponse{nombre_eleves_soumis > 1 ? "s" : ""}.
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
@@ -210,8 +229,20 @@ export const ManualQuizCard = ({
 
       {/* Footer avec boutons */}
       <div className="flex items-center justify-between gap-3">
-        {nombre_eleves_soumis === 0 ? (
-          // Aucune soumission : afficher "En attente de soumission" + "Voir détails"
+        {!isActive ? (
+          // Quiz en brouillon : afficher uniquement "Voir détails"
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onViewDetails) onViewDetails();
+            }}
+            variant="outline"
+            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
+          >
+            Voir détails
+          </Button>
+        ) : nombre_eleves_soumis === 0 ? (
+          // Quiz publié mais aucune soumission : afficher "En attente de soumission" + "Voir détails"
           <>
             <div className="flex-1 flex items-center justify-center bg-orange-100 border-2 border-orange-400 rounded-xl px-6 h-11">
               <p className="text-sm font-medium text-orange-700">

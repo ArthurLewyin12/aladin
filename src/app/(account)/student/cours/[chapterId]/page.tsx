@@ -217,6 +217,7 @@ export default function CoursePage() {
 
                 {/* Titre Principal avec underline */}
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 pb-3 w-fit mx-auto">
+                  Chapitre :{" "}
                   {getCourseData(courseData)?.["TITRE_DE_LA_LECON"] ||
                     getCourseData(courseData)?.["Titre de la leçon"] ||
                     getCourseData(courseData)?.["Titre de la lecon"]}

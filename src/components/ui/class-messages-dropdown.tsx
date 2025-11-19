@@ -112,7 +112,7 @@ export const ClassMessagesDropdown = ({
             </p>
           </div>
         ) : (
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[400px] overflow-y-auto">
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {messages.map((message) => (
                 <div

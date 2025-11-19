@@ -52,7 +52,8 @@ const QuizDetailsPage = () => {
 
   const isManual = quiz.is_manual;
   const qcmData = quiz.data?.qcm || [];
-  const questionsApprofondissement = quiz.data?.questions_approfondissement || [];
+  const questionsApprofondissement =
+    quiz.data?.questions_approfondissement || [];
 
   // Récupérer la matière du quiz
   const matieres = classeDetails.matieres || [];
@@ -78,14 +79,15 @@ const QuizDetailsPage = () => {
   // quiz.temps est le temps TOTAL du quiz en secondes
   const tempsTotal = quiz.temps;
   // Calculer le temps par question
-  const tempsParQuestion = qcmData.length > 0 ? Math.floor(tempsTotal / qcmData.length) : 0;
+  const tempsParQuestion =
+    qcmData.length > 0 ? Math.floor(tempsTotal / qcmData.length) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
+        {/* Header avec bouton retour, titre et badge */}
         <div
-          className="mt-4 w-full mx-auto flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 mb-8 rounded-2xl"
+          className="mt-4 w-full mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 py-4 mb-8 rounded-2xl"
           style={{
             backgroundImage: `url("/bg-2.png")`,
             backgroundSize: "180px 180px",
@@ -100,28 +102,32 @@ const QuizDetailsPage = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-          </div>
-        </div>
-
-        {/* Titre et badges */}
-        <div className="mb-8 px-4">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-green-600 leading-tight">
               {quiz.titre}
             </h1>
-            <Badge className={quiz.is_active ? "bg-green-600" : "bg-gray-500"}>
-              {quiz.is_active ? "Publié" : "Brouillon"}
-            </Badge>
           </div>
+          <Badge className={quiz.is_active ? "bg-green-600" : "bg-gray-500"}>
+            {quiz.is_active ? "Publié" : "Brouillon"}
+          </Badge>
+        </div>
+
+        {/* Badges et informations */}
+        <div className="mb-8 px-4">
 
           <div className="flex flex-wrap gap-2 mb-4">
             {matiere && (
-              <Badge variant="outline" className="text-base bg-blue-50 text-blue-700 border-blue-200">
+              <Badge
+                variant="outline"
+                className="text-base bg-blue-50 text-blue-700 border-blue-200"
+              >
                 {matiere}
               </Badge>
             )}
             {chapitre && (
-              <Badge variant="outline" className="text-base bg-purple-50 text-purple-700 border-purple-200">
+              <Badge
+                variant="outline"
+                className="text-base bg-purple-50 text-purple-700 border-purple-200"
+              >
                 {chapitre}
               </Badge>
             )}
@@ -139,7 +145,10 @@ const QuizDetailsPage = () => {
 
           <div className="text-gray-600">
             <p className="text-lg">
-              <span className="font-semibold">{formatDuration(tempsParQuestion)}</span> par question
+              <span className="font-semibold">
+                {formatDuration(tempsParQuestion)}
+              </span>{" "}
+              par question
             </p>
             <p className="text-base">
               Durée totale : {formatDuration(tempsTotal)}
@@ -177,7 +186,7 @@ const QuizDetailsPage = () => {
         {questionsApprofondissement.length > 0 && (
           <div className="space-y-6 px-4">
             <h2 className="text-2xl font-bold text-gray-900">
-              Questions d&apos;approfondissement
+              Justification des réponses
             </h2>
 
             {questionsApprofondissement.map((qa, index) => (

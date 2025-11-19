@@ -24,9 +24,16 @@ export function QuizList() {
 
   // Trier les quiz par ID décroissant (plus récents en premier) et calculer la pagination
   const { paginatedQuizzes, totalPages } = useMemo(() => {
+    // Filtrer les quiz perso (exclure les quiz de classe et groupe)
+    // Les quiz sans type sont les quiz perso générés par l'utilisateur
+    const personalQuizzes = quizzes.filter((quiz) => {
+      const quizType = (quiz as any).type;
+      return !quizType || (quizType !== "classe" && quizType !== "groupe");
+    });
+
     // Trier par ID décroissant (les plus récents en premier)
-    const sortedQuizzes = [...quizzes].sort((a, b) => b.id - a.id);
-    
+    const sortedQuizzes = [...personalQuizzes].sort((a, b) => b.id - a.id);
+
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return {

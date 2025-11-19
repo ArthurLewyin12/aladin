@@ -84,6 +84,11 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
     router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}/details`);
   };
 
+  // Naviguer vers la page d'édition du quiz
+  const handleEdit = (quizId: number) => {
+    router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}/edit`);
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête Quiz avec titre et bouton */}
@@ -197,6 +202,7 @@ export const QuizAISection = ({ classeDetails }: QuizAISectionProps) => {
                   onStatusChange={(newStatus) => handleStatusChange(quiz.id, newStatus)}
                   onViewGrades={() => handleViewGrades(quiz.id)}
                   onViewDetails={() => handleViewDetails(quiz.id)}
+                  onEdit={() => handleEdit(quiz.id)}
                   nombre_eleves_soumis={quiz.nombre_eleves_soumis ?? 0}
                   createdAt={quiz.created_at}
                 />

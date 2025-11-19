@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { BookMarked } from "lucide-react";
+import { BookMarked, Edit } from "lucide-react";
 
 interface QuizCardProps {
   title: string;
@@ -26,6 +26,7 @@ interface QuizCardProps {
   onStatusChange?: (newStatus: boolean) => void;
   onViewGrades?: () => void;
   onViewDetails?: () => void; // New prop - pour voir les détails du quiz (questions/réponses)
+  onEdit?: () => void; // New prop - pour modifier le quiz
   onStart?: () => void; // New prop
   hasTaken?: boolean; // New prop
   allMembersTaken?: boolean; // New prop
@@ -83,6 +84,7 @@ export const QuizCard = ({
   onStatusChange,
   onViewGrades,
   onViewDetails,
+  onEdit,
   onStart,
   hasTaken,
   allMembersTaken,
@@ -95,9 +97,10 @@ export const QuizCard = ({
   // Sécuriser les valeurs pour éviter NaN et Infinity
   const safeNumberOfQuestions = numberOfQuestions || 0;
   const safeDuration = duration || 0;
-  const durationPerQuestion = safeNumberOfQuestions > 0
-    ? Math.floor(safeDuration / safeNumberOfQuestions)
-    : 0;
+  const durationPerQuestion =
+    safeNumberOfQuestions > 0
+      ? Math.floor(safeDuration / safeNumberOfQuestions)
+      : 0;
 
   // State local pour optimistic update
   const [isActive, setIsActive] = useState(initialIsActive);
@@ -140,7 +143,7 @@ export const QuizCard = ({
                       htmlFor={`quiz-status-${quizId}`}
                       className={cn(
                         "text-sm font-medium whitespace-nowrap",
-                        nombre_eleves_soumis > 0 && "text-gray-400"
+                        nombre_eleves_soumis > 0 && "text-gray-400",
                       )}
                     >
                       {isActive ? "Publié" : "Brouillon"}
@@ -157,13 +160,20 @@ export const QuizCard = ({
                 {nombre_eleves_soumis > 0 ? (
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Ce quiz ne peut plus être modifié car {nombre_eleves_soumis} élève{nombre_eleves_soumis > 1 ? "s" : ""} {nombre_eleves_soumis > 1 ? "ont" : "a"} déjà soumis {nombre_eleves_soumis > 1 ? "leurs" : "sa"} réponse{nombre_eleves_soumis > 1 ? "s" : ""}.
+                      Ce quiz ne peut plus être modifié car{" "}
+                      {nombre_eleves_soumis} élève
+                      {nombre_eleves_soumis > 1 ? "s" : ""}{" "}
+                      {nombre_eleves_soumis > 1 ? "ont" : "a"} déjà soumis{" "}
+                      {nombre_eleves_soumis > 1 ? "leurs" : "sa"} réponse
+                      {nombre_eleves_soumis > 1 ? "s" : ""}.
                     </p>
                   </TooltipContent>
                 ) : (
                   <TooltipContent>
                     <p className="max-w-xs">
-                      {isActive ? "Visible par les élèves" : "Cliquez pour diffuser aux élèves"}
+                      {isActive
+                        ? "Visible par les élèves"
+                        : "Cliquez pour diffuser aux élèves"}
                     </p>
                   </TooltipContent>
                 )}
@@ -218,17 +228,33 @@ export const QuizCard = ({
         {canManage ? (
           // Vue professeur
           !isActive ? (
-            // Quiz en brouillon : afficher uniquement "Voir détails"
-            <Button
-              onClick={onViewDetails}
-              variant="outline"
-              className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
-            >
-              Voir détails
-            </Button>
-          ) : nombre_eleves_soumis === 0 ? (
-            // Quiz publié mais aucune soumission : afficher "En attente de soumission" + "Voir détails"
+            // Quiz en brouillon : afficher "Modifier" + "Voir détails"
             <>
+              <Button
+                onClick={onEdit}
+                className=" text-white rounded-xl px-6 h-11 font-medium flex-1"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+              <Button
+                onClick={onViewDetails}
+                variant="outline"
+                className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
+              >
+                Voir détails
+              </Button>
+            </>
+          ) : nombre_eleves_soumis === 0 ? (
+            // Quiz publié mais aucune soumission : afficher "Modifier" + "En attente de soumission" + "Voir détails"
+            <>
+              <Button
+                onClick={onEdit}
+                className=" text-white rounded-xl px-6 h-11 font-medium"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
               <div className="flex-1 flex items-center justify-center bg-orange-100 border-2 border-orange-400 rounded-xl px-6 h-11">
                 <p className="text-sm font-medium text-orange-700">
                   En attente de soumission
@@ -243,7 +269,7 @@ export const QuizCard = ({
               </Button>
             </>
           ) : (
-            // Des soumissions existent : afficher "Voir les notes" + nombre de soumissions
+            // Des soumissions existent : afficher "Voir les notes" + nombre de soumissions + "Voir détails"
             <>
               <Button
                 onClick={onViewGrades}
@@ -288,9 +314,13 @@ export const QuizCard = ({
                 "rounded-xl px-6 h-11 font-medium border-2 flex-1",
                 allMembersTaken
                   ? "bg-white border-gray-900 text-gray-900 hover:bg-gray-50"
-                  : "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed",
               )}
-              title={!allMembersTaken ? "En attente que tous les membres terminent le quiz" : ""}
+              title={
+                !allMembersTaken
+                  ? "En attente que tous les membres terminent le quiz"
+                  : ""
+              }
             >
               Voir les notes
             </Button>

@@ -282,20 +282,24 @@ export type GenerateQuizResponse = {
 
 export type UpdateQuizPayload = {
   titre?: string;
+  temps?: number;
+  delai_soumission_jours?: number;
   data?: {
     qcm: Array<{
       question: string;
-      reponses: Array<{
-        texte: string;
-        correct: boolean;
-      }>;
+      propositions: {
+        a: string;
+        b: string;
+        c: string;
+        d: string;
+      };
+      bonne_reponse: "a" | "b" | "c" | "d";
     }>;
     questions_approfondissement: Array<{
       question: string;
       reponse: string;
     }>;
   };
-  temps?: number;
 };
 
 export type UpdateQuizResponse = {

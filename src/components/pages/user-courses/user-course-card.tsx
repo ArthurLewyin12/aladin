@@ -42,24 +42,29 @@ export const UserCourseCard = ({
         </h3>
       </div>
 
-      {/* Informations du cours */}
-      <div className="mb-6 space-y-1">
-        <p className="text-sm text-gray-500">
-          Généré le : {new Date(course.created_at).toLocaleDateString()}
-        </p>
-        <p className="text-base text-gray-500">
-          Matière : {course.chapitre?.matiere?.libelle || "N/A"}
-        </p>
-        <p className="text-base text-gray-500">
-          Niveau : {course.chapitre?.niveau?.libelle || "N/A"}
-        </p>
-        <p className="text-sm text-gray-500 line-clamp-3">
-          Aperçu : {course.text_preview || "Pas d'aperçu disponible."}
-        </p>
-        {/*<p className="text-sm text-gray-500">
-          Questions : {course.questions_count}
-        </p>*/}
-      </div>
+       {/* Informations du cours */}
+       <div className="mb-6 space-y-1">
+         <p className="text-sm text-gray-500">
+           Généré le : {new Date(course.created_at).toLocaleDateString()}
+         </p>
+         <p className="text-base text-gray-500">
+           Matière : {course.chapitre?.matiere?.libelle || "N/A"}
+         </p>
+         <p className="text-base text-gray-500">
+           Niveau : {course.chapitre?.niveau?.libelle || "N/A"}
+         </p>
+         {course.type === "classe_genere" && course.classe && (
+           <p className="text-base text-gray-500">
+             Classe : {course.classe.nom}
+           </p>
+         )}
+         <p className="text-sm text-gray-500 line-clamp-3">
+           Aperçu : {course.text_preview || "Pas d'aperçu disponible."}
+         </p>
+         {/*<p className="text-sm text-gray-500">
+           Questions : {course.questions_count}
+         </p>*/}
+       </div>
 
       {/* Footer avec bouton "Voir les détails" */}
       <div className="flex items-center justify-end gap-3">

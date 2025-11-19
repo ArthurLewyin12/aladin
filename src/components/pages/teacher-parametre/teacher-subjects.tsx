@@ -349,7 +349,8 @@ export default function TeacherSubjects() {
       {/* Mode sélection initiale: affiche si changements ET nombre choisi */}
       {!isModifyMode &&
         hasChanges &&
-        !shouldAskNumber && (
+        nombreMatieres > 0 &&
+        selectedMatieres.length > 0 && (
           <div className="flex gap-3 pt-4">
             <Button
               onClick={handleSave}
@@ -361,8 +362,10 @@ export default function TeacherSubjects() {
                   <Spinner size="sm" className="mr-2" />
                   Enregistrement...
                 </>
-              ) : (
+              ) : selectedMatieres.length === nombreMatieres ? (
                 "Enregistrer"
+              ) : (
+                `Sélectionnez ${nombreMatieres - selectedMatieres.length} matière${nombreMatieres - selectedMatieres.length > 1 ? 's' : ''} supplémentaire${nombreMatieres - selectedMatieres.length > 1 ? 's' : ''}`
               )}
             </Button>
             <Button

@@ -293,7 +293,7 @@ export default function TeacherSubjects() {
       </div>
 
       {/* Liste de toutes les matières disponibles - Affichée après avoir choisi le nombre */}
-      {nombreMatieres > 0 && !shouldAskNumber && (!isSelectionComplete || isModifyMode) && (
+      {nombreMatieres > 0 && (currentLibelles.length === 0 || isModifyMode || !isSelectionComplete) && (
         <div>
           <Label className="text-sm font-semibold text-gray-700">
             {isModifyMode

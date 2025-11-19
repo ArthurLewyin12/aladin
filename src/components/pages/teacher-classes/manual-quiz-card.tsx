@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, FileQuestion, BookOpen, Calendar, Edit, BookMarked } from "lucide-react";
+import {
+  Clock,
+  FileQuestion,
+  BookOpen,
+  Calendar,
+  Edit,
+  BookMarked,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -22,6 +29,7 @@ interface ManualQuizCardProps {
   onDeactivate?: () => void;
   onOpen?: () => void; // Pour voir les notes
   onViewDetails?: () => void; // Pour voir les détails (questions/réponses)
+  onEdit?: () => void; // Pour modifier le quiz
   className?: string;
 }
 
@@ -39,6 +47,7 @@ export const ManualQuizCard = ({
   onDeactivate,
   onOpen,
   onViewDetails,
+  onEdit,
   className,
 }: ManualQuizCardProps) => {
   const nombre_eleves_soumis = quiz.nombre_eleves_soumis ?? 0;
@@ -137,7 +146,7 @@ export const ManualQuizCard = ({
                     htmlFor={`quiz-status-${quiz.id}`}
                     className={cn(
                       "text-sm font-medium whitespace-nowrap",
-                      nombre_eleves_soumis > 0 && "text-gray-400"
+                      nombre_eleves_soumis > 0 && "text-gray-400",
                     )}
                   >
                     {isActive ? "Publié" : "Partager"}
@@ -154,7 +163,11 @@ export const ManualQuizCard = ({
               {nombre_eleves_soumis > 0 && (
                 <TooltipContent>
                   <p className="max-w-xs">
-                    Ce quiz ne peut plus être modifié car {nombre_eleves_soumis} élève{nombre_eleves_soumis > 1 ? "s" : ""} {nombre_eleves_soumis > 1 ? "ont" : "a"} déjà soumis {nombre_eleves_soumis > 1 ? "leurs" : "sa"} réponse{nombre_eleves_soumis > 1 ? "s" : ""}.
+                    Ce quiz ne peut plus être modifié car {nombre_eleves_soumis}{" "}
+                    élève{nombre_eleves_soumis > 1 ? "s" : ""}{" "}
+                    {nombre_eleves_soumis > 1 ? "ont" : "a"} déjà soumis{" "}
+                    {nombre_eleves_soumis > 1 ? "leurs" : "sa"} réponse
+                    {nombre_eleves_soumis > 1 ? "s" : ""}.
                   </p>
                 </TooltipContent>
               )}
@@ -176,7 +189,9 @@ export const ManualQuizCard = ({
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2 cursor-help">
                   <BookMarked className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  <p className="text-sm text-gray-500 truncate">{quiz.chapitre.libelle}</p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {quiz.chapitre.libelle}
+                  </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -198,7 +213,9 @@ export const ManualQuizCard = ({
           <>
             <div className="flex items-center gap-2 text-base text-gray-900">
               <Clock className="w-5 h-5 flex-shrink-0" />
-              <span className="font-bold">{formatDuration(tempsParQuestion)} par question</span>
+              <span className="font-bold">
+                {formatDuration(tempsParQuestion)} par question
+              </span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>Durée totale : {formatDuration(tempsTotal)}</span>
@@ -207,7 +224,9 @@ export const ManualQuizCard = ({
         ) : (
           <div className="flex items-center gap-2 text-base text-gray-900">
             <Clock className="w-5 h-5 flex-shrink-0" />
-            <span className="font-semibold">{formatDuration(quiz.temps)} par question</span>
+            <span className="font-semibold">
+              {formatDuration(quiz.temps)} par question
+            </span>
           </div>
         )}
 
@@ -230,20 +249,42 @@ export const ManualQuizCard = ({
       {/* Footer avec boutons */}
       <div className="flex items-center justify-between gap-3">
         {!isActive ? (
-          // Quiz en brouillon : afficher uniquement "Voir détails"
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onViewDetails) onViewDetails();
-            }}
-            variant="outline"
-            className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium w-full"
-          >
-            Voir détails
-          </Button>
-        ) : nombre_eleves_soumis === 0 ? (
-          // Quiz publié mais aucune soumission : afficher "En attente de soumission" + "Voir détails"
+          // Quiz en brouillon : afficher "Modifier" + "Voir détails"
           <>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onEdit) onEdit();
+              }}
+              className=" text-white rounded-xl px-6 h-11 font-medium flex-1"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Modifier
+            </Button>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onViewDetails) onViewDetails();
+              }}
+              variant="outline"
+              className="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 rounded-xl px-6 h-11 font-medium flex-1"
+            >
+              Voir détails
+            </Button>
+          </>
+        ) : nombre_eleves_soumis === 0 ? (
+          // Quiz publié mais aucune soumission : afficher "Modifier" + "En attente de soumission" + "Voir détails"
+          <>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onEdit) onEdit();
+              }}
+              className=" text-white rounded-xl px-6 h-11 font-medium"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Modifier
+            </Button>
             <div className="flex-1 flex items-center justify-center bg-orange-100 border-2 border-orange-400 rounded-xl px-6 h-11">
               <p className="text-sm font-medium text-orange-700">
                 En attente de soumission
@@ -286,4 +327,3 @@ export const ManualQuizCard = ({
     </div>
   );
 };
-

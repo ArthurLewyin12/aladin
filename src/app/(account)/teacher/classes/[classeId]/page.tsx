@@ -230,6 +230,11 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
     router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}/details`);
   };
 
+  const handleEdit = (quizId: number) => {
+    // Aller vers la page d'édition du quiz
+    router.push(`/teacher/classes/${classeDetails.id}/quiz/${quizId}/edit`);
+  };
+
   const handlePrevPage = () => {
     if (page > 1) {
       setPage(page - 1);
@@ -326,6 +331,7 @@ const ManualQuizSection = ({ classeDetails }: ManualQuizSectionProps) => {
               onDeactivate={() => handleDeactivate(quiz.id)}
               onOpen={() => handleOpen(quiz.id)}
               onViewDetails={() => handleViewDetails(quiz.id)}
+              onEdit={() => handleEdit(quiz.id)}
             />
           );
         })}

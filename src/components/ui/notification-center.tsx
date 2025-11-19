@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Bell, Check, X, Users, Award, BookOpen, CheckCircle } from "lucide-react";
+import {
+  Bell,
+  Check,
+  X,
+  Users,
+  Award,
+  BookOpen,
+  CheckCircle,
+} from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -20,7 +28,11 @@ import {
   useAcceptGroupInvitation,
   useDeclineGroupInvitation,
 } from "@/services/hooks/notifications";
-import { Notification, NotificationType, GroupInvitation } from "@/services/controllers/types/common/notification.types";
+import {
+  Notification,
+  NotificationType,
+  GroupInvitation,
+} from "@/services/controllers/types/common/notification.types";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { UserRole } from "@/constants/navigation";
 
@@ -92,14 +104,18 @@ const formatDate = (dateString: string) => {
 
 export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [loadingState, setLoadingState] = useState<{ invitationId: number; action: "accept" | "decline" } | null>(null);
+  const [loadingState, setLoadingState] = useState<{
+    invitationId: number;
+    action: "accept" | "decline";
+  } | null>(null);
   const router = useRouter();
   const { user } = useSession();
 
   // Récupérer les notifications (20 dernières, toutes)
   const { data, isLoading, isError } = useNotifications({ per_page: 20 });
   const { mutate: markAsRead } = useMarkNotificationAsRead();
-  const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead();
+  const { mutate: markAllAsRead, isPending: isMarkingAll } =
+    useMarkAllNotificationsAsRead();
   const { mutate: acceptInvitation } = useAcceptGroupInvitation();
   const { mutate: declineInvitation } = useDeclineGroupInvitation();
 
@@ -107,8 +123,11 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const unreadCount = data?.notifications_generales?.unread_count || 0;
   const invitationsGroupes = data?.invitations_groupes || [];
 
-  const hasNotifications = notificationsGenerales.length > 0 || invitationsGroupes.length > 0;
-  const totalUnread = unreadCount + invitationsGroupes.filter(inv => inv.reponse === "en attente").length;
+  const hasNotifications =
+    notificationsGenerales.length > 0 || invitationsGroupes.length > 0;
+  const totalUnread =
+    unreadCount +
+    invitationsGroupes.filter((inv) => inv.reponse === "en attente").length;
 
   // Déterminer le préfixe de route selon le rôle
   const getRolePrefix = (): string => {
@@ -151,8 +170,13 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
               router.push(`${rolePrefix}/enfants`);
             }
             // Professeurs: rediriger vers la classe
-            else if (user?.statut === "professeur" && notification.data.classe_id) {
-              router.push(`${rolePrefix}/classes/${notification.data.classe_id}`);
+            else if (
+              user?.statut === "professeur" &&
+              notification.data.classe_id
+            ) {
+              router.push(
+                `${rolePrefix}/classes/${notification.data.classe_id}`,
+              );
             }
           }
           break;
@@ -161,15 +185,22 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           if (notification.data.quiz_id) {
             // Élèves: rediriger vers les résultats du quiz
             if (user?.statut === "eleve") {
-              router.push(`${rolePrefix}/quiz/${notification.data.quiz_id}/results`);
+              router.push(
+                `${rolePrefix}/quiz/${notification.data.quiz_id}/results`,
+              );
             }
             // Parents: rediriger vers les notes
             else if (user?.statut === "parent") {
               router.push(`${rolePrefix}/notes`);
             }
             // Professeurs: rediriger vers les notes de la classe
-            else if (user?.statut === "professeur" && notification.data.classe_id) {
-              router.push(`${rolePrefix}/classes/${notification.data.classe_id}`);
+            else if (
+              user?.statut === "professeur" &&
+              notification.data.classe_id
+            ) {
+              router.push(
+                `${rolePrefix}/classes/${notification.data.classe_id}`,
+              );
             }
           }
           break;
@@ -183,7 +214,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           if (notification.data.course_id) {
             // Élèves: rediriger vers le cours
             if (user?.statut === "eleve") {
-              router.push(`${rolePrefix}/courses/${notification.data.course_id}`);
+              router.push(
+                `${rolePrefix}/courses/${notification.data.course_id}`,
+              );
             }
             // Professeurs: rediriger vers les cours
             else if (user?.statut === "professeur") {
@@ -301,7 +334,8 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                       key={invitation.id}
                       className={cn(
                         "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
-                        invitation.reponse === "en attente" && "bg-purple-50/30 dark:bg-purple-900/10",
+                        invitation.reponse === "en attente" &&
+                          "bg-purple-50/30 dark:bg-purple-900/10",
                       )}
                     >
                       <div className="flex gap-3">
@@ -320,7 +354,8 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                                 Invitation de groupe
                               </p>
                               <p className="text-xs text-gray-600 dark:text-gray-400">
-                                De {invitation.userEnvoie.prenom} {invitation.userEnvoie.nom}
+                                De {invitation.userEnvoie.prenom}{" "}
+                                {invitation.userEnvoie.nom}
                               </p>
                             </div>
                             {invitation.reponse === "en attente" && (
@@ -339,14 +374,22 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                                 variant="default"
                                 className="h-7 text-xs flex-1"
                                 onClick={() => {
-                                  setLoadingState({ invitationId: invitation.id, action: "accept" });
+                                  setLoadingState({
+                                    invitationId: invitation.id,
+                                    action: "accept",
+                                  });
                                   acceptInvitation(invitation.id, {
                                     onSettled: () => setLoadingState(null),
                                   });
                                 }}
                                 disabled={loadingState !== null}
                               >
-                                {loadingState?.invitationId === invitation.id && loadingState?.action === "accept" ? <Spinner size="sm" /> : <Check className="h-3 w-3 mr-1" />}
+                                {loadingState?.invitationId === invitation.id &&
+                                loadingState?.action === "accept" ? (
+                                  <Spinner size="sm" />
+                                ) : (
+                                  <Check className="h-3 w-3 mr-1" />
+                                )}
                                 Accepter
                               </Button>
                               <Button
@@ -354,14 +397,22 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                                 variant="outline"
                                 className="h-7 text-xs flex-1"
                                 onClick={() => {
-                                  setLoadingState({ invitationId: invitation.id, action: "decline" });
+                                  setLoadingState({
+                                    invitationId: invitation.id,
+                                    action: "decline",
+                                  });
                                   declineInvitation(invitation.id, {
                                     onSettled: () => setLoadingState(null),
                                   });
                                 }}
                                 disabled={loadingState !== null}
                               >
-                                {loadingState?.invitationId === invitation.id && loadingState?.action === "decline" ? <Spinner size="sm" /> : <X className="h-3 w-3 mr-1" />}
+                                {loadingState?.invitationId === invitation.id &&
+                                loadingState?.action === "decline" ? (
+                                  <Spinner size="sm" />
+                                ) : (
+                                  <X className="h-3 w-3 mr-1" />
+                                )}
                                 Refuser
                               </Button>
                             </div>
@@ -403,7 +454,8 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                         onClick={() => handleNotificationClick(notification)}
                         className={cn(
                           "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
-                          !notification.is_read && "bg-gray-50/30 dark:bg-gray-800/10",
+                          !notification.is_read &&
+                            "bg-gray-50/30 dark:bg-gray-800/10",
                         )}
                       >
                         <div className="flex gap-3">
@@ -416,7 +468,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                                 style.ringColor,
                               )}
                             >
-                              <IconComponent className={cn("h-5 w-5", style.iconColor)} />
+                              <IconComponent
+                                className={cn("h-5 w-5", style.iconColor)}
+                              />
                             </div>
                           </div>
 

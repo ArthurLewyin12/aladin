@@ -474,7 +474,7 @@ export default function TeacherDashboardPage() {
       const columns: any[] = [
         columnHelper.accessor("eleve", {
           header: "Élève",
-          cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+          cell: (info) => <span className="text-lg font-semibold">{info.getValue()}</span>,
         }),
         columnHelper.accessor("classe", {
           header: "Classe",

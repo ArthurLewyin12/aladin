@@ -1,15 +1,16 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useGetAllCourses } from "@/services/hooks/cours/useGetAllCourses";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
-import { Plus, BookOpen, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, BookOpen, FileText, ChevronLeft, ChevronRight, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCourseCard } from "./user-course-card";
 import { Course } from "@/services/controllers/types/common/cours.type";
 import { getOneCourse } from "@/services/controllers/cours.controller";
 import { toast } from "@/lib/toast";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { AnimatedTabs } from "@/components/ui/animated-tabs";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -19,21 +20,55 @@ export function CourseList() {
   const courses: Course[] = (data?.courses as Course[]) || [];
   const [loadingCourseId, setLoadingCourseId] = useState<number | null>(null);
 
+  // Tab management avec nuqs
+  const [activeTab, setActiveTab] = useQueryState("tab", parseAsString.withDefault("personnel"));
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-  // Trier les cours par ID décroissant (plus récents en premier) et calculer la pagination
-  const { paginatedCourses, totalPages } = useMemo(() => {
-    // Trier par ID décroissant (les plus récents en premier)
-    const sortedCourses = [...courses].sort((a, b) => b.id - a.id);
-    
+  // Vérifier s'il y a des cours dans chaque catégorie
+  const hasPersonalCourses = courses.some(course => course.type === "personnel");
+  const hasClassCourses = courses.some(course => course.type === "classe_genere");
+
+  // Si une seule catégorie a des cours, forcer ce tab
+  const effectiveActiveTab = !hasPersonalCourses && hasClassCourses ? "classe" :
+                            !hasClassCourses && hasPersonalCourses ? "personnel" : activeTab;
+
+  // Mettre à jour le tab actif si nécessaire
+  useEffect(() => {
+    if (effectiveActiveTab !== activeTab) {
+      setActiveTab(effectiveActiveTab);
+    }
+  }, [effectiveActiveTab, activeTab, setActiveTab]);
+
+  // Filtrer et trier les cours selon le tab actif
+  const { filteredCourses, paginatedCourses, totalPages } = useMemo(() => {
+    // Filtrer selon le type
+    const filtered = courses.filter(course =>
+      activeTab === "personnel" ? course.type === "personnel" : course.type === "classe_genere"
+    );
+
+    // Trier par ID décroissant (plus récents en premier)
+    const sortedCourses = [...filtered].sort((a, b) => b.id - a.id);
+
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
+
     return {
+      filteredCourses: sortedCourses,
       paginatedCourses: sortedCourses.slice(startIndex, endIndex),
       totalPages: Math.ceil(sortedCourses.length / ITEMS_PER_PAGE),
     };
-  }, [courses, page]);
+  }, [courses, activeTab, page]);
+
+  const tabs = [
+    { label: "personnel", icon: <User size={16} /> },
+    { label: "classe", icon: <Users size={16} /> },
+  ];
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setPage(1); // Reset pagination when changing tabs
+  };
 
   const handleOpenDetails = async (course: Course) => {
     setLoadingCourseId(course.id);
@@ -122,15 +157,15 @@ export function CourseList() {
   return (
     <>
       <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
-        {/* Bouton en haut quand il y a des cours */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4  backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
+        {/* Header avec bouton */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
               Mes Cours
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              {courses.length} cours{" "}
-              {courses.length > 1 ? "disponibles" : "disponible"}
+              {filteredCourses.length} cours{" "}
+              {filteredCourses.length > 1 ? "disponibles" : "disponible"}
               {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </p>
           </div>
@@ -145,18 +180,49 @@ export function CourseList() {
           </Button>
         </div>
 
-        {/* Grille des cours paginés */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {paginatedCourses.map((course, index) => (
-            <UserCourseCard
-              key={course.id}
-              course={course}
-              index={(page - 1) * ITEMS_PER_PAGE + index}
-              onDetailsClick={() => handleOpenDetails(course)}
-              isLoading={loadingCourseId === course.id}
+        {/* Tabs pour filtrer les cours */}
+        {(hasPersonalCourses && hasClassCourses) && (
+          <div className="flex justify-center">
+            <AnimatedTabs
+              tabs={tabs}
+              activeTab={effectiveActiveTab}
+              onTabChange={handleTabChange}
             />
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* Grille des cours paginés */}
+        {paginatedCourses.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {paginatedCourses.map((course, index) => (
+              <UserCourseCard
+                key={course.id}
+                course={course}
+                index={(page - 1) * ITEMS_PER_PAGE + index}
+                onDetailsClick={() => handleOpenDetails(course)}
+                isLoading={loadingCourseId === course.id}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-6 sm:gap-8 mt-8">
+            <EmptyState
+              title={`Aucun cours ${effectiveActiveTab === "personnel" ? "personnel" : "de classe"}`}
+              description={`${
+                effectiveActiveTab === "personnel"
+                  ? "Crée ton premier cours personnalisé !"
+                  : "Les cours de classe apparaîtront ici quand ils seront disponibles."
+              }`}
+              icons={[
+                <FileText key="1" size={20} />,
+                <BookOpen key="2" size={20} />,
+              ]}
+              size="default"
+              theme="light"
+              variant="default"
+            />
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (

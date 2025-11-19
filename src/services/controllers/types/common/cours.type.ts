@@ -54,7 +54,12 @@ export type GenerateCoursResponse =
 
 export type Course = {
   id: number;
+  type: "personnel" | "classe_genere";
   chapitre: Chapitre;
+  classe?: {
+    id: number;
+    nom: string;
+  };
   text_preview: string;
   questions_count: number;
   time: number;

@@ -8,8 +8,9 @@ import { useReactivateClasse } from '@/services/hooks/professeur/useReactivateCl
 import { ClasseCard } from './classe-card';
 import { AddStudentModal } from './add-student-modal';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { parseAsInteger, useQueryState } from 'nuqs';
+import { Input } from '@/components/ui/input';
+import { ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -33,15 +34,16 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
   const [isAddStudentModalOpen, setAddStudentModalOpen] = useState(false);
   const [selectedClasseId, setSelectedClasseId] = useState<number | null>(null);
 
-  // Pagination avec nuqs
+  // Pagination et recherche avec nuqs
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [searchQuery, setSearchQuery] = useQueryState('search', parseAsString.withDefault(''));
 
   const enrichedClasses = useMemo(() => {
     if (!classes) return [];
 
     // Filtrer les classes sans ID valide et éviter les doublons
     const seenIds = new Set<number>();
-    return classes
+    const filtered = classes
       .filter(classe => {
         if (!classe || classe.id == null) {
           console.warn('Classe sans ID valide ignorée:', classe);
@@ -55,11 +57,18 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
         return true;
       })
       .sort((a, b) => b.id - a.id) // Trier par ID décroissant (plus récent en premier)
+      // Filtrer par recherche
+      .filter(classe => {
+        if (!searchQuery) return true;
+        return classe.nom.toLowerCase().includes(searchQuery.toLowerCase());
+      })
       .map((classe, index) => ({
         ...classe,
         cardColor: CARD_COLORS[index % CARD_COLORS.length],
       }));
-  }, [classes]);
+
+    return filtered;
+  }, [classes, searchQuery]);
 
   // Calculer les classes paginées
   const { paginatedClasses, totalPages } = useMemo(() => {
@@ -146,6 +155,27 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
           <span className="hidden sm:inline">Nouvelle classe</span>
           <span className="sm:hidden">Créer</span>
         </Button>
+      </div>
+
+      {/* Barre de recherche */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            placeholder="Rechercher une classe..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-white border-2 border-gray-200 rounded-xl h-11"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Grille des classes paginées */}

@@ -3,12 +3,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { QuizList } from "@/components/pages/user-quizzes/quiz-list";
 import { GroupQuizList } from "@/components/pages/user-quizzes/group-quiz-list";
+import { ClassQuizList } from "@/components/pages/user-quizzes/class-quiz-list";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { ArrowLeft } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
+import { useGetAllQuiz } from "@/services/hooks/quiz";
 
 export default function QuizPage() {
   const router = useRouter();
+  const { data: allQuizData, isLoading } = useGetAllQuiz();
   const [activeTab, setActiveTab] = useQueryState(
     "tab",
     parseAsString.withDefault("Mes Quiz"),
@@ -18,7 +21,11 @@ export default function QuizPage() {
     router.push("/student/home");
   };
 
-  const tabs = [{ label: "Mes Quiz" }, { label: "Quiz de Groupe" }];
+  const tabs = [
+    { label: "Mes Quiz" },
+    { label: "Quiz de Groupe" },
+    { label: "Quiz de Classe" },
+  ];
 
   return (
     <div className="min-h-screen relative">
@@ -63,7 +70,14 @@ export default function QuizPage() {
         </div>
 
         {/* Contenu principal basé sur l'onglet actif */}
-        {activeTab === "Mes Quiz" ? <QuizList /> : <GroupQuizList />}
+        {activeTab === "Mes Quiz" && <QuizList />}
+        {activeTab === "Quiz de Groupe" && <GroupQuizList />}
+        {activeTab === "Quiz de Classe" && (
+          <ClassQuizList
+            quizzes={allQuizData?.quizzes || []}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </div>
   );

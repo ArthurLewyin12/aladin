@@ -37,6 +37,7 @@ import {
 } from "@/services/controllers/types/common/notification.types";
 import { useSession } from "@/services/hooks/auth/useSession";
 import { UserRole } from "@/constants/navigation";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
 interface NotificationCenterProps {
   className?: string;
@@ -114,9 +115,12 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const router = useRouter();
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const { isNotificationHidden } = useNotificationStore();
 
   // Récupérer les notifications (20 dernières, toutes)
-  const { data, isLoading, isError, refetch } = useNotifications({ per_page: 20 });
+  const { data, isLoading, isError, refetch } = useNotifications({
+    per_page: 20,
+  });
   const { mutate: markAsRead } = useMarkNotificationAsRead();
   const { mutate: markAllAsRead, isPending: isMarkingAll } =
     useMarkAllNotificationsAsRead();
@@ -167,7 +171,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           if (notification.data.quiz_id) {
             // Élèves et répétiteurs: rediriger vers le quiz de classe
             if (user?.statut === "eleve" || user?.statut === "repetiteur") {
-              router.push(`${rolePrefix}/class-quiz/${notification.data.quiz_id}`);
+              router.push(
+                `${rolePrefix}/class-quiz/${notification.data.quiz_id}`,
+              );
             }
             // Parents: rediriger vers la page de l'enfant (si disponible)
             else if (user?.statut === "parent" && notification.data.eleve_id) {
@@ -472,59 +478,63 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                       </p>
                     </div>
                   )}
-                  {notificationsGenerales.map((notification) => {
-                    const style = getNotificationStyle(notification.type);
-                    const IconComponent = style.icon;
+                  {notificationsGenerales
+                    .filter(
+                      (notification) => !isNotificationHidden(notification.id),
+                    )
+                    .map((notification) => {
+                      const style = getNotificationStyle(notification.type);
+                      const IconComponent = style.icon;
 
-                    return (
-                      <div
-                        key={notification.id}
-                        onClick={() => handleNotificationClick(notification)}
-                        className={cn(
-                          "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
-                          !notification.is_read &&
-                            "bg-gray-50/30 dark:bg-gray-800/10",
-                        )}
-                      >
-                        <div className="flex gap-3">
-                          {/* Icône */}
-                          <div className="flex-shrink-0">
-                            <div
-                              className={cn(
-                                "h-10 w-10 rounded-full flex items-center justify-center ring-2",
-                                style.bgColor,
-                                style.ringColor,
-                              )}
-                            >
-                              <IconComponent
-                                className={cn("h-5 w-5", style.iconColor)}
-                              />
+                      return (
+                        <div
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={cn(
+                            "px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer",
+                            !notification.is_read &&
+                              "bg-gray-50/30 dark:bg-gray-800/10",
+                          )}
+                        >
+                          <div className="flex gap-3">
+                            {/* Icône */}
+                            <div className="flex-shrink-0">
+                              <div
+                                className={cn(
+                                  "h-10 w-10 rounded-full flex items-center justify-center ring-2",
+                                  style.bgColor,
+                                  style.ringColor,
+                                )}
+                              >
+                                <IconComponent
+                                  className={cn("h-5 w-5", style.iconColor)}
+                                />
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Contenu */}
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                {notification.title}
+                            {/* Contenu */}
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                  {notification.title}
+                                </p>
+                                {!notification.is_read && (
+                                  <div className="w-2 h-2 rounded-full bg-gray-600 flex-shrink-0 mt-1" />
+                                )}
+                              </div>
+
+                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                {notification.message}
                               </p>
-                              {!notification.is_read && (
-                                <div className="w-2 h-2 rounded-full bg-gray-600 flex-shrink-0 mt-1" />
-                              )}
+
+                              <p className="text-xs text-gray-400 dark:text-gray-500">
+                                {formatDate(notification.created_at)}
+                              </p>
                             </div>
-
-                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                              {notification.message}
-                            </p>
-
-                            <p className="text-xs text-gray-400 dark:text-gray-500">
-                              {formatDate(notification.created_at)}
-                            </p>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </>
               )}
             </div>

@@ -129,19 +129,31 @@ export default function SavedCoursePage() {
   // Utiliser les données de sessionStorage ou de l'API
   const data = useSessionData ? sessionData : apiData;
 
-  // Déterminer le type de cours et le contenu à afficher
-  const courseType = data?.type;
-  const isManualCourse = courseType === "manuel";
-  const isAICourse = courseType === "genere";
-
   // Helper function pour récupérer les données structurées des cours IA
   const getCourseData = (courseData: any) => {
-    return courseData?.course_data || courseData?.cours_data;
+    // Check multiple possible locations for course_data
+    return (
+      courseData?.content?.course_data ||
+      courseData?.course_data ||
+      courseData?.data?.course_data ||
+      courseData?.content?.cours_data ||
+      courseData?.cours_data ||
+      courseData?.data?.cours_data
+    );
   };
   const { startTracking, stopTracking } = useTimeTracking();
 
-  // Déterminer si c'est un cours IA avec données structurées
-  const hasStructuredCourseData = isAICourse && getCourseData(data) !== null;
+  // Déterminer si c'est un cours avec données structurées
+  const hasStructuredCourseData =
+    data &&
+    typeof data === "object" &&
+    ("course_data" in data ||
+      "cours_data" in data ||
+      (data.content &&
+        ("course_data" in data.content || "cours_data" in data.content)) ||
+      (data.data &&
+        ("course_data" in data.data || "cours_data" in data.data))) &&
+    getCourseData(data) !== null;
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
@@ -156,8 +168,8 @@ export default function SavedCoursePage() {
   }, [isLoading, data, startTracking, stopTracking]);
 
   const parsedContent = useMemo(() => {
-    // Pour les cours manuels, utiliser plain_text s'il existe
-    if (isManualCourse && data?.plain_text) {
+    // Pour les cours avec plain_text (fallback)
+    if (data?.plain_text) {
       return data.plain_text.split("\n").map((line: string, index: number) => ({
         id: index,
         type: "paragraph",
@@ -165,7 +177,7 @@ export default function SavedCoursePage() {
       }));
     }
 
-    // Pour les cours IA ou anciens, utiliser text
+    // Pour les cours avec text
     if (!data || !data.text || typeof data.text !== "string") return [];
 
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
@@ -180,7 +192,7 @@ export default function SavedCoursePage() {
         content: line,
       };
     });
-  }, [data, isManualCourse]);
+  }, [data]);
 
   // Memoized summary generation
   const summary = useMemo(() => {
@@ -666,11 +678,11 @@ export default function SavedCoursePage() {
                   </section>
                 )}
 
-                {/* FAQ Section - Ancien Format */}
-                {!hasStructuredCourseData &&
-                  data &&
-                  data.questions &&
-                  data.questions.length > 0 && (
+                 {/* FAQ Section - Ancien Format */}
+                 {!hasStructuredCourseData &&
+                   data &&
+                   (data.content?.questions || data.questions) &&
+                   (data.content?.questions || data.questions).length > 0 && (
                     <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-orange-500 rounded-xl">
@@ -680,8 +692,8 @@ export default function SavedCoursePage() {
                           Questions d'approfondissements
                         </h2>
                       </div>
-                      <div className="space-y-4">
-                        {data.questions.map((qa: any, index: number) => (
+                       <div className="space-y-4">
+                         {(data.content?.questions || data.questions).map((qa: any, index: number) => (
                           <details
                             key={index}
                             className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
@@ -706,11 +718,11 @@ export default function SavedCoursePage() {
               </>
             )}
 
-            {/* Questions Fréquentes pour le nouveau format */}
-            {hasStructuredCourseData &&
-              data &&
-              data.questions &&
-              data.questions.length > 0 && (
+             {/* Questions Fréquentes pour le nouveau format */}
+             {hasStructuredCourseData &&
+               data &&
+               (data.content?.questions || data.questions) &&
+               (data.content?.questions || data.questions).length > 0 && (
                 <section className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-orange-500 rounded-xl">
@@ -720,8 +732,8 @@ export default function SavedCoursePage() {
                       Questions d'approfondissements
                     </h2>
                   </div>
-                  <div className="space-y-4">
-                    {data.questions.map((qa: any, index: number) => (
+                   <div className="space-y-4">
+                     {(data.content?.questions || data.questions).map((qa: any, index: number) => (
                       <details
                         key={index}
                         className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"

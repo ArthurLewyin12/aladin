@@ -86,6 +86,7 @@ export enum CourseEndpoints {
   COURSES_BY_CHAPITRE = "/api/cours/expliquer",
   ALL_QUIZ_GENERATED = "/api/cours/my-generated",
   GET_ONE_COURSE = "/api/cours/{courseId}",
+  ELEVE_COURS = "/api/eleves/{eleveId}/classes/cours",
 }
 
 /**

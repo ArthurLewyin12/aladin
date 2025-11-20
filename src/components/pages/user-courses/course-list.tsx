@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
-import { useGetAllCourses } from "@/services/hooks/cours/useGetAllCourses";
+import { useGetCoursesByType } from "@/services/hooks/cours/useGetAllCourses";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useRouter } from "next/navigation";
 import { Plus, BookOpen, FileText, ChevronLeft, ChevronRight, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCourseCard } from "./user-course-card";
-import { Course } from "@/services/controllers/types/common/cours.type";
+import { Course, EleveCours } from "@/services/controllers/types/common/cours.type";
 import { getOneCourse } from "@/services/controllers/cours.controller";
 import { toast } from "@/lib/toast";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
@@ -16,43 +16,42 @@ const ITEMS_PER_PAGE = 6;
 
 export function CourseList() {
   const router = useRouter();
-  const { data, isLoading, isError, error } = useGetAllCourses();
-  const courses: Course[] = (data?.courses as Course[]) || [];
-  const [loadingCourseId, setLoadingCourseId] = useState<number | null>(null);
-
   // Tab management avec nuqs
   const [activeTab, setActiveTab] = useQueryState("tab", parseAsString.withDefault("personnel"));
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-  // Vérifier s'il y a des cours dans chaque catégorie
-  const hasPersonalCourses = courses.some(course => course.type === "personnel");
-  const hasClassCourses = courses.some(course => course.type === "classe_genere");
+  // Utiliser le hook adapté selon le type de cours
+  const { data, isLoading, isError } = useGetCoursesByType(activeTab as "personnel" | "classe");
+  const [loadingCourseId, setLoadingCourseId] = useState<number | null>(null);
 
-  // Si une seule catégorie a des cours, forcer ce tab
-  const effectiveActiveTab = !hasPersonalCourses && hasClassCourses ? "classe" :
-                            !hasClassCourses && hasPersonalCourses ? "personnel" : activeTab;
-
-  // Mettre à jour le tab actif si nécessaire
-  useEffect(() => {
-    if (effectiveActiveTab !== activeTab) {
-      setActiveTab(effectiveActiveTab);
+  // Adapter les données selon l'API utilisée
+  const courses: Course[] | EleveCours[] = useMemo(() => {
+    if (activeTab === "personnel") {
+      // Ancienne API : data.courses
+      return (data as any)?.courses || [];
+    } else {
+      // Nouvelle API : data.cours
+      return (data as any)?.cours || [];
     }
-  }, [effectiveActiveTab, activeTab, setActiveTab]);
+  }, [data, activeTab]);
+
+  // Vérifier s'il y a des cours
+  const hasCourses = courses.length > 0;
 
   // Filtrer et trier les cours selon le tab actif
   const { filteredCourses, paginatedCourses, totalPages } = useMemo(() => {
-    // Filtrer selon le type
-    const filtered = courses.filter(course =>
-      activeTab === "personnel" ? course.type === "personnel" : course.type === "classe_genere"
-    );
+    // Pour les cours personnels, filtrer par type
+    // Pour les cours de classe, tous sont déjà du bon type
+    const filtered = activeTab === "personnel"
+      ? courses.filter((course: any) => course.type === "personnel")
+      : courses;
 
     // Trier par ID décroissant (plus récents en premier)
-    const sortedCourses = [...filtered].sort((a, b) => b.id - a.id);
+    const sortedCourses = [...filtered].sort((a: any, b: any) => b.id - a.id);
 
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-
     return {
       filteredCourses: sortedCourses,
       paginatedCourses: sortedCourses.slice(startIndex, endIndex),
@@ -70,17 +69,43 @@ export function CourseList() {
     setPage(1); // Reset pagination when changing tabs
   };
 
-  const handleOpenDetails = async (course: Course) => {
+  const handleOpenDetails = async (course: Course | EleveCours) => {
     setLoadingCourseId(course.id);
 
     try {
-      // Tenter de charger le cours pour vérifier s'il est disponible
-      await getOneCourse(course.id);
+      // Pour les cours de classe, vérifier si on a déjà les données complètes
+      if (activeTab === "classe" && (course as EleveCours).data) {
+        // Les cours de classe ont déjà toutes les données, on peut les sauvegarder directement
+        const eleveCourse = course as EleveCours;
 
-      // Si succès, rediriger vers la page du cours
-      router.push(`/student/cours/saved/${course.id}`);
+        // Transformer les données pour le format attendu par la page de cours
+        const courseData = {
+          id: eleveCourse.id,
+          titre: eleveCourse.titre,
+          chapitre: eleveCourse.chapitre,
+          classe: eleveCourse.classe,
+          professeur: eleveCourse.professeur,
+          text: eleveCourse.plain_text || "",
+          course_data: eleveCourse.data?.course_data,
+          cours_data: eleveCourse.data?.course_data, // Pour compatibilité
+          questions: eleveCourse.data?.questions || [],
+          time: 0, // Les cours de classe n'ont pas de time tracking
+          created_at: eleveCourse.created_at,
+          updated_at: eleveCourse.updated_at,
+        };
+
+        // Sauvegarder dans sessionStorage pour la page de cours
+        sessionStorage.setItem("courseData", JSON.stringify(courseData));
+
+        // Rediriger vers la page du cours
+        router.push(`/student/cours/saved/${course.id}`);
+      } else {
+        // Pour les cours personnels, utiliser l'API existante
+        await getOneCourse(course.id);
+        router.push(`/student/cours/saved/${course.id}`);
+      }
     } catch (err: any) {
-      // Si erreur (404 ou autre), afficher un toast informatif
+      console.error("Erreur lors de l'accès au cours:", err);
       toast({
         title: "Cours en cours de préparation",
         message:
@@ -113,15 +138,19 @@ export function CourseList() {
     );
   }
 
-  if (courses.length === 0) {
+  if (!hasCourses) {
     return (
       <div className="px-4 sm:px-0">
         {/* Illustration centrale */}
         <div className="flex flex-col items-center gap-6 sm:gap-8 mt-4 sm:mt-8">
           <div className="relative w-full max-w-2xl">
             <EmptyState
-              title="Aucun cours généré"
-              description="Crée ton premier cours personnalisé et commence à apprendre de manière efficace !"
+              title={activeTab === "personnel" ? "Aucun cours personnel" : "Aucun cours de classe"}
+              description={
+                activeTab === "personnel"
+                  ? "Crée ton premier cours personnalisé et commence à apprendre de manière efficace !"
+                  : "Tes professeurs n'ont pas encore créé de cours pour toi."
+              }
               icons={[
                 <FileText key="1" size={20} />,
                 <BookOpen key="2" size={20} />,
@@ -136,18 +165,22 @@ export function CourseList() {
           {/* Texte et bouton CTA */}
           <div className="text-center px-4">
             <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
-              Clique ci-dessous pour générer ton premier cours et commencer
-              l'aventure !
+              {activeTab === "personnel"
+                ? "Clique ci-dessous pour générer ton premier cours et commencer l'aventure !"
+                : "Les cours de classe apparaîtront ici quand ils seront disponibles."
+              }
             </p>
 
-            <Button
-              size="lg"
-              onClick={() => router.push("/student/revision/generated")}
-              className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
-            >
-              <Plus className="w-4  sm:w-5 h-5 mr-2" />
-              Générer un cours
-            </Button>
+            {activeTab === "personnel" && (
+              <Button
+                size="lg"
+                onClick={() => router.push("/student/revision/generated")}
+                className="bg-[#2C3E50] hover:bg-[#1a252f] text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg transition-all hover:shadow-xl w-full sm:w-auto"
+              >
+                <Plus className="w-4  sm:w-5 h-5 mr-2" />
+                Générer un cours
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -181,35 +214,76 @@ export function CourseList() {
         </div>
 
         {/* Tabs pour filtrer les cours */}
-        {(hasPersonalCourses && hasClassCourses) && (
-          <div className="flex justify-center">
-            <AnimatedTabs
-              tabs={tabs}
-              activeTab={effectiveActiveTab}
-              onTabChange={handleTabChange}
-            />
-          </div>
-        )}
+        <div className="flex justify-center">
+          <AnimatedTabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        </div>
 
         {/* Grille des cours paginés */}
         {paginatedCourses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {paginatedCourses.map((course, index) => (
-              <UserCourseCard
-                key={course.id}
-                course={course}
-                index={(page - 1) * ITEMS_PER_PAGE + index}
-                onDetailsClick={() => handleOpenDetails(course)}
-                isLoading={loadingCourseId === course.id}
-              />
-            ))}
+            {paginatedCourses.map((course, index) => {
+              // Transformer les données pour UserCourseCard selon le type
+              let courseData: Course;
+              if (activeTab === "personnel") {
+                // Cours personnels - déjà au bon format
+                courseData = course as Course;
+              } else {
+                // Cours de classe - transformer en format Course
+                const eleveCourse = course as EleveCours;
+                courseData = {
+                  id: eleveCourse.id,
+                  type: "classe_genere",
+                  chapitre: {
+                    id: eleveCourse.chapitre.id,
+                    libelle: eleveCourse.chapitre.libelle,
+                    niveau_id: eleveCourse.chapitre.niveau.id,
+                    matiere_id: eleveCourse.chapitre.matiere.id,
+                    matiere: {
+                      id: eleveCourse.chapitre.matiere.id,
+                      libelle: eleveCourse.chapitre.matiere.libelle,
+                    },
+                    niveau: {
+                      id: eleveCourse.chapitre.niveau.id,
+                      libelle: eleveCourse.chapitre.niveau.libelle,
+                    },
+                    fichier: "",
+                    created_at: "",
+                    updated_at: "",
+                  } as any,
+                  classe: eleveCourse.classe,
+                  text_preview: eleveCourse.type === "genere"
+                    ? (eleveCourse.data?.course_data?.Introduction || "Aucun aperçu disponible.")
+                    : (eleveCourse.plain_text || "Aucun aperçu disponible."),
+                  questions_count: eleveCourse.type === "genere"
+                    ? (eleveCourse.data?.questions?.length || 0)
+                    : 0,
+                  time: 0,
+                  created_at: eleveCourse.created_at,
+                  updated_at: eleveCourse.updated_at,
+                };
+              }
+
+              return (
+                <UserCourseCard
+                  key={course.id}
+                  course={courseData}
+                  index={(page - 1) * ITEMS_PER_PAGE + index}
+                  onDetailsClick={() => handleOpenDetails(course)}
+                  isLoading={loadingCourseId === course.id}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-6 sm:gap-8 mt-8">
             <EmptyState
-              title={`Aucun cours ${effectiveActiveTab === "personnel" ? "personnel" : "de classe"}`}
+              title={`Aucun cours ${activeTab === "personnel" ? "personnel" : "de classe"}`}
               description={`${
-                effectiveActiveTab === "personnel"
+                activeTab === "personnel"
                   ? "Crée ton premier cours personnalisé !"
                   : "Les cours de classe apparaîtront ici quand ils seront disponibles."
               }`}

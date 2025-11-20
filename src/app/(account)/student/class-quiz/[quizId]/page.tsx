@@ -115,11 +115,19 @@ const ClassQuizPage = () => {
       // Calculer le score
       const scoreResult = calculateQuizScore(quizQuestions, answersToSubmit);
 
+      let result: any = null;
+
       try {
-        const result = await submitQuizMutation.mutateAsync({
+        console.log("🔄 Début soumission quiz, score à envoyer:", scoreResult.scoreForApi);
+
+        result = await submitQuizMutation.mutateAsync({
           quizId: classQuiz.id,
           payload: { score: scoreResult.scoreForApi },
         });
+
+        console.log("✅ Quiz soumis avec succès:", result);
+        console.log("✅ Score envoyé:", scoreResult.scoreForApi);
+        console.log("✅ Note calculée:", scoreResult.noteSur20);
 
         toast({
           variant: "success",
@@ -128,6 +136,10 @@ const ClassQuizPage = () => {
         });
 
         // Transformer les corrections
+        console.log("🔄 Début transformation corrections");
+        console.log("🔄 result.corrections:", result.corrections);
+        console.log("🔄 quizQuestions:", quizQuestions);
+
         const transformedCorrections = result.corrections.map((question: any, index: number) => {
           const propositions = Object.entries(question.propositions).map(([key, value]) => ({
             id: key,
@@ -147,6 +159,9 @@ const ClassQuizPage = () => {
           };
         });
 
+        console.log("✅ Corrections transformées:", transformedCorrections);
+
+        console.log("💾 Sauvegarde dans sessionStorage");
         sessionStorage.setItem("quizCorrections", JSON.stringify(transformedCorrections));
         sessionStorage.setItem(
           "quizScore",
@@ -158,10 +173,19 @@ const ClassQuizPage = () => {
           })
         );
 
+        console.log("🔄 Redirection vers:", `/student/class-quiz/results/${result.quiz.id}`);
+        console.log("🔄 result.quiz:", result.quiz);
+
         resetQuizTimer();
-        router.push(`/student/class-quiz/results/${result.userQuiz.id}`);
+        router.push(`/student/class-quiz/results/${result.quiz.id}`);
       } catch (error) {
-        console.error("Erreur lors de la soumission du quiz", error);
+        console.error("❌ Erreur détaillée lors de la soumission du quiz:", error);
+        console.error("❌ Result reçu avant erreur:", result);
+        console.error("❌ Answers soumis:", answersToSubmit);
+        console.error("❌ Score calculé:", scoreResult);
+        console.error("❌ Quiz questions:", quizQuestions);
+        console.error("❌ Total time:", totalTimeInSeconds);
+
         toast({
           variant: "error",
           title: "Erreur de soumission",
@@ -243,12 +267,15 @@ const ClassQuizPage = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center max-w-md">
-          <p className="text-red-600 font-semibold">Quiz non trouvé</p>
+          <p className="text-red-600 font-semibold">Quiz de classe non accessible</p>
+          <p className="text-red-500 text-sm mt-2">
+            Ce quiz n'est pas encore disponible ou vous n'avez pas la permission d'y accéder.
+          </p>
           <Button
             onClick={handleBack}
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Retour aux quiz
+            Retour aux quiz de classe
           </Button>
         </div>
       </div>

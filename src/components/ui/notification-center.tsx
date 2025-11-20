@@ -9,6 +9,7 @@ import {
   Award,
   BookOpen,
   CheckCircle,
+  RefreshCw,
 } from "lucide-react";
 import {
   Popover,
@@ -21,6 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useNotifications,
   useMarkNotificationAsRead,
@@ -108,11 +110,13 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
     invitationId: number;
     action: "accept" | "decline";
   } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
   const { user } = useSession();
+  const queryClient = useQueryClient();
 
   // Récupérer les notifications (20 dernières, toutes)
-  const { data, isLoading, isError } = useNotifications({ per_page: 20 });
+  const { data, isLoading, isError, refetch } = useNotifications({ per_page: 20 });
   const { mutate: markAsRead } = useMarkNotificationAsRead();
   const { mutate: markAllAsRead, isPending: isMarkingAll } =
     useMarkAllNotificationsAsRead();
@@ -161,9 +165,9 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
         case "quiz_activated":
         case "quiz_created":
           if (notification.data.quiz_id) {
-            // Élèves et répétiteurs: rediriger vers le quiz
+            // Élèves et répétiteurs: rediriger vers le quiz de classe
             if (user?.statut === "eleve" || user?.statut === "repetiteur") {
-              router.push(`${rolePrefix}/quiz/${notification.data.quiz_id}`);
+              router.push(`${rolePrefix}/class-quiz/${notification.data.quiz_id}`);
             }
             // Parents: rediriger vers la page de l'enfant (si disponible)
             else if (user?.statut === "parent" && notification.data.eleve_id) {
@@ -239,6 +243,15 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
     markAllAsRead();
   };
 
+  const handleRefreshNotifications = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -275,24 +288,39 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
               </p>
             )}
           </div>
-          {unreadCount > 0 && (
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleMarkAllAsRead}
-              disabled={isMarkingAll}
+              onClick={handleRefreshNotifications}
+              disabled={isRefreshing}
               className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              {isMarkingAll ? (
+              {isRefreshing ? (
                 <Spinner size="sm" />
               ) : (
-                <>
-                  <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                  Tout marquer comme lu
-                </>
+                <RefreshCw className="h-3.5 w-3.5" />
               )}
             </Button>
-          )}
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={isMarkingAll}
+                className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                {isMarkingAll ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <>
+                    <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                    Tout marquer comme lu
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Content */}

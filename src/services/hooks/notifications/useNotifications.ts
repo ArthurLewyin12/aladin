@@ -30,7 +30,11 @@ export const useNotifications = (params?: GetNotificationsParams) => {
 
       return data;
     },
-    // Rafraîchir automatiquement toutes les 30 secondes pour avoir les nouvelles notifications
-    refetchInterval: 30000,
+    // Rafraîchir automatiquement toutes les 10 secondes pour une meilleure réactivité
+    refetchInterval: 10000,
+    // Rafraîchir quand la fenêtre retrouve le focus
+    refetchOnWindowFocus: true,
+    // Rafraîchir quand on reconnecte internet
+    refetchOnReconnect: true,
   });
 };

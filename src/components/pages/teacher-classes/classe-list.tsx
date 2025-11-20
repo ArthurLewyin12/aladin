@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useClassesWithDetails } from '@/services/hooks/professeur/useClassesWithDetails';
-import { useDeactivateClasse } from '@/services/hooks/professeur/useDeactivateClasse';
-import { useReactivateClasse } from '@/services/hooks/professeur/useReactivateClasse';
-import { ClasseCard } from './classe-card';
-import { AddStudentModal } from './add-student-modal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
-import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useClassesWithDetails } from "@/services/hooks/professeur/useClassesWithDetails";
+import { useDeactivateClasse } from "@/services/hooks/professeur/useDeactivateClasse";
+import { useReactivateClasse } from "@/services/hooks/professeur/useReactivateClasse";
+import { ClasseCard } from "./classe-card";
+import { AddStudentModal } from "./add-student-modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 
 const ITEMS_PER_PAGE = 6;
 
 const CARD_COLORS = [
-  'bg-[#D4F4DD]', // Vert clair
-  'bg-[#E8F8E8]', // Vert très clair
-  'bg-[#C8E6C9]', // Vert menthe
-  'bg-[#DCEDC8]', // Vert lime clair
+  "bg-[#D4F4DD]", // Vert clair
+  "bg-[#E8F8E8]", // Vert très clair
+  "bg-[#C8E6C9]", // Vert menthe
+  "bg-[#DCEDC8]", // Vert lime clair
 ];
 
 interface ClasseListProps {
@@ -35,8 +35,11 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
   const [selectedClasseId, setSelectedClasseId] = useState<number | null>(null);
 
   // Pagination et recherche avec nuqs
-  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
-  const [searchQuery, setSearchQuery] = useQueryState('search', parseAsString.withDefault(''));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault(""),
+  );
 
   const enrichedClasses = useMemo(() => {
     if (!classes) return [];
@@ -44,9 +47,9 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
     // Filtrer les classes sans ID valide et éviter les doublons
     const seenIds = new Set<number>();
     const filtered = classes
-      .filter(classe => {
+      .filter((classe) => {
         if (!classe || classe.id == null) {
-          console.warn('Classe sans ID valide ignorée:', classe);
+          console.warn("Classe sans ID valide ignorée:", classe);
           return false;
         }
         if (seenIds.has(classe.id)) {
@@ -58,7 +61,7 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
       })
       .sort((a, b) => b.id - a.id) // Trier par ID décroissant (plus récent en premier)
       // Filtrer par recherche
-      .filter(classe => {
+      .filter((classe) => {
         if (!searchQuery) return true;
         return classe.nom.toLowerCase().includes(searchQuery.toLowerCase());
       })
@@ -104,14 +107,14 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
   const handleNextPage = () => {
     if (page < totalPages) {
       setPage(page + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handlePrevPage = () => {
     if (page > 1) {
       setPage(page - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -142,7 +145,8 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
             Mes Classes
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            {enrichedClasses.length} classe{enrichedClasses.length > 1 ? 's' : ''}
+            {enrichedClasses.length} classe
+            {enrichedClasses.length > 1 ? "s" : ""}
             {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
           </p>
         </div>
@@ -159,17 +163,17 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
 
       {/* Barre de recherche */}
       <div className="flex gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 mx-auto max-w-[500px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             placeholder="Rechercher une classe..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white border-2 border-gray-200 rounded-xl h-11"
+            className="pl-10 bg-white border-2 border-gray-200 rounded-3xl h-12 "
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery('')}
+              onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
@@ -180,7 +184,7 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
 
       {/* Grille des classes paginées */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {paginatedClasses.map(classe => (
+        {paginatedClasses.map((classe) => (
           <ClasseCard
             key={`classe-${classe.id}`}
             classe={classe}
@@ -208,24 +212,26 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
           </Button>
 
           <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-              <Button
-                key={pageNum}
-                variant={pageNum === page ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => {
-                  setPage(pageNum);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`rounded-full ${
-                  pageNum === page
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : ''
-                }`}
-              >
-                {pageNum}
-              </Button>
-            ))}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === page ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => {
+                    setPage(pageNum);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className={`rounded-full ${
+                    pageNum === page
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : ""
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              ),
+            )}
           </div>
 
           <Button
@@ -244,8 +250,12 @@ export const ClasseList = ({ onCreateClasse }: ClasseListProps) => {
       {selectedClasseId && (
         <AddStudentModal
           classeId={selectedClasseId}
-          classeName={enrichedClasses.find(c => c.id === selectedClasseId)?.nom || ''}
-          classeNiveauId={enrichedClasses.find(c => c.id === selectedClasseId)?.niveau_id}
+          classeName={
+            enrichedClasses.find((c) => c.id === selectedClasseId)?.nom || ""
+          }
+          classeNiveauId={
+            enrichedClasses.find((c) => c.id === selectedClasseId)?.niveau_id
+          }
           isOpen={isAddStudentModalOpen}
           onClose={() => setAddStudentModalOpen(false)}
         />

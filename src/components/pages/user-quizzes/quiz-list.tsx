@@ -4,12 +4,19 @@ import { useGetAllQuiz } from "@/services/hooks/quiz";
 import { UserQuizCard } from "./user-quiz-card";
 import { Spinner } from "@/components/ui/spinner";
 import { Quiz } from "@/services/controllers/types/common/quiz.types";
-import { EmptyState } from "@/components/ui/empty-state";
+
 import { useRouter } from "next/navigation";
-import { Plus, BookOpen, FileQuestion, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  BookOpen,
+  FileQuestion,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuizDetailsModal } from "./quiz-details-modal";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -22,15 +29,17 @@ export function QuizList() {
   // Pagination avec nuqs
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-  // Trier les quiz par ID décroissant (plus récents en premier) et calculer la pagination
-  const { paginatedQuizzes, totalPages } = useMemo(() => {
-    // Filtrer les quiz perso (exclure les quiz de classe et groupe)
-    // Les quiz sans type sont les quiz perso générés par l'utilisateur
-    const personalQuizzes = quizzes.filter((quiz) => {
+  // Filtrer les quiz personnels (ceux sans type ou avec type différent de "classe" et "groupe")
+  const personalQuizzes = useMemo(() => {
+    return quizzes.filter((quiz) => {
       const quizType = (quiz as any).type;
+      // Considérer comme personnel si pas de type ou type différent de "classe" et "groupe"
       return !quizType || (quizType !== "classe" && quizType !== "groupe");
     });
+  }, [quizzes]);
 
+  // Trier les quiz par ID décroissant (plus récents en premier) et calculer la pagination
+  const { paginatedQuizzes, totalPages } = useMemo(() => {
     // Trier par ID décroissant (les plus récents en premier)
     const sortedQuizzes = [...personalQuizzes].sort((a, b) => b.id - a.id);
 
@@ -40,7 +49,7 @@ export function QuizList() {
       paginatedQuizzes: sortedQuizzes.slice(startIndex, endIndex),
       totalPages: Math.ceil(sortedQuizzes.length / ITEMS_PER_PAGE),
     };
-  }, [quizzes, page]);
+  }, [personalQuizzes, page]);
 
   const handleOpenDetails = (quizId: number) => {
     setSelectedQuizId(quizId);
@@ -70,7 +79,7 @@ export function QuizList() {
     );
   }
 
-  if (quizzes.length === 0) {
+  if (personalQuizzes.length === 0) {
     return (
       <div className="px-4 sm:px-0">
         {/* Illustration centrale */}
@@ -121,8 +130,8 @@ export function QuizList() {
               Mes Quiz
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              {quizzes.length} quiz{" "}
-              {quizzes.length > 1 ? "disponibles" : "disponible"}
+              {personalQuizzes.length} quiz{" "}
+              {personalQuizzes.length > 1 ? "disponibles" : "disponible"}
               {totalPages > 1 && ` • Page ${page} sur ${totalPages}`}
             </p>
           </div>
@@ -163,45 +172,47 @@ export function QuizList() {
             </Button>
 
             <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                // Afficher les 3 premières pages, les 3 dernières, et la page courante avec ses voisines
-                const showPage =
-                  pageNum <= 2 ||
-                  pageNum >= totalPages - 1 ||
-                  (pageNum >= page - 1 && pageNum <= page + 1);
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => {
+                  // Afficher les 3 premières pages, les 3 dernières, et la page courante avec ses voisines
+                  const showPage =
+                    pageNum <= 2 ||
+                    pageNum >= totalPages - 1 ||
+                    (pageNum >= page - 1 && pageNum <= page + 1);
 
-                const showEllipsisBefore = pageNum === 3 && page > 4;
-                const showEllipsisAfter =
-                  pageNum === totalPages - 2 && page < totalPages - 3;
+                  const showEllipsisBefore = pageNum === 3 && page > 4;
+                  const showEllipsisAfter =
+                    pageNum === totalPages - 2 && page < totalPages - 3;
 
-                if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                  return null;
-                }
+                  if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                    return null;
+                  }
 
-                if (showEllipsisBefore || showEllipsisAfter) {
+                  if (showEllipsisBefore || showEllipsisAfter) {
+                    return (
+                      <span key={pageNum} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
                   return (
-                    <span key={pageNum} className="px-2 text-gray-400">
-                      ...
-                    </span>
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(pageNum)}
+                      className={`rounded-full min-w-[2.5rem] ${
+                        pageNum === page
+                          ? "bg-[#2C3E50] hover:bg-[#1a252f]"
+                          : ""
+                      }`}
+                    >
+                      {pageNum}
+                    </Button>
                   );
-                }
-
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setPage(pageNum)}
-                    className={`rounded-full min-w-[2.5rem] ${
-                      pageNum === page
-                        ? "bg-[#2C3E50] hover:bg-[#1a252f]"
-                        : ""
-                    }`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
+                },
+              )}
             </div>
 
             <Button

@@ -8,8 +8,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useGetAllQuiz, useSubmitQuiz } from "@/services/hooks/quiz";
+import { useNotifications } from "@/services/hooks/notifications";
 import { useTimeTracking } from "@/stores/useTimeTracking";
 import { useQuizTimer } from "@/stores/useQuizTimer";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 import { calculateQuizScore } from "@/lib/quiz-score";
 import { toast } from "@/lib/toast";
 import { usePreventNavigation } from "@/services/hooks/usePreventNavigation";
@@ -22,21 +24,33 @@ const ClassQuizPage = () => {
 
   const { data: allQuizData, isLoading: isLoadingQuizzes } = useGetAllQuiz();
   const submitQuizMutation = useSubmitQuiz();
+  const { data: notificationsData } = useNotifications();
 
   // État du quiz
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
-  const [userAnswers, setUserAnswers] = useState<Record<string | number, string>>({});
+  const [userAnswers, setUserAnswers] = useState<
+    Record<string | number, string>
+  >({});
   const [questionTimeRemaining, setQuestionTimeRemaining] = useState(60);
   const [isQuizStarted, setIsQuizStarted] = useState(false);
 
   // Récupérer le quiz depuis les données
   const classQuiz = allQuizData?.quizzes?.find(
-    (q) => q.id === quizId && (q as any).type === "classe"
-  ) as (Quiz & { classe?: { id: number; nom: string }; type?: string }) | undefined;
+    (q) => q.id === quizId && (q as any).type === "classe",
+  ) as
+    | (Quiz & { classe?: { id: number; nom: string }; type?: string })
+    | undefined;
 
   const { startTracking, stopTracking } = useTimeTracking();
-  const { startQuiz, startQuestion, endQuestion, getTotalTime, reset: resetQuizTimer } = useQuizTimer();
+  const {
+    startQuiz,
+    startQuestion,
+    endQuestion,
+    getTotalTime,
+    reset: resetQuizTimer,
+  } = useQuizTimer();
+  const { hideNotification } = useNotificationStore();
 
   // Démarrer le tracking
   useEffect(() => {
@@ -56,21 +70,22 @@ const ClassQuizPage = () => {
   // Initialiser le quiz
   useEffect(() => {
     if (classQuiz && !isQuizStarted) {
-      const transformedQuestions = classQuiz.questions?.map((q: any, index: number) => {
-        const propositionsArray = Array.isArray(q.propositions)
-          ? q.propositions
-          : Object.entries(q.propositions).map(([key, value]) => ({
-              id: key,
-              text: value,
-            }));
+      const transformedQuestions =
+        classQuiz.questions?.map((q: any, index: number) => {
+          const propositionsArray = Array.isArray(q.propositions)
+            ? q.propositions
+            : Object.entries(q.propositions).map(([key, value]) => ({
+                id: key,
+                text: value,
+              }));
 
-        return {
-          id: `q_${index}`,
-          question: q.question,
-          propositions: propositionsArray,
-          bonne_reponse_id: q.bonne_reponse,
-        };
-      }) || [];
+          return {
+            id: `q_${index}`,
+            question: q.question,
+            propositions: propositionsArray,
+            bonne_reponse_id: q.bonne_reponse,
+          };
+        }) || [];
 
       setQuizQuestions(transformedQuestions);
       setCurrentQuestionIndex(0);
@@ -98,7 +113,13 @@ const ClassQuizPage = () => {
         startQuestion(nextQuestion.id);
       }
     }
-  }, [currentQuestionIndex, quizQuestions, currentQuestion, endQuestion, startQuestion]);
+  }, [
+    currentQuestionIndex,
+    quizQuestions,
+    currentQuestion,
+    endQuestion,
+    startQuestion,
+  ]);
 
   const handleSubmitQuiz = useCallback(
     async (answers?: Record<string | number, string>) => {
@@ -118,7 +139,10 @@ const ClassQuizPage = () => {
       let result: any = null;
 
       try {
-        console.log("🔄 Début soumission quiz, score à envoyer:", scoreResult.scoreForApi);
+        console.log(
+          "🔄 Début soumission quiz, score à envoyer:",
+          scoreResult.scoreForApi,
+        );
 
         result = await submitQuizMutation.mutateAsync({
           quizId: classQuiz.id,
@@ -135,34 +159,55 @@ const ClassQuizPage = () => {
           message: `Votre note: ${scoreResult.noteSur20}/20 (${scoreResult.correctAnswers}/${quizQuestions.length} bonnes réponses)`,
         });
 
+        // Masquer la notification correspondante si elle existe
+        const quizNotification =
+          notificationsData?.notifications_generales?.data?.find(
+            (notif) =>
+              (notif.type === "quiz_created" ||
+                notif.type === "quiz_activated") &&
+              notif.data.quiz_id === classQuiz.id,
+          );
+        if (quizNotification) {
+          hideNotification(quizNotification.id);
+        }
+
         // Transformer les corrections
         console.log("🔄 Début transformation corrections");
         console.log("🔄 result.corrections:", result.corrections);
         console.log("🔄 quizQuestions:", quizQuestions);
 
-        const transformedCorrections = result.corrections.map((question: any, index: number) => {
-          const propositions = Object.entries(question.propositions).map(([key, value]) => ({
-            id: key,
-            text: value as string,
-          }));
+        const transformedCorrections = result.corrections.map(
+          (question: any, index: number) => {
+            const propositions = Object.entries(question.propositions).map(
+              ([key, value]) => ({
+                id: key,
+                text: value as string,
+              }),
+            );
 
-          const originalQuestion = quizQuestions[index];
-          const questionId = originalQuestion?.id || question.id || `q_${index}`;
+            const originalQuestion = quizQuestions[index];
+            const questionId =
+              originalQuestion?.id || question.id || `q_${index}`;
 
-          return {
-            id: questionId,
-            question: question.question,
-            propositions: propositions,
-            bonne_reponse_id: question.bonne_reponse,
-            user_answer:
-              answersToSubmit[questionId] || answersToSubmit[originalQuestion?.id],
-          };
-        });
+            return {
+              id: questionId,
+              question: question.question,
+              propositions: propositions,
+              bonne_reponse_id: question.bonne_reponse,
+              user_answer:
+                answersToSubmit[questionId] ||
+                answersToSubmit[originalQuestion?.id],
+            };
+          },
+        );
 
         console.log("✅ Corrections transformées:", transformedCorrections);
 
         console.log("💾 Sauvegarde dans sessionStorage");
-        sessionStorage.setItem("quizCorrections", JSON.stringify(transformedCorrections));
+        sessionStorage.setItem(
+          "quizCorrections",
+          JSON.stringify(transformedCorrections),
+        );
         sessionStorage.setItem(
           "quizScore",
           JSON.stringify({
@@ -170,16 +215,22 @@ const ClassQuizPage = () => {
             totalQuestions: quizQuestions.length,
             noteSur20: scoreResult.noteSur20,
             totalTimeInSeconds,
-          })
+          }),
         );
 
-        console.log("🔄 Redirection vers:", `/student/class-quiz/results/${result.quiz.id}`);
+        console.log(
+          "🔄 Redirection vers:",
+          `/student/class-quiz/results/${result.quiz.id}`,
+        );
         console.log("🔄 result.quiz:", result.quiz);
 
         resetQuizTimer();
         router.push(`/student/class-quiz/results/${result.quiz.id}`);
       } catch (error) {
-        console.error("❌ Erreur détaillée lors de la soumission du quiz:", error);
+        console.error(
+          "❌ Erreur détaillée lors de la soumission du quiz:",
+          error,
+        );
         console.error("❌ Result reçu avant erreur:", result);
         console.error("❌ Answers soumis:", answersToSubmit);
         console.error("❌ Score calculé:", scoreResult);
@@ -193,12 +244,24 @@ const ClassQuizPage = () => {
         });
       }
     },
-    [classQuiz, currentQuestion, endQuestion, getTotalTime, quizQuestions, userAnswers, submitQuizMutation, stopTracking, resetQuizTimer, router]
+    [
+      classQuiz,
+      currentQuestion,
+      endQuestion,
+      getTotalTime,
+      quizQuestions,
+      userAnswers,
+      submitQuizMutation,
+      stopTracking,
+      resetQuizTimer,
+      router,
+    ],
   );
 
   // Timer countdown
   useEffect(() => {
-    if (!isQuizStarted || !currentQuestion || submitQuizMutation.isPending) return;
+    if (!isQuizStarted || !currentQuestion || submitQuizMutation.isPending)
+      return;
 
     const timer = setInterval(() => {
       setQuestionTimeRemaining((prev) => {
@@ -216,7 +279,16 @@ const ClassQuizPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isQuizStarted, currentQuestion, currentQuestionIndex, quizQuestions.length, submitQuizMutation.isPending, userAnswers, handleNextQuestion, handleSubmitQuiz]);
+  }, [
+    isQuizStarted,
+    currentQuestion,
+    currentQuestionIndex,
+    quizQuestions.length,
+    submitQuizMutation.isPending,
+    userAnswers,
+    handleNextQuestion,
+    handleSubmitQuiz,
+  ]);
 
   // Réinitialiser le timer quand on change de question
   useEffect(() => {
@@ -244,7 +316,8 @@ const ClassQuizPage = () => {
   // Hook pour empêcher la navigation
   const { ConfirmationDialog, interceptNavigation } = usePreventNavigation({
     when: isQuizStarted && quizQuestions.length > 0,
-    message: "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
+    message:
+      "Tu es en train de passer un quiz. Si tu quittes maintenant, ton quiz sera automatiquement soumis avec les réponses actuelles.",
     onConfirm: stableHandleSubmitQuiz,
   });
 
@@ -267,9 +340,12 @@ const ClassQuizPage = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center max-w-md">
-          <p className="text-red-600 font-semibold">Quiz de classe non accessible</p>
+          <p className="text-red-600 font-semibold">
+            Quiz de classe non accessible
+          </p>
           <p className="text-red-500 text-sm mt-2">
-            Ce quiz n'est pas encore disponible ou vous n'avez pas la permission d'y accéder.
+            Ce quiz n'est pas encore disponible ou vous n'avez pas la permission
+            d'y accéder.
           </p>
           <Button
             onClick={handleBack}
@@ -323,23 +399,41 @@ const ClassQuizPage = () => {
             <div className="max-w-4xl mx-auto mt-8">
               <div className="space-y-8">
                 {/* Règles du Quiz */}
-                <Alert variant="destructive" className="border-2 border-red-500 bg-red-50">
+                <Alert
+                  variant="destructive"
+                  className="border-2 border-red-500 bg-red-50"
+                >
                   <AlertTriangle className="h-6 w-6 text-red-600" />
                   <AlertTitle className="text-red-800 font-bold text-lg md:text-xl">
                     Règles du Quiz
                   </AlertTitle>
                   <AlertDescription className="text-red-700 space-y-2 text-base md:text-lg">
-                    <p>⏱️ <strong>60 secondes</strong> par question - passage automatique si le temps expire</p>
-                    <p>➡️ <strong>Passage automatique</strong> à la question suivante après sélection</p>
-                    <p>🚫 <strong>Impossible de revenir</strong> en arrière sur une question déjà passée</p>
-                    <p>⚠️ <strong>Quitter la page = soumission automatique</strong> du quiz avec tes réponses actuelles</p>
+                    <p>
+                      ⏱️ <strong>60 secondes</strong> par question - passage
+                      automatique si le temps expire
+                    </p>
+                    <p>
+                      ➡️ <strong>Passage automatique</strong> à la question
+                      suivante après sélection
+                    </p>
+                    <p>
+                      🚫 <strong>Impossible de revenir</strong> en arrière sur
+                      une question déjà passée
+                    </p>
+                    <p>
+                      ⚠️{" "}
+                      <strong>Quitter la page = soumission automatique</strong>{" "}
+                      du quiz avec tes réponses actuelles
+                    </p>
                   </AlertDescription>
                 </Alert>
 
                 {/* Timer et Progress bar */}
                 <div>
                   <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-600">
-                    <span>Question {currentQuestionIndex + 1}/{quizQuestions.length}</span>
+                    <span>
+                      Question {currentQuestionIndex + 1}/{quizQuestions.length}
+                    </span>
                     <span
                       className={`text-lg font-bold ${questionTimeRemaining <= 10 ? "text-red-600 animate-pulse" : "text-orange-600"}`}
                     >
@@ -386,27 +480,29 @@ const ClassQuizPage = () => {
                     }}
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {currentQuestion.propositions.map((proposition: any, index: number) => {
-                        const letters = ["a", "b", "c", "d", "e", "f"];
-                        return (
-                          <div
-                            key={proposition.id}
-                            className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
-                          >
-                            <RadioGroupItem
-                              value={proposition.id.toString()}
-                              id={proposition.id.toString()}
-                              className="border-black border-2 flex-shrink-0"
-                            />
-                            <Label
-                              htmlFor={proposition.id.toString()}
-                              className="flex-1 text-base font-medium cursor-pointer"
+                      {currentQuestion.propositions.map(
+                        (proposition: any, index: number) => {
+                          const letters = ["a", "b", "c", "d", "e", "f"];
+                          return (
+                            <div
+                              key={proposition.id}
+                              className="flex items-center space-x-3 bg-white rounded-xl p-4 border-2 border-gray-900 hover:bg-gray-50 transition-colors"
                             >
-                              {letters[index]}) {proposition.text}
-                            </Label>
-                          </div>
-                        );
-                      })}
+                              <RadioGroupItem
+                                value={proposition.id.toString()}
+                                id={proposition.id.toString()}
+                                className="border-black border-2 flex-shrink-0"
+                              />
+                              <Label
+                                htmlFor={proposition.id.toString()}
+                                className="flex-1 text-base font-medium cursor-pointer"
+                              >
+                                {letters[index]}) {proposition.text}
+                              </Label>
+                            </div>
+                          );
+                        },
+                      )}
                     </div>
                   </RadioGroup>
                 </div>

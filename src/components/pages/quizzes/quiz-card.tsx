@@ -246,15 +246,8 @@ export const QuizCard = ({
               </Button>
             </>
           ) : nombre_eleves_soumis === 0 ? (
-            // Quiz publié mais aucune soumission : afficher "Modifier" + "En attente de soumission" + "Voir détails"
+            // Quiz publié mais aucune soumission : afficher "En attente de soumission" + "Voir détails"
             <>
-              <Button
-                onClick={onEdit}
-                className=" text-white rounded-xl px-6 h-11 font-medium"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Modifier
-              </Button>
               <div className="flex-1 flex items-center justify-center bg-orange-100 border-2 border-orange-400 rounded-xl px-6 h-11">
                 <p className="text-sm font-medium text-orange-700">
                   En attente de soumission

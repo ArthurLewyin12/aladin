@@ -138,16 +138,16 @@ const ClassQuizPage = () => {
 
       let result: any = null;
 
-      try {
-        console.log(
-          "🔄 Début soumission quiz, score à envoyer:",
-          scoreResult.scoreForApi,
-        );
+       try {
+         console.log(
+           "🔄 Début soumission quiz, score à envoyer:",
+           scoreResult.scoreForApi,
+         );
 
-        result = await submitQuizMutation.mutateAsync({
-          quizId: classQuiz.id,
-          payload: { score: scoreResult.scoreForApi },
-        });
+         result = await submitQuizMutation.mutateAsync({
+           quizId: classQuiz.id,
+           payload: { score: scoreResult.scoreForApi },
+         });
 
         console.log("✅ Quiz soumis avec succès:", result);
         console.log("✅ Score envoyé:", scoreResult.scoreForApi);
@@ -220,12 +220,12 @@ const ClassQuizPage = () => {
 
         console.log(
           "🔄 Redirection vers:",
-          `/student/class-quiz/results/${result.quiz.id}`,
+          `/student/class-quiz/results/${classQuiz.id}`,
         );
-        console.log("🔄 result.quiz:", result.quiz);
+        console.log("🔄 result:", result);
 
         resetQuizTimer();
-        router.push(`/student/class-quiz/results/${result.quiz.id}`);
+        router.push(`/student/class-quiz/results/${classQuiz.id}`);
       } catch (error) {
         console.error(
           "❌ Erreur détaillée lors de la soumission du quiz:",
@@ -240,8 +240,14 @@ const ClassQuizPage = () => {
         toast({
           variant: "error",
           title: "Erreur de soumission",
-          message: "Impossible de soumettre le quiz. Veuillez réessayer.",
+          message: "Une erreur s'est produite, mais votre quiz a peut-être été enregistré. Vérifiez vos résultats.",
         });
+
+        // Même en cas d'erreur frontend, essayer de rediriger vers les résultats
+        // car la soumission peut avoir réussi côté backend
+        console.log("🔄 Tentative de redirection malgré l'erreur...");
+        resetQuizTimer();
+        router.push(`/student/class-quiz/results/${classQuiz.id}`);
       }
     },
     [
@@ -279,16 +285,16 @@ const ClassQuizPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [
-    isQuizStarted,
-    currentQuestion,
-    currentQuestionIndex,
-    quizQuestions.length,
-    submitQuizMutation.isPending,
-    userAnswers,
-    handleNextQuestion,
-    handleSubmitQuiz,
-  ]);
+   }, [
+     isQuizStarted,
+     currentQuestion,
+     currentQuestionIndex,
+     quizQuestions.length,
+     submitQuizMutation.isPending,
+     userAnswers,
+     handleNextQuestion,
+     handleSubmitQuiz,
+   ]);
 
   // Réinitialiser le timer quand on change de question
   useEffect(() => {

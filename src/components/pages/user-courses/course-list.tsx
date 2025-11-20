@@ -97,8 +97,8 @@ export function CourseList() {
         // Sauvegarder dans sessionStorage pour la page de cours
         sessionStorage.setItem("courseData", JSON.stringify(courseData));
 
-        // Rediriger vers la page du cours
-        router.push(`/student/cours/saved/${course.id}`);
+        // Rediriger vers la page du cours de classe
+        router.push(`/student/cours/classe/${course.id}`);
       } else {
         // Pour les cours personnels, utiliser l'API existante
         await getOneCourse(course.id);

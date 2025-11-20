@@ -5,6 +5,7 @@ import {
   UserCours,
   GenerateCoursPayload,
   EleveCoursResponse,
+  EleveCours,
 } from "./types/common/cours.type";
 import { request } from "@/lib/request";
 
@@ -66,4 +67,21 @@ export const getEleveCours = async (eleveId: number): Promise<EleveCoursResponse
     eleveId.toString(),
   );
   return request.get<EleveCoursResponse>(endpoint);
+};
+
+/**
+ * Récupère un cours de classe spécifique pour un élève.
+ * @param {number} eleveId - L'ID de l'élève.
+ * @param {number} courseId - L'ID du cours.
+ * @returns {Promise<EleveCours>} Le cours complet avec son contenu.
+ */
+export const getOneEleveCourse = async (
+  eleveId: number,
+  courseId: number
+): Promise<EleveCours> => {
+  const endpoint = CourseEndpoints.GET_ONE_ELEVE_COURSE
+    .replace("{eleveId}", eleveId.toString())
+    .replace("{coursId}", courseId.toString());
+
+  return request.get<EleveCours>(endpoint);
 };

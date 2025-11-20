@@ -185,8 +185,10 @@ export const EleveCoursesByClass = ({ className }: EleveCoursesByClassProps) => 
                       <div className="mb-4">
                         <p className="text-sm text-gray-700 line-clamp-3">
                           {course.type === "genere" && course.data?.course_data?.Introduction
-                            ? course.data.course_data.Introduction
-                            : course.plain_text || "Aucun aperçu disponible"}
+                            ? course.data.course_data.Introduction.substring(0, 150) + "..."
+                            : course.plain_text
+                            ? course.plain_text.substring(0, 150) + "..."
+                            : "Aucun aperçu disponible"}
                         </p>
                       </div>
 

@@ -110,28 +110,38 @@ export default function SavedCoursePage() {
           sessionStorage.removeItem("courseData");
         }
       } catch (error) {
-        console.error("Erreur lors de la lecture des données sessionStorage:", error);
+        console.error(
+          "Erreur lors de la lecture des données sessionStorage:",
+          error,
+        );
       }
     }
   }, [courseId]);
 
   // Utiliser les données de sessionStorage si disponibles, sinon l'API
-  const { data: apiData, isLoading, isError, error } = useGetOneCourse(courseId);
+  const {
+    data: apiData,
+    isLoading,
+    isError,
+    error,
+  } = useGetOneCourse(courseId);
 
   // Utiliser les données de sessionStorage ou de l'API
   const data = useSessionData ? sessionData : apiData;
-  const { startTracking, stopTracking } = useTimeTracking();
 
-  // Helper function to get course_data or cours_data
+  // Déterminer le type de cours et le contenu à afficher
+  const courseType = data?.type;
+  const isManualCourse = courseType === "manuel";
+  const isAICourse = courseType === "genere";
+
+  // Helper function pour récupérer les données structurées des cours IA
   const getCourseData = (courseData: any) => {
     return courseData?.course_data || courseData?.cours_data;
   };
+  const { startTracking, stopTracking } = useTimeTracking();
 
-  // Déterminer si c'est le nouveau format structuré
-  const hasStructuredCourseData =
-    data &&
-    typeof data === "object" &&
-    ("course_data" in data || "cours_data" in data);
+  // Déterminer si c'est un cours IA avec données structurées
+  const hasStructuredCourseData = isAICourse && getCourseData(data) !== null;
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
@@ -146,6 +156,16 @@ export default function SavedCoursePage() {
   }, [isLoading, data, startTracking, stopTracking]);
 
   const parsedContent = useMemo(() => {
+    // Pour les cours manuels, utiliser plain_text s'il existe
+    if (isManualCourse && data?.plain_text) {
+      return data.plain_text.split("\n").map((line: string, index: number) => ({
+        id: index,
+        type: "paragraph",
+        content: line,
+      }));
+    }
+
+    // Pour les cours IA ou anciens, utiliser text
     if (!data || !data.text || typeof data.text !== "string") return [];
 
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
@@ -160,7 +180,7 @@ export default function SavedCoursePage() {
         content: line,
       };
     });
-  }, [data]);
+  }, [data, isManualCourse]);
 
   // Memoized summary generation
   const summary = useMemo(() => {
@@ -171,7 +191,9 @@ export default function SavedCoursePage() {
     }
     // Fallback: take first 3 non-title lines
     return parsedContent
-      .filter((line: any) => line.type === "paragraph" && line.content.length > 20)
+      .filter(
+        (line: any) => line.type === "paragraph" && line.content.length > 20,
+      )
       .slice(0, 3)
       .map((line: any) => line.content)
       .join(" ");

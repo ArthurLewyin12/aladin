@@ -90,23 +90,58 @@ const NotionCard = ({ notion, index }: { notion: any; index: number }) => {
 };
 
 export default function SavedCoursePage() {
-  const router = useRouter();
   const params = useParams();
-  const courseId = parseInt(params.courseId as string);
+  const router = useRouter();
+  const courseId = Number(params.courseId);
 
-  const { data, isLoading, isError, error } = useGetOneCourse(courseId);
-  const { startTracking, stopTracking } = useTimeTracking();
+  // Vérifier si les données sont disponibles dans sessionStorage (pour les cours de classe)
+  const [sessionData, setSessionData] = useState<any>(null);
+  const [useSessionData, setUseSessionData] = useState(false);
 
-  // Helper function to get course_data or cours_data
+  useEffect(() => {
+    const storedData = sessionStorage.getItem("courseData");
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        if (parsedData.id === courseId) {
+          setSessionData(parsedData);
+          setUseSessionData(true);
+          // Nettoyer le sessionStorage après utilisation
+          sessionStorage.removeItem("courseData");
+        }
+      } catch (error) {
+        console.error(
+          "Erreur lors de la lecture des données sessionStorage:",
+          error,
+        );
+      }
+    }
+  }, [courseId]);
+
+  // Utiliser les données de sessionStorage si disponibles, sinon l'API
+  const {
+    data: apiData,
+    isLoading,
+    isError,
+    error,
+  } = useGetOneCourse(courseId);
+
+  // Utiliser les données de sessionStorage ou de l'API
+  const data = useSessionData ? sessionData : apiData;
+
+  // Déterminer le type de cours et le contenu à afficher
+  const courseType = data?.type;
+  const isManualCourse = courseType === "manuel";
+  const isAICourse = courseType === "genere";
+
+  // Helper function pour récupérer les données structurées des cours IA
   const getCourseData = (courseData: any) => {
     return courseData?.course_data || courseData?.cours_data;
   };
+  const { startTracking, stopTracking } = useTimeTracking();
 
-  // Déterminer si c'est le nouveau format structuré
-  const hasStructuredCourseData =
-    data &&
-    typeof data === "object" &&
-    ("course_data" in data || "cours_data" in data);
+  // Déterminer si c'est un cours IA avec données structurées
+  const hasStructuredCourseData = isAICourse && getCourseData(data) !== null;
 
   // Démarrer le tracking quand le cours est chargé
   useEffect(() => {
@@ -121,11 +156,21 @@ export default function SavedCoursePage() {
   }, [isLoading, data, startTracking, stopTracking]);
 
   const parsedContent = useMemo(() => {
+    // Pour les cours manuels, utiliser plain_text s'il existe
+    if (isManualCourse && data?.plain_text) {
+      return data.plain_text.split("\n").map((line: string, index: number) => ({
+        id: index,
+        type: "paragraph",
+        content: line,
+      }));
+    }
+
+    // Pour les cours IA ou anciens, utiliser text
     if (!data || !data.text || typeof data.text !== "string") return [];
 
     const romanNumeralRegex = /^([IVXLCDM]+)\.\s/;
 
-    return data.text.split("\n").map((line, index) => {
+    return data.text.split("\n").map((line: string, index: number) => {
       const isTitle =
         romanNumeralRegex.test(line) ||
         (line.toUpperCase() === line && line.length > 0 && line.length < 100);
@@ -135,7 +180,7 @@ export default function SavedCoursePage() {
         content: line,
       };
     });
-  }, [data]);
+  }, [data, isManualCourse]);
 
   // Memoized summary generation
   const summary = useMemo(() => {
@@ -146,9 +191,11 @@ export default function SavedCoursePage() {
     }
     // Fallback: take first 3 non-title lines
     return parsedContent
-      .filter((line) => line.type === "paragraph" && line.content.length > 20)
+      .filter(
+        (line: any) => line.type === "paragraph" && line.content.length > 20,
+      )
       .slice(0, 3)
-      .map((line) => line.content)
+      .map((line: any) => line.content)
       .join(" ");
   }, [data, parsedContent]);
 
@@ -582,7 +629,7 @@ export default function SavedCoursePage() {
               prose-ol:my-4 prose-ol:list-decimal
             `}
                   >
-                    {parsedContent.map((line) => (
+                    {parsedContent.map((line: any) => (
                       <div key={line.id}>
                         {line.type === "title" ? (
                           <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mt-8 first:mt-0 mb-4">
@@ -634,7 +681,7 @@ export default function SavedCoursePage() {
                         </h2>
                       </div>
                       <div className="space-y-4">
-                        {data.questions.map((qa, index) => (
+                        {data.questions.map((qa: any, index: number) => (
                           <details
                             key={index}
                             className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"
@@ -674,7 +721,7 @@ export default function SavedCoursePage() {
                     </h2>
                   </div>
                   <div className="space-y-4">
-                    {data.questions.map((qa, index) => (
+                    {data.questions.map((qa: any, index: number) => (
                       <details
                         key={index}
                         className="group bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-5 rounded-2xl hover:border-orange-300 transition-all duration-200 open:bg-white open:border-orange-400 open:shadow-md"

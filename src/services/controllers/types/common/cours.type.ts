@@ -83,7 +83,6 @@ export type ProfesseurCourse = {
     id: number;
     nom: string;
   };
-  chapitre?: Chapitre;
   content?: {
     lexical_state: any;
     html: string;
@@ -104,6 +103,82 @@ export type ProfesseurCourse = {
   created_at: string;
   updated_at: string;
 };
+
+// Types pour l'API des cours par élève
+export interface EleveClasse {
+  id: number;
+  nom: string;
+  description: string;
+}
+
+export interface EleveCours {
+  id: number;
+  type: "manuel" | "genere";
+  titre: string;
+  classe: {
+    id: number;
+    nom: string;
+  };
+  chapitre: {
+    id: number;
+    libelle: string;
+    matiere: {
+      id: number;
+      libelle: string;
+    };
+    niveau: {
+      id: number;
+      libelle: string;
+    };
+  };
+  professeur: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
+
+  // Pour cours manuels
+  html?: string;
+  plain_text?: string;
+  lexical_state?: any;
+
+  // Pour cours générés par IA
+  data?: {
+    structured: boolean;
+    course_data?: CourseStructuredData;
+    questions?: QuestionReponse[];
+    illustrations?: any[];
+  };
+
+  metadata: {
+    has_math: boolean;
+    has_images: boolean;
+    has_tables: boolean;
+    has_videos: boolean;
+    word_count: number;
+    image_count: number;
+    table_count: number;
+    video_count: number;
+    character_count: number;
+  };
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EleveCoursCount {
+  classes: number;
+  cours_manuel: number;
+  cours_genere: number;
+  cours_total: number;
+}
+
+export interface EleveCoursResponse {
+  eleve_id: string;
+  classes: EleveClasse[];
+  cours: EleveCours[];
+  count: EleveCoursCount;
+}
 
 /**
  * Types pour le nouveau format structuré des cours générés

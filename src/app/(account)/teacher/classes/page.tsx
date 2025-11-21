@@ -38,6 +38,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/lib/toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle } from "lucide-react";
+import { Matiere } from "@/services/controllers/types/common/matiere.types";
 
 interface FormContentProps {
   classeName: string;
@@ -208,7 +209,7 @@ export default function TeacherClassesPage() {
   const isLoadingMatieres = isLoadingSubjects;
   const matieres = selectedNiveau
     ? subjectsResponse.matieres.filter(
-        (matiere) =>
+        (matiere: Matiere) =>
           matiere.niveau_id === parseInt(selectedNiveau) &&
           profSubjectNames.includes(matiere.libelle)
       )

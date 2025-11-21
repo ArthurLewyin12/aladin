@@ -62,6 +62,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigation> = {
         path: "/student/groups",
         icon: Users,
       },
+      {
+        label: "Mes documents",
+        path: "/student/documents",
+        icon: FileText,
+      },
     ],
   },
   parent: {

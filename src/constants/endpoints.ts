@@ -232,6 +232,10 @@ export enum RepetiteurEndpoints {
  */
 export enum EleveEndpoints {
   CHECK_EMAIL = "/api/eleves/check",
+
+  // Documents côté élève
+  GET_ELEVE_DOCUMENTS = "/api/eleves/{eleve_id}/classes/documents",
+  DOWNLOAD_ELEVE_DOCUMENT = "/api/eleves/{eleve_id}/classes/documents/{document_id}/download",
 }
 
 /**
@@ -319,4 +323,8 @@ export enum ProfesseurEndpoints {
   GET_CLASSE_DOCUMENTS = "/api/prof/classes/{classe_id}/documents",
   DELETE_CLASSE_DOCUMENT = "/api/prof/classes/{classe_id}/documents/{document_id}",
   DOWNLOAD_CLASSE_DOCUMENT = "/api/prof/classes/{classe_id}/documents/{document_id}/download",
+
+  // Documents côté élève
+  GET_ELEVE_DOCUMENTS = "/api/eleves/{eleve_id}/classes/documents",
+  DOWNLOAD_ELEVE_DOCUMENT = "/api/eleves/{eleve_id}/classes/documents/{document_id}/download",
 }

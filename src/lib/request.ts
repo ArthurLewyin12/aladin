@@ -10,7 +10,7 @@ import ENVIRONNEMENTS from "@/constants/environnement";
  * Instance Axios pré-configurée pour tous les appels API de l'application.
  * Définit l'URL de base, un timeout et les en-têtes par défaut.
  */
-const api = axios.create({
+export const api = axios.create({
   baseURL: ENVIRONNEMENTS.API_URL || "",
   timeout: 60000,
   headers: {
@@ -211,8 +211,8 @@ export const request = {
       ...config,
       headers: {
         ...config?.headers,
-        // DO NOT set Content-Type for FormData - let the browser/axios set it automatically with the correct boundary
-        // "Content-Type": "multipart/form-data",
+        // Explicitly remove Content-Type for FormData - let the browser set it automatically with boundary
+        "Content-Type": undefined,
       },
     });
 
@@ -220,14 +220,16 @@ export const request = {
   },
 };
 
-/**
- * Fonction utilitaire pour créer des clés de requête pour TanStack Query.
- * Accepte des chaînes, nombres, objets, undefined ou null.
- * Les valeurs undefined/null sont filtrées automatiquement.
- * Les objets sont inclus tels quels pour permettre la comparaison par référence de TanStack Query.
- * @param {...(string | number | object | undefined | null)[]} parts Les segments qui composent la clé.
- * @returns {(string | object)[]} Un tableau utilisable comme clé de requête TanStack Query.
- */
+
+
+  /**
+   * Fonction utilitaire pour créer des clés de requête pour TanStack Query.
+   * Accepte des chaînes, nombres, objets, undefined ou null.
+   * Les valeurs undefined/null sont filtrées automatiquement.
+   * Les objets sont inclus tels quels pour permettre la comparaison par référence de TanStack Query.
+   * @param {...(string | number | object | undefined | null)[]} parts Les segments qui composent la clé.
+   * @returns {(string | object)[]} Un tableau utilisable comme clé de requête TanStack Query.
+   */
 export const createQueryKey = (
   ...parts: (string | number | object | undefined | null)[]
 ): (string | object)[] => {

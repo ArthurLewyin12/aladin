@@ -1,4 +1,5 @@
-import { request } from "@/lib/request";
+import { request, api as axiosApi } from "@/lib/request";
+import { api } from "@/lib/request";
 import {
   ProfesseurEndpoints,
   EleveEndpoints,
@@ -67,7 +68,12 @@ import {
   CreateClassMessageResponse,
   UpdateClassMessagePayload,
   UpdateClassMessageResponse,
-  ToggleClassMessageResponse,
+   ToggleClassMessageResponse,
+   ClasseDocument,
+   GetClasseDocumentsResponse,
+   UploadClasseDocumentPayload,
+   UploadClasseDocumentResponse,
+   DeleteClasseDocumentResponse,
 } from "./types/common/professeur.types";
 import { DashboardResponse } from "./types/common/professeur-dashboard.types";
 
@@ -946,4 +952,113 @@ export const toggleClassMessage = async (
  */
 export const getDashboard = async (): Promise<DashboardResponse> => {
   return request.get<DashboardResponse>(ProfesseurEndpoints.GET_DASHBOARD);
+};
+
+/**
+ * ===============================
+ * DOCUMENTS DE CLASSE
+ * ===============================
+ */
+
+/**
+ * Upload un document pour une classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {UploadClasseDocumentPayload} payload - Données du document.
+ * @returns {Promise<UploadClasseDocumentResponse>} Confirmation et données du document uploadé.
+ */
+export const uploadClasseDocument = async (
+  classeId: number,
+  payload: UploadClasseDocumentPayload,
+): Promise<UploadClasseDocumentResponse> => {
+  const endpoint = ProfesseurEndpoints.UPLOAD_CLASSE_DOCUMENT.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+
+  return request.postFormData<UploadClasseDocumentResponse>(endpoint, {
+    file: payload.file,
+    ...(payload.nom && { nom: payload.nom }),
+    ...(payload.description && { description: payload.description }),
+  });
+};
+
+/**
+ * Récupère les documents d'une classe.
+ * @param {number} classeId - ID de la classe.
+ * @returns {Promise<GetClasseDocumentsResponse>} Liste des documents avec métadonnées.
+ */
+export const getClasseDocuments = async (
+  classeId: number,
+): Promise<GetClasseDocumentsResponse> => {
+  const endpoint = ProfesseurEndpoints.GET_CLASSE_DOCUMENTS.replace(
+    "{classe_id}",
+    classeId.toString(),
+  );
+  return request.get<GetClasseDocumentsResponse>(endpoint);
+};
+
+/**
+ * Supprime un document de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} documentId - ID du document.
+ * @returns {Promise<DeleteClasseDocumentResponse>} Message de confirmation.
+ */
+export const deleteClasseDocument = async (
+  classeId: number,
+  documentId: number,
+): Promise<DeleteClasseDocumentResponse> => {
+  const endpoint = ProfesseurEndpoints.DELETE_CLASSE_DOCUMENT
+    .replace("{classe_id}", classeId.toString())
+    .replace("{document_id}", documentId.toString());
+  return request.delete<DeleteClasseDocumentResponse>(endpoint);
+};
+
+/**
+ * Télécharge un document de classe.
+ * @param {number} classeId - ID de la classe.
+ * @param {number} documentId - ID du document.
+ */
+export const downloadClasseDocument = async (
+  classeId: number,
+  documentId: number,
+): Promise<void> => {
+  const endpoint = ProfesseurEndpoints.DOWNLOAD_CLASSE_DOCUMENT
+    .replace("{classe_id}", classeId.toString())
+    .replace("{document_id}", documentId.toString());
+
+  try {
+    // Faire une requête authentifiée pour récupérer le fichier
+    const response = await axiosApi.get(endpoint, {
+      responseType: 'blob', // Important pour les fichiers binaires
+    });
+
+    // Extraire le nom du fichier depuis les headers Content-Disposition
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = 'document.pdf'; // Nom par défaut
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1].replace(/['"]/g, '');
+      }
+    }
+
+    // Créer un blob URL
+    const blob = new Blob([response.data]);
+    const url = window.URL.createObjectURL(blob);
+
+    // Créer un lien temporaire et déclencher le téléchargement
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+
+    // Nettoyer
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Erreur lors du téléchargement:', error);
+    throw error;
+  }
 };

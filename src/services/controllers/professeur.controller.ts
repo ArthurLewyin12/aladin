@@ -1,5 +1,4 @@
 import { request, api as axiosApi } from "@/lib/request";
-import { api } from "@/lib/request";
 import {
   ProfesseurEndpoints,
   EleveEndpoints,
@@ -7,75 +6,74 @@ import {
   CourseEndpoints,
 } from "@/constants/endpoints";
 import { PromiseExecutor } from "@/lib/promise-executor";
+
+import { DashboardResponse } from "./types/common/professeur-dashboard.types";
 import {
-  GetSubjectsResponse,
   GetSubjectsGenericResponse,
   SetSubjectsPayload,
   SetSubjectsResponse,
+  GetClassMembersResponse,
+  GenerateCoursePayload,
+  GetClasseResponse,
   GetClassesResponse,
   CreateClassePayload,
   CreateClasseResponse,
-  GetClasseResponse,
-  GetClasseRawResponse,
   UpdateClassePayload,
   UpdateClasseResponse,
+  GetClasseRawResponse,
   DeactivateClasseResponse,
-  ReactivateClasseResponse,
+  DeactivateMemberResponse,
   CheckEleveResponse,
   AddMemberPayload,
-  AddMemberResponse,
-  DeactivateMemberResponse,
-  ReactivateMemberResponse,
   CreateManualQuizPayload,
+  CreateManualCoursePayload,
+  CreateManualCourseResponse,
+  AddMemberResponse,
+  ReactivateClasseResponse,
+  ReactivateMemberResponse,
   CreateManualQuizResponse,
   GenerateQuizPayload,
   GenerateQuizResponse,
   UpdateQuizPayload,
   UpdateQuizResponse,
   ActivateQuizResponse,
+  DeactivateCourseResponse,
   DeactivateQuizResponse,
   GetQuizNotesResponse,
-  CreateManualCoursePayload,
-  CreateManualCourseResponse,
-  GenerateCoursePayload,
   GenerateCourseResponse,
-  UpdateCoursePayload,
   UpdateCourseIAPayload,
+  UpdateCoursePayload,
   UpdateCourseResponse,
   ActivateCourseResponse,
-  DeactivateCourseResponse,
-  UploadCourseImagePayload,
   UploadCourseImageResponse,
+  UploadCourseImagePayload,
+  UpdateAllGradesPayload,
+  UpdateAllGradesResponse,
   SaveGradesPayload,
   SaveGradesResponse,
   CreateClassEvaluationPayload,
   CreateClassEvaluationResponse,
-  GetClassMembersResponse,
-  CreateEvaluationPayload,
   CreateEvaluationResponse,
-  GetEvaluationsResponse,
-  GetEvaluationNotesResponse,
-  AddGradesToEvaluationPayload,
-  AddGradesToEvaluationResponse,
-  UpdateEvaluationPayload,
-  UpdateEvaluationResponse,
-  UpdateGradePayload,
-  UpdateGradeResponse,
-  UpdateAllGradesPayload,
-  UpdateAllGradesResponse,
-  GetClassMessagesResponse,
   CreateClassMessagePayload,
   CreateClassMessageResponse,
+  CreateEvaluationPayload,
+  GetEvaluationsResponse,
+  GetEvaluationNotesResponse,
+  UpdateEvaluationPayload,
+  AddGradesToEvaluationPayload,
+  AddGradesToEvaluationResponse,
+  UpdateGradePayload,
+  UpdateGradeResponse,
+  GetClassMessagesResponse,
   UpdateClassMessagePayload,
   UpdateClassMessageResponse,
-   ToggleClassMessageResponse,
-   ClasseDocument,
-   GetClasseDocumentsResponse,
-   UploadClasseDocumentPayload,
-   UploadClasseDocumentResponse,
-   DeleteClasseDocumentResponse,
+  ToggleClassMessageResponse,
+  UploadClasseDocumentPayload,
+  UploadClasseDocumentResponse,
+  GetClasseDocumentsResponse,
+  DeleteClasseDocumentResponse,
+  UpdateEvaluationResponse,
 } from "./types/common/professeur.types";
-import { DashboardResponse } from "./types/common/professeur-dashboard.types";
 
 /**
  * ===============================
@@ -87,8 +85,8 @@ import { DashboardResponse } from "./types/common/professeur-dashboard.types";
  * Récupère les matières enseignées par le professeur.
  * @returns {Promise<GetSubjectsResponse>} Liste des matières avec compteur et maximum.
  */
-export const getSubjects = async (): Promise<GetSubjectsResponse> => {
-  return request.get<GetSubjectsResponse>(ProfesseurEndpoints.GET_SUBJECTS);
+export const getSubjects = async (): Promise<any> => {
+  return request.get<any>(ProfesseurEndpoints.GET_SUBJECTS);
 };
 
 /**
@@ -1007,9 +1005,10 @@ export const deleteClasseDocument = async (
   classeId: number,
   documentId: number,
 ): Promise<DeleteClasseDocumentResponse> => {
-  const endpoint = ProfesseurEndpoints.DELETE_CLASSE_DOCUMENT
-    .replace("{classe_id}", classeId.toString())
-    .replace("{document_id}", documentId.toString());
+  const endpoint = ProfesseurEndpoints.DELETE_CLASSE_DOCUMENT.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{document_id}", documentId.toString());
   return request.delete<DeleteClasseDocumentResponse>(endpoint);
 };
 
@@ -1022,24 +1021,27 @@ export const downloadClasseDocument = async (
   classeId: number,
   documentId: number,
 ): Promise<void> => {
-  const endpoint = ProfesseurEndpoints.DOWNLOAD_CLASSE_DOCUMENT
-    .replace("{classe_id}", classeId.toString())
-    .replace("{document_id}", documentId.toString());
+  const endpoint = ProfesseurEndpoints.DOWNLOAD_CLASSE_DOCUMENT.replace(
+    "{classe_id}",
+    classeId.toString(),
+  ).replace("{document_id}", documentId.toString());
 
   try {
     // Faire une requête authentifiée pour récupérer le fichier
     const response = await axiosApi.get(endpoint, {
-      responseType: 'blob', // Important pour les fichiers binaires
+      responseType: "blob", // Important pour les fichiers binaires
     });
 
     // Extraire le nom du fichier depuis les headers Content-Disposition
-    const contentDisposition = response.headers['content-disposition'];
-    let filename = 'document.pdf'; // Nom par défaut
+    const contentDisposition = response.headers["content-disposition"];
+    let filename = "document.pdf"; // Nom par défaut
 
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      const filenameMatch = contentDisposition.match(
+        /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/,
+      );
       if (filenameMatch && filenameMatch[1]) {
-        filename = filenameMatch[1].replace(/['"]/g, '');
+        filename = filenameMatch[1].replace(/['"]/g, "");
       }
     }
 
@@ -1048,7 +1050,7 @@ export const downloadClasseDocument = async (
     const url = window.URL.createObjectURL(blob);
 
     // Créer un lien temporaire et déclencher le téléchargement
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -1058,7 +1060,7 @@ export const downloadClasseDocument = async (
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Erreur lors du téléchargement:', error);
+    console.error("Erreur lors du téléchargement:", error);
     throw error;
   }
 };

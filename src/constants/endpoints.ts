@@ -313,4 +313,10 @@ export enum ProfesseurEndpoints {
 
   // Dashboard
   GET_DASHBOARD = "/api/prof/dashboard",
+
+  // Documents de classe
+  UPLOAD_CLASSE_DOCUMENT = "/api/prof/classes/{classe_id}/documents",
+  GET_CLASSE_DOCUMENTS = "/api/prof/classes/{classe_id}/documents",
+  DELETE_CLASSE_DOCUMENT = "/api/prof/classes/{classe_id}/documents/{document_id}",
+  DOWNLOAD_CLASSE_DOCUMENT = "/api/prof/classes/{classe_id}/documents/{document_id}/download",
 }

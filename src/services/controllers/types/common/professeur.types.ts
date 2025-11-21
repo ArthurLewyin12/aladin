@@ -758,3 +758,44 @@ export type ToggleClassMessageResponse = {
   message: string;
   is_active: boolean;
 };
+
+/**
+ * Types pour la gestion des documents de classe
+ */
+export type ClasseDocument = {
+  id: number;
+  nom: string;
+  nom_fichier: string;
+  description?: string;
+  file_type: "pdf" | "doc" | "docx" | "txt";
+  file_size: number;
+  mime_type: string;
+  uploaded_by: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
+  created_at: string;
+  download_url: string;
+};
+
+export type GetClasseDocumentsResponse = {
+  documents: ClasseDocument[];
+  total_professor_documents: number;
+  limit: number;
+};
+
+export type UploadClasseDocumentPayload = {
+  file: File;
+  nom?: string;
+  description?: string;
+};
+
+export type UploadClasseDocumentResponse = {
+  message: string;
+  document: ClasseDocument;
+};
+
+export type DeleteClasseDocumentResponse = {
+  message: string;
+};

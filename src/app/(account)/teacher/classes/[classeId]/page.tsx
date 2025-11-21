@@ -21,12 +21,14 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
+  FileText,
 } from "lucide-react";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { QuizAISection } from "@/components/pages/teacher-classes/quiz-ai-section";
 import { SendMessageModal } from "@/components/pages/teacher-classes/send-message-modal";
 import { StudentSection } from "@/components/pages/teacher-classes/student-section";
 import { GradesSection } from "@/components/pages/teacher-classes/grades-section";
+import { DocumentsSection } from "@/components/pages/teacher-classes/documents-section";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ManualQuizCard } from "@/components/pages/teacher-classes/manual-quiz-card";
 import { GetClasseResponse } from "@/services/controllers/types/common/professeur.types";
@@ -61,6 +63,7 @@ const ClasseDetailPage = () => {
     { label: "Elèves", icon: <Users className="w-4 h-4" /> },
     { label: "Quiz avec IA", icon: <Brain className="w-4 h-4" /> },
     { label: "Quiz manuel", icon: <BookText className="w-4 h-4" /> },
+    { label: "Documents", icon: <FileText className="w-4 h-4" /> },
     { label: "Notes", icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
@@ -143,6 +146,9 @@ const ClasseDetailPage = () => {
             )}
             {activeTab === "Elèves" && (
               <StudentSection classeDetails={classeDetails} />
+            )}
+            {activeTab === "Documents" && (
+              <DocumentsSection classeDetails={classeDetails} />
             )}
             {activeTab === "Notes" && (
               <GradesSection classeDetails={classeDetails} />

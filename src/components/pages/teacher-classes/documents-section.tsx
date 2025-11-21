@@ -132,7 +132,7 @@ export const DocumentsSection = ({ classeDetails }: DocumentsSectionProps) => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 backdrop-blur-sm rounded-3xl p-3 sm:p-4 shadow-sm px-4 sm:px-0">
           <div className="ml-4">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Documents de classe
+              Documents de classe (Uniquement partager aux élèves)
             </h2>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-xs sm:text-sm text-gray-600">
@@ -152,7 +152,7 @@ export const DocumentsSection = ({ classeDetails }: DocumentsSectionProps) => {
             className="mr-4 bg-[#2C3E50] hover:bg-[#1a252f] text-white px-4 sm:px-6 py-3 text-sm sm:text-base rounded-2xl shadow-lg transition-all hover:shadow-xl w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
           >
             <Upload className="w-4 h-4 mr-2 flex-shrink-0" />
-            Ajouter un document
+            Partager un document
           </Button>
         </div>
 
@@ -163,7 +163,7 @@ export const DocumentsSection = ({ classeDetails }: DocumentsSectionProps) => {
               <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
               <p className="text-yellow-800 text-sm">
                 Vous avez atteint la limite de {limit} documents. Supprimez des
-                documents existants pour en ajouter de nouveaux.
+                documents existants pour pouvoir en partager de nouveaux.
               </p>
             </div>
           </div>
@@ -228,7 +228,7 @@ export const DocumentsSection = ({ classeDetails }: DocumentsSectionProps) => {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between text-xs text-gray-600">
-                      <span>Uploadé le:</span>
+                      <span className="bg-red-600">Partager le:</span>
                       <span className="font-medium">
                         {format(new Date(document.created_at), "dd/MM/yyyy", {
                           locale: fr,
@@ -249,8 +249,8 @@ export const DocumentsSection = ({ classeDetails }: DocumentsSectionProps) => {
                       disabled={downloadDocumentMutation.isPending}
                       className="flex-1"
                     >
-                      <Download className="w-3 h-3 mr-1" />
-                      Télécharger
+                      {/*<Download className="w-3 h-3 mr-1" />*/}
+                      Consulter
                     </Button>
 
                     <AlertDialog>

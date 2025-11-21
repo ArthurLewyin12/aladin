@@ -83,5 +83,6 @@ export const getOneEleveCourse = async (
     .replace("{eleveId}", eleveId.toString())
     .replace("{coursId}", courseId.toString());
 
-  return request.get<EleveCours>(endpoint);
+  const response = await request.get<{ type: string; cours: Omit<EleveCours, 'type'> }>(endpoint);
+  return { ...response.cours, type: response.type as "manuel" | "genere" };
 };

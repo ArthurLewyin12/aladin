@@ -77,7 +77,9 @@ export function MathText({ text, className = "" }: MathTextProps) {
         );
 
         // Ne pas remplacer les \n par <br /> pour éviter les sauts de ligne non désirés
-        container.innerHTML = processedHTML;
+        if (container) {
+          container.innerHTML = processedHTML;
+        }
       } catch (error) {
         console.error("Erreur lors du rendu LaTeX:", error);
         if (containerRef.current) {

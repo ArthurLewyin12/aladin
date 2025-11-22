@@ -30,8 +30,8 @@ export default function RevisionPage() {
   );
 
   // États locaux (non persistés dans l'URL)
-  // const [useDocument, setUseDocument] = useState(false);
-  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [useDocument, setUseDocument] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const router = useRouter();
   const { user } = useSession();
@@ -71,8 +71,7 @@ export default function RevisionPage() {
   const handleStart = () => {
     if (selectedChapitreId) {
       // Stocker le document dans le store Zustand si présent
-      // setPendingDocument(selectedFile);
-      setPendingDocument(null);
+      setPendingDocument(selectedFile);
       router.push(`/student/cours/${selectedChapitreId}`);
     }
   };
@@ -217,10 +216,10 @@ export default function RevisionPage() {
                 </div>
               )}
 
-              {/* Checkbox et FileUpload pour document optionnel - MASQUÉ POUR LES ÉLÈVES */}
-              {/* {chapitres.length > 0 && (
+              {/* Checkbox et FileUpload pour document optionnel */}
+              {chapitres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-300">
-                  <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
+                  <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-300">
                     <div className="flex items-start space-x-3 mb-4">
                       <Checkbox
                         id="useDocument"
@@ -232,16 +231,16 @@ export default function RevisionPage() {
                           }
                         }}
                         disabled={!selectedChapitreId}
-                        className="mt-0.5 border-2 border-red-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                        className="mt-0.5 border-2 border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
                       <div className="grid gap-1.5 leading-none flex-1">
                         <label
                           htmlFor="useDocument"
-                          className="text-sm font-bold text-red-700 cursor-pointer"
+                          className="text-sm font-bold text-blue-700 cursor-pointer"
                         >
                           Générer depuis un document (optionnel)
                         </label>
-                        <p className="text-xs text-red-600 font-medium">
+                        <p className="text-xs text-blue-600 font-medium">
                           PDF, DOC, DOCX, TXT - Maximum 10 MB
                         </p>
                       </div>
@@ -260,7 +259,7 @@ export default function RevisionPage() {
                     )}
                   </div>
                 </div>
-              )} */}
+              )}
 
               <div className="text-center mt-8">
                 <Button
